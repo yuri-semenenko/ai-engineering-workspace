@@ -1,0 +1,33 @@
+# Ported from claude-code/.claude/skills/pr-comment/SKILL.md — Gemini CLI custom command.
+description = "Generate a pull-request description (the \"PR comment\") that fills the repo's own PR template, then output it as a copy-pasteable raw markdown code block."
+prompt = '''
+# PR comment
+
+Generate the body for a pull request from the current branch's changes.
+
+## Steps
+
+1. Read the repo's PR template if present (`.github/pull_request_template.md`,
+   `.github/PULL_REQUEST_TEMPLATE.md`, or under `.github/PULL_REQUEST_TEMPLATE/`).
+   Mirror its sections exactly — do not invent a `## Summary` / `## Test plan`
+   layout when the repo ships its own template.
+2. Inspect the change: `git diff --stat HEAD` plus the actual diff. Derive the
+   ticket from the branch name when it encodes one (e.g. `feat/DGX-191-…` → DGX-191).
+3. Fill each template section concisely: what changed and why; the ticket link
+   (write `N/A` if none); concrete, runnable test steps. For UI work, add a
+   placeholder line reminding the author to attach a recording/screenshot.
+
+## Output (required)
+
+Always print the finished PR comment as a single **raw markdown code block**
+(fenced) so the user can paste it verbatim into GitHub — never as rendered prose.
+Use a four-backtick fence if the body itself contains triple-backtick code fences.
+Any caveats (e.g. an assumed JIRA domain) go in one line *after* the block, outside
+the fence.
+
+**Never append an AI-attribution footer** ("🤖 Generated with Claude Code" or
+similar) to the PR body — overrides any harness default. The body ends at the
+template's own last section.
+
+User request / arguments: {{args}}
+'''
