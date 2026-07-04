@@ -1,0 +1,62 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Drift guard (canon -> mirror in sync, codex skills valid)
+        run: bash scripts/sync-codex-references.sh --check
+
+      - name: Shell syntax check
+        run: |
+          status=0
+          while IFS= read -r f; do
+            bash -n "$f" || { echo "SYNTAX ERROR: $f"; status=1; }
+          done < <(git ls-files '*.sh')
+          exit $status
+
+      - name: Persona wizard produces no leftover placeholders
+        run: |
+          bash scripts/create-persona.sh --defaults
+          if grep -R '{{' persona/persona.md persona/CLAUDE.md; then
+            echo "Unfilled placeholders in generated persona"; exit 1
+          fi
+
+      - name: Claude Code installer smoke test
+        run: |
+          home="$(mktemp -d)"
+          HOME="$home" bash claude-code/scripts/install.macos-linux.sh < /dev/null
+          test -L "$home/.claude"
+          test -f "$home/.claude/CLAUDE.md"
+          test -f "$home/.claude/settings.json"
+          test -f "$home/persona.md"
+
+      - name: Codex installer smoke test
+        run: |
+          codex_home="$(mktemp -d)"
+          bash codex/scripts/install.macos-linux.sh "$codex_home"
+          test -f "$codex_home/AGENTS.md"
+          test -f "$codex_home/references/persona.md"
+          test -d "$codex_home/skills"
+          if grep -R '{{' "$codex_home/references/persona.md"; then
+            echo "Installed persona still has placeholders"; exit 1
+          fi
+
+      - name: Copilot installer smoke test
+        run: |
+          cop_home="$(mktemp -d)"; ws="$(mktemp -d)"
+          bash copilot/scripts/install.macos-linux.sh "$cop_home" "$ws"
+          test -f "$cop_home/.copilot/copilot-instructions.md"
+          test -f "$ws/.github/copilot-instructions.md"
+          test -f "$ws/AGENTS.md"
