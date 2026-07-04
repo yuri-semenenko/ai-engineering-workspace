@@ -8,10 +8,13 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptDir
 
 $CanonPersona = Join-Path $RepoRoot 'persona\persona.template.md'
+$CanonCondensed = Join-Path $RepoRoot 'persona\CLAUDE.template.md'
 $CanonMemory = Join-Path $RepoRoot 'claude-code\.claude\memory-seed.example'
 $MirrorPersona = Join-Path $RepoRoot 'codex\references\persona.md'
 $MirrorMemory = Join-Path $RepoRoot 'codex\references\memory-seed.example'
+$MirrorGemini = Join-Path $RepoRoot 'gemini\references\GEMINI.md'
 $SkillsRoot = Join-Path $RepoRoot 'codex\skills'
+$GeminiCommandsRoot = Join-Path $RepoRoot 'gemini\commands'
 
 # Read the frontmatter `name:` from a SKILL.md, or $null if absent.
 function Get-SkillName {
@@ -70,6 +73,32 @@ function Test-Skills {
                 Write-Error "SKILLS: $name frontmatter name ('$fmName') != directory name"
                 $ok = $false
             }
+        }
+    }
+
+    return $ok
+}
+
+# Validate the owned-here Gemini command ports: commands root holds only *.toml
+# files, each with a prompt field. There is no auto-fix.
+function Test-GeminiCommands {
+    param([string]$Root)
+
+    if (-not (Test-Path -LiteralPath $Root)) {
+        Write-Error "GEMINI: commands directory missing: $Root"
+        return $false
+    }
+
+    $ok = $true
+    foreach ($entry in Get-ChildItem -LiteralPath $Root) {
+        if ($entry.PSIsContainer -or $entry.Extension -ne '.toml') {
+            Write-Error "GEMINI: non-.toml entry in commands/: $($entry.Name)"
+            $ok = $false
+            continue
+        }
+        if (-not (Select-String -LiteralPath $entry.FullName -Pattern '^\s*prompt\s*=' -Quiet)) {
+            Write-Error "GEMINI: $($entry.Name) has no prompt field"
+            $ok = $false
         }
     }
 
@@ -147,6 +176,7 @@ function Test-DirectoryMirror {
 }
 
 Assert-PathExists -Path $CanonPersona -Label 'Canon persona'
+Assert-PathExists -Path $CanonCondensed -Label 'Canon condensed persona'
 Assert-PathExists -Path $CanonMemory -Label 'Canon memory-seed'
 
 if ($Check) {
@@ -165,13 +195,26 @@ if ($Check) {
         $mirrorOk = $false
     }
 
+    if (-not (Test-Path -LiteralPath $MirrorGemini)) {
+        Write-Error 'DRIFT: gemini\references\GEMINI.md mirror missing'
+        $mirrorOk = $false
+    } elseif ((Get-FileHash -Algorithm SHA256 -LiteralPath $CanonCondensed).Hash -ne (Get-FileHash -Algorithm SHA256 -LiteralPath $MirrorGemini).Hash) {
+        Write-Error 'DRIFT: gemini\references\GEMINI.md differs from canon (persona\CLAUDE.template.md)'
+        $mirrorOk = $false
+    }
+
     if (-not (Test-Skills -Root $SkillsRoot)) {
         Write-Error 'Fix the skill structure above (no auto-fix: skills are owned-here canon).'
         $skillsOk = $false
     }
 
+    if (-not (Test-GeminiCommands -Root $GeminiCommandsRoot)) {
+        Write-Error 'Fix the Gemini command structure above (no auto-fix: owned-here ports).'
+        $skillsOk = $false
+    }
+
     if (-not $mirrorOk) {
-        Write-Error 'Run: scripts\sync-codex-references.ps1; git add codex\references'
+        Write-Error 'Run: scripts\sync-codex-references.ps1; git add codex\references gemini\references'
     }
 
     if ($mirrorOk -and $skillsOk) { exit 0 } else { exit 1 }
@@ -186,10 +229,17 @@ if (Test-Path -LiteralPath $MirrorMemory) {
 New-Item -ItemType Directory -Force -Path $MirrorMemory | Out-Null
 Copy-Item -Path (Join-Path $CanonMemory '*') -Destination $MirrorMemory -Recurse -Force
 
-Write-Host 'Synced codex\references from canon (persona\ + claude-code\).'
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $MirrorGemini) | Out-Null
+Copy-Item -LiteralPath $CanonCondensed -Destination $MirrorGemini -Force
 
-# Skills are owned-here and cannot be regenerated; surface broken structure now.
+Write-Host 'Synced codex\references and gemini\references from canon (persona\ + claude-code\).'
+
+# Ports are owned-here and cannot be regenerated; surface broken structure now.
 if (-not (Test-Skills -Root $SkillsRoot)) {
     throw 'Skill structure invalid (owned-here canon, no auto-fix). Fix the files above.'
 }
 Write-Host 'Validated codex\skills structure.'
+if (-not (Test-GeminiCommands -Root $GeminiCommandsRoot)) {
+    throw 'Gemini command structure invalid (owned-here ports, no auto-fix). Fix the files above.'
+}
+Write-Host 'Validated gemini\commands structure.'
