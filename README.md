@@ -106,6 +106,10 @@ Full design in [`docs/architecture.md`](docs/architecture.md).
 
 Do not add auth files, tokens, credentials, session transcripts, logs, telemetry, plugin/model caches, or machine-local runtime state. The `.gitignore` is a whitelist-style backstop, and the write-time hooks scan for secret patterns. Your generated persona and `settings.json` are gitignored by design.
 
+## Contributing
+
+Contributions welcome. Two rules above all: keep it sterile (no personal or employer data) and keep the canon and its mirrors in sync. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE) — set your name or handle in the copyright line before publishing.
