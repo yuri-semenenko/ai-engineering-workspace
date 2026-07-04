@@ -60,3 +60,15 @@ jobs:
           test -f "$cop_home/.copilot/copilot-instructions.md"
           test -f "$ws/.github/copilot-instructions.md"
           test -f "$ws/AGENTS.md"
+
+      - name: Gemini CLI installer smoke test
+        run: |
+          gem_home="$(mktemp -d)"
+          bash gemini/scripts/install.macos-linux.sh "$gem_home"
+          test -f "$gem_home/GEMINI.md"
+          test -d "$gem_home/commands"
+          test -f "$gem_home/settings.json"
+          test "$(ls -1 "$gem_home"/commands/*.toml | wc -l)" -ge 16
+          if grep -R '{{' "$gem_home/GEMINI.md"; then
+            echo "Installed GEMINI.md still has placeholders"; exit 1
+          fi
