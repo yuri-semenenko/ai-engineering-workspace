@@ -1,0 +1,65 @@
+{
+  "context": {
+    "fileName": ["GEMINI.md", "AGENTS.md"]
+  },
+  "tools": {
+    "sandbox": true,
+    "allowed": [
+      "run_shell_command(ls)",
+      "run_shell_command(pwd)",
+      "run_shell_command(cat)",
+      "run_shell_command(head)",
+      "run_shell_command(tail)",
+      "run_shell_command(wc)",
+      "run_shell_command(which)",
+      "run_shell_command(tree)",
+      "run_shell_command(file)",
+      "run_shell_command(stat)",
+      "run_shell_command(rg)",
+      "run_shell_command(grep)",
+      "run_shell_command(find)",
+      "run_shell_command(jq)"
+    ]
+  },
+  "hooks": {
+    "BeforeTool": [
+      {
+        "matcher": "run_shell_command",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "command-guard",
+            "command": "cmd=$(jq -r '.tool_input.command // empty' 2>/dev/null); [ -n \"$cmd\" ] || exit 0; case \"$cmd\" in *\"rm -rf\"*|*\"rm -fr\"*|*\"git reset --hard\"*|*\"git clean -f\"*|*\"git checkout --\"*|*\"git restore --staged\"*|*\"git branch -D\"*|*\"push --force\"*|*\"push -f\"*|*\"--force-with-lease\"*|*\"commit --amend\"*|*\"rebase -i\"*|*\"filter-branch\"*|*\"npm publish\"*|*\"npm unpublish\"*|*\"gh pr merge\"*|*\"gh release create\"*|*\"gh repo delete\"*|*\"node -e\"*) jq -n --arg c \"$cmd\" '{decision:\"deny\",reason:(\"Blocked irreversible or outbound command: \\($c). This is on the denylist; run it manually if it is truly intended.\")}'; exit 0;; esac; case \"$cmd\" in *\"git commit\"*) ;; *) exit 0;; esac; cur=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || exit 0; def=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@'); [ -n \"$def\" ] || def=main; case \"$cur\" in \"$def\"|main|master) jq -n --arg b \"$cur\" '{decision:\"deny\",reason:(\"On default branch \\($b). Create a feature branch first, then commit.\")}';; esac; exit 0"
+          }
+        ]
+      },
+      {
+        "matcher": "write_file|replace|edit",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "secret-scan",
+            "command": "c=$(jq -r '[.tool_input | .. | strings] | join(\"\\n\")' 2>/dev/null); printf '%s' \"$c\" | grep -Eq -e '-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{10,}' && jq -n '{decision:\"deny\",reason:\"Possible secret in this write (private key or cloud/token pattern). Blocked; remove the secret or write it outside the repo.\"}'; exit 0"
+          },
+          {
+            "type": "command",
+            "name": "protected-file-guard",
+            "command": "f=$(jq -r '.tool_input.file_path // .tool_input.path // empty' 2>/dev/null); [ -n \"$f\" ] || exit 0; b=${f##*/}; case \"$b\" in .env.example|.env.sample|.env.template|.env.*.example) exit 0;; esac; case \"$b\" in .env|.env.*|*.pem|*.key|id_rsa|id_ed25519|*.p12|*.keystore|package-lock.json|npm-shrinkwrap.json|yarn.lock|pnpm-lock.yaml|bun.lockb) jq -n --arg f \"$b\" '{decision:\"deny\",reason:(\"Editing protected file \\($f) (secret/key/lockfile). Blocked; regenerate lockfiles via the package manager or write outside the repo.\")}';; esac; exit 0"
+          }
+        ]
+      }
+    ],
+    "AfterTool": [
+      {
+        "matcher": "write_file|replace|edit",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "prettier-on-write",
+            "command": "f=$(jq -r '.tool_input.file_path // .tool_input.path // empty' 2>/dev/null); [ -n \"$f\" ] || exit 0; case \"$f\" in *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|*.json|*.css|*.scss|*.html|*.md|*.mdx|*.yaml|*.yml) ;; *) exit 0;; esac; npx --no-install prettier --find-config-path \"$f\" >/dev/null 2>&1 || exit 0; npx --no-install prettier --write --ignore-unknown \"$f\" >/dev/null 2>&1 || true; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}
