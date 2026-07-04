@@ -196,5 +196,7 @@ careless.
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE) — set your name or handle in the copyright line
-before publishing.
+MIT License. Copyright © 2026 Yuri Semenenko. See [`LICENSE`](LICENSE).
+
+Forking this? Update the copyright line in [`LICENSE`](LICENSE) to your own name
+or handle.
