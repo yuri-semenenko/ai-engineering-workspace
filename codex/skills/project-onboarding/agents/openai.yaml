@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Onboarding"
+  short_description: "Create project AGENTS.md"
+  default_prompt: "Create or improve this repo's AGENTS.md."

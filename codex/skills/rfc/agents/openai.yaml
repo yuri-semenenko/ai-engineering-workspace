@@ -1,0 +1,4 @@
+interface:
+  display_name: "RFC"
+  short_description: "Draft architecture RFCs"
+  default_prompt: "Draft an RFC for this proposal."

@@ -1,0 +1,6 @@
+*.sh text eol=lf
+scripts/hooks/* text eol=lf
+*.ps1 text eol=crlf
+*.md text
+*.json text
+*.yaml text eol=lf

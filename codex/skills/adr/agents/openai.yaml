@@ -1,0 +1,4 @@
+interface:
+  display_name: "ADR"
+  short_description: "Record architecture decisions"
+  default_prompt: "Write an ADR for this decision."

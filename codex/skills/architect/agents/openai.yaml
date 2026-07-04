@@ -1,0 +1,4 @@
+interface:
+  display_name: "Architect"
+  short_description: "Analyze architecture trade-offs"
+  default_prompt: "Analyze this architecture decision."

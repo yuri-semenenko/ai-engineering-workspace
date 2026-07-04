@@ -1,0 +1,178 @@
+---
+name: web-security-checklist
+description: Web application security checklist — OWASP Top 10 + LLM Top 10, threat modeling (STRIDE), auth/authz, input validation, secrets, security headers, CORS, data protection, and supply-chain hygiene. Use when reviewing security, hardening a feature, threat-modeling, or before merging security-sensitive changes (auth, user input, secrets, external or LLM-derived data). Pairs with /security-review.
+---
+
+# Web Security Checklist
+
+A fast, concrete checklist for reviewing and hardening web applications. Read the relevant section for the change at hand rather than the whole file. Treat each unchecked box as a question to answer, not a box to tick blindly.
+
+## Rationalizations (read first)
+
+Pre-written rebuttals to the excuses that precede a skipped control. If you catch yourself thinking the left column, the right column is the answer.
+
+| Rationalization | Rebuttal |
+|---|---|
+| "This endpoint is internal, no auth needed." | "Internal" is a network assumption, not a guarantee. Authn + authz still apply. |
+| "It's just an MVP, we'll harden later." | Auth, secrets, and injection are table stakes, not later-work. Later rarely comes. |
+| "Input comes from our own frontend." | The frontend is not a trust boundary. The API is. Validate at the boundary. |
+| "It's behind a login, so it's safe." | Authn ≠ authz. IDOR lives exactly here — check owner/role on every resource. |
+| "The framework auto-escapes output." | Verify the sink. `dangerouslySetInnerHTML`, raw SQL, and template bypasses exist. |
+
+## Threat modeling (start here)
+
+Before picking defenses, spend five minutes thinking like an attacker:
+
+- [ ] Trust boundaries mapped (requests, file uploads, webhooks, third-party APIs, LLM output).
+- [ ] Sensitive assets identified (credentials, PII, payment data, admin actions, financial transactions).
+- [ ] STRIDE pass per boundary (Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, Elevation of privilege).
+- [ ] Abuse cases written next to use cases: "how could I misuse this?"
+
+## Pre-commit
+
+- [ ] No secrets in the diff (`git diff --cached | grep -iE "password|secret|api_key|token"`).
+- [ ] `.gitignore` covers `.env`, `.env.local`, `*.pem`, `*.key`.
+- [ ] `.env.example` uses placeholder values only (no real secrets).
+
+## Authentication
+
+- [ ] Passwords hashed with bcrypt (≥12 rounds), scrypt, or argon2.
+- [ ] Session cookies set `httpOnly`, `secure`, `sameSite: 'lax'`.
+- [ ] Session lifetime bounded (reasonable max-age).
+- [ ] Rate limiting on the login endpoint (e.g. ≤10 attempts / 15 min).
+- [ ] Password reset tokens time-bounded (≤1 hour) and single-use.
+- [ ] Account lockout after repeated failures (optional, with user notice).
+- [ ] MFA available for sensitive operations (recommended).
+
+## Authorization
+
+- [ ] Every protected endpoint checks authentication.
+- [ ] Owner/role checked on every resource access (prevents IDOR).
+- [ ] Admin endpoints require an admin-role check.
+- [ ] API keys scoped to least privilege.
+- [ ] JWTs validated (signature, expiry, issuer).
+- [ ] Postgres/Supabase: RLS enabled on every table; server uses the least-privileged client (anon vs service-role); ownership/tenant checks not left to RLS alone in trusted server paths.
+
+## Input validation
+
+- [ ] All user input validated at the boundary (API routes, form handlers).
+- [ ] Validation uses allowlists, not denylists.
+- [ ] String length bounded (min/max); numeric ranges validated.
+- [ ] Email/URL/date formats validated with vetted libraries.
+- [ ] File uploads: types restricted, size capped, content verified.
+- [ ] SQL queries parameterized (no string concatenation).
+- [ ] HTML output encoded (use the framework/templating auto-escape).
+- [ ] URLs validated before redirect (prevents open redirect).
+- [ ] SSRF: outbound requests allowlisted; private/reserved IPs blocked.
+
+## Security headers
+
+```
+Content-Security-Policy: default-src 'self'; script-src 'self'
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 0   (disabled; rely on CSP)
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+```
+
+## CORS
+
+```typescript
+// Restrictive (recommended)
+cors({
+  origin: ['https://yourdomain.com', 'https://app.yourdomain.com'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+})
+
+// NEVER in production:
+cors({ origin: '*' })   // allows any origin
+```
+
+## Data protection
+
+- [ ] Sensitive fields stripped from API responses (`passwordHash`, `resetToken`, etc.).
+- [ ] Sensitive data never logged (passwords, tokens, full card numbers).
+- [ ] PII encrypted at rest where required by regulation.
+- [ ] HTTPS for all external traffic.
+- [ ] Database backups encrypted.
+
+## Dependency & supply-chain
+
+```bash
+npm audit                          # known CVEs
+npm audit fix                      # auto-fix where safe
+npm audit --audit-level=critical   # gate on criticals
+npx npm-check-updates              # keep current
+```
+
+`npm audit` does not catch malicious packages. Also:
+
+- [ ] Lockfile committed; CI installs via `npm ci`, not `npm install`.
+- [ ] New dependencies vetted (maintenance, downloads, `postinstall` scripts).
+- [ ] No typosquatting (e.g. `cross-env` vs `crossenv`, `react-dom` vs `reactdom`).
+
+## AI / LLM security
+
+For any feature that calls an LLM (chatbots, summarizers, agents, RAG):
+
+- [ ] Model output treated as untrusted — never pass directly into `eval`/SQL/shell/`innerHTML`/file paths.
+- [ ] Assume prompt injection; enforce permissions in code, not in the system prompt.
+- [ ] Secrets, cross-user data, and full system prompts kept out of the context window.
+- [ ] Tool/agent permissions scoped; destructive or irreversible actions require user confirmation.
+- [ ] Token, rate, and recursion/loop-depth limits in place.
+
+## Error handling
+
+```typescript
+// Production: generic message, no internals
+res.status(500).json({
+  error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' }
+});
+
+// NEVER in production:
+res.status(500).json({
+  error: err.message,
+  stack: err.stack,   // leaks internals
+  query: err.sql,     // leaks DB structure
+});
+```
+
+## OWASP Top 10 quick reference
+
+| # | Risk | Prevention |
+|---|---|---|
+| 1 | Broken access control | Authorization on every endpoint, owner checks |
+| 2 | Cryptographic failures | HTTPS, strong hashing, no secrets in code |
+| 3 | Injection | Parameterized queries, input validation |
+| 4 | Insecure design | Threat modeling, spec-driven design |
+| 5 | Security misconfiguration | Security headers, least privilege, dep audit |
+| 6 | Vulnerable components | `npm audit`, updates, fewer third-party packages |
+| 7 | Identification/auth failures | Strong passwords, rate limiting, session management |
+| 8 | Software/data integrity failures | Verify updates/deps, signed artifacts |
+| 9 | Logging/monitoring failures | Log security events, keep secrets out of logs |
+| 10 | SSRF | URL allowlists, restrict outbound requests |
+
+## OWASP Top 10 for LLM quick reference
+
+See the [OWASP GenAI Security Project](https://genai.owasp.org/llm-top-10/).
+
+| ID | Risk | Prevention |
+|---|---|---|
+| LLM01 | Prompt injection | Don't treat the system prompt as a boundary; enforce permissions in code |
+| LLM02 | Sensitive information disclosure | Keep secrets/PII out of prompts; filter outputs |
+| LLM03 | Supply-chain | Vet models, datasets, plugins like any dependency |
+| LLM04 | Data & model poisoning | Trusted model sources, integrity checks, validate RAG/fine-tune data |
+| LLM05 | Improper output handling | Treat output as untrusted; validate, parameterize, encode |
+| LLM06 | Excessive agency | Scope tool permissions; confirm destructive actions |
+| LLM07 | System-prompt leakage | Assume it leaks; store no secrets in it |
+| LLM08 | Vector & embedding weaknesses | Partition RAG embeddings per user; validate documents before indexing |
+| LLM09 | Misinformation | Ground answers in citations; verify critical claims; keep a human in the loop |
+| LLM10 | Unbounded consumption | Limit tokens, rate, and loop/recursion depth |
+
+## Done when
+
+You ran the change through the relevant sections above (not just skimmed them), no Critical or High finding is left open, and you can name what you verified — authz checks exercised, inputs rejected at the boundary, secrets absent from diff and logs. "Looks secure" is not evidence; an unanswered box is unfinished work.

@@ -1,0 +1,81 @@
+---
+name: pr-classify
+description: Review a pull request and classify every finding as Critical / Important / Optional per the user's persona framework. Use when the user asks for a "PR review", "review this PR", "проревьюй PR", or wants PR-level triage. Different from /review (generic GitHub PR review) and from /code-review (working-diff bug scan) — this skill enforces the 3-tier classification and filters nitpicks.
+---
+
+# PR classify
+
+Review the current branch (or a specified PR) and produce structured feedback in the user's canonical classification scheme. The user is a Staff Engineer who explicitly wants to filter out nitpicks and focus on meaningful engineering concerns.
+
+## Preconditions (before any review work)
+
+1. **Auth.** Run `gh auth status`. If unauthenticated, stop and tell the user to run `gh auth login` before continuing. Do not fall back to a local-branch-only review silently.
+2. **PR target.** A PR number/URL or a checked-out branch with an open PR is required. If invoked as a bare review with no PR context, ask for the target instead of guessing.
+3. **Open state.** Verify the PR is still open: `gh pr view <id> --json state,mergedAt`. If it is merged or closed, surface that and confirm the user still wants the review before proceeding.
+
+## Steps
+
+1. **Identify the PR scope.** If invoked on a branch, run `gh pr view --json title,body,baseRefName,headRefName,files` or `git diff <base>...HEAD`. If invoked with a PR number/URL, fetch via `gh pr view <id>`.
+2. **Read the diff fully**, not just changed-line context. Cross-reference touched files for callers and tests.
+3. **For each finding, decide the bucket BEFORE writing it.** If it's borderline Important/Optional and you can't articulate the cost of ignoring it, drop it.
+4. **Group findings by bucket**, not by file. Within each bucket, order by severity.
+5. **Cite file:line for every comment.** Never describe an issue abstractly.
+6. **End with a summary verdict**: approve / request changes / needs discussion. One sentence rationale.
+
+## Classification rules
+
+### Critical
+Correctness, security, reliability. Examples:
+- Logic bug that breaks the happy path or a documented edge case
+- SQL injection, XSS, auth bypass, secret leak
+- Race condition, unhandled promise rejection in hot path
+- Data loss / migration that can't roll back
+- Regression in existing test coverage
+
+If you write more than ~3 Critical comments on a normal-sized PR, re-check — you're probably over-classifying.
+
+### Important
+Maintainability, scalability, readability. Examples:
+- Coupling that will hurt the next change in this area
+- Missing test for non-trivial branch logic
+- N+1 query, O(n²) where O(n) is trivial
+- Naming that misleads future readers (not "I'd prefer X")
+- Abstraction that leaks implementation across module boundary
+
+### Optional
+Style, preferences, "would be nice". Examples:
+- Could be more functional / could destructure here
+- Comment phrasing
+- Consistency with a pattern used elsewhere — only when the inconsistency genuinely costs something
+
+**If a finding is Optional and the cost of ignoring it is "none" — do not include it.** This is the explicit anti-nitpick rule from persona.md.
+
+## Output format
+
+```
+## Summary
+<one paragraph: scope, overall direction, verdict>
+
+## Critical
+- `path/to/file.ts:42` — <issue> — <why it's critical> — <suggested fix>
+
+## Important
+- ...
+
+## Optional
+- ...
+
+## Verdict
+<approve | request changes | needs discussion> — <one sentence>
+```
+
+If a bucket is empty, write `_None._` rather than removing the heading.
+
+## Posting inline comments
+
+The classified output above is for the chat. Posting it as inline PR comments is a separate, opt-in step.
+
+- **Draft first, post on confirmation only.** Show the drafted inline comments and wait for the user to explicitly confirm. Never post to GitHub before that.
+- **Conversational English, plain prose.** Write each comment the way a peer would leave it, not as a classification dump. English unless told otherwise.
+- **No symbols, no AI tells.** Do not use arrows (→), tildes (~), or em-dashes. Strip AI-sounding phrasing — run the text through the `humanizer` skill's rules before posting.
+- **Anchor every comment to file:line** via the `gh` review API; keep the Critical/Important/Optional context but phrase it naturally.

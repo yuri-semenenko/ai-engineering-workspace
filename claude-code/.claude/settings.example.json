@@ -1,0 +1,202 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch)",
+      "Bash(git branch -v)",
+      "Bash(git branch -vv)",
+      "Bash(git branch --show-current)",
+      "Bash(git branch -a)",
+      "Bash(git remote -v)",
+      "Bash(git remote show:*)",
+      "Bash(git blame:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git stash list)",
+      "Bash(git stash show:*)",
+      "Bash(git config --get:*)",
+      "Bash(git config --list)",
+      "Bash(git fetch:*)",
+      "Bash(git switch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m:*)",
+      "Bash(git commit --message:*)",
+      "Bash(git stash)",
+      "Bash(git stash push:*)",
+      "Bash(git stash pop)",
+      "Bash(npm ls)",
+      "Bash(npm ls:*)",
+      "Bash(npm view:*)",
+      "Bash(npm outdated)",
+      "Bash(npm outdated:*)",
+      "Bash(npm config get:*)",
+      "Bash(npm run)",
+      "Bash(npm run test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run check:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm test)",
+      "Bash(npm test:*)",
+      "Bash(npm install)",
+      "Bash(npm i)",
+      "Bash(npm ci)",
+      "Bash(npm -w *)",
+      "Bash(npm run -w *)",
+      "Bash(npm --workspaces:*)",
+      "Bash(npm --workspace=*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx jest:*)",
+      "Bash(npx next lint:*)",
+      "Bash(npx next build:*)",
+      "Bash(tsc:*)",
+      "Bash(vitest:*)",
+      "Bash(eslint:*)",
+      "Bash(prettier:*)",
+      "Bash(node --version)",
+      "Bash(node -v)",
+      "Bash(npm --version)",
+      "Bash(npm -v)",
+      "Bash(ls)",
+      "Bash(ls:*)",
+      "Bash(pwd)",
+      "Bash(which:*)",
+      "Bash(tree:*)",
+      "Bash(find . *)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(wc:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr status)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh workflow list)",
+      "Bash(gh workflow view:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(git clean -fdx:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git checkout --:*)",
+      "Bash(git restore --staged:*)",
+      "Bash(git commit --amend:*)",
+      "Bash(git rebase -i:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(npm publish)",
+      "Bash(npm publish:*)",
+      "Bash(npm unpublish:*)",
+      "Bash(npm deprecate:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh release create:*)",
+      "Bash(gh repo delete:*)",
+      "Bash(node -e:*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/model-reminder.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath // empty' | { read -r f; [ -n \"$f\" ] || exit 0; case \"$f\" in *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|*.json|*.css|*.scss|*.html|*.md|*.mdx|*.yaml|*.yml) ;; *) exit 0;; esac; npx --no-install prettier --find-config-path \"$f\" >/dev/null 2>&1 || exit 0; npx --no-install prettier --write --ignore-unknown \"$f\" >/dev/null 2>&1 || true; }",
+            "statusMessage": "Prettier"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostCompact\",\"additionalContext\":\"Persona guardrails re-asserted after compaction (full rules in ~/.claude/CLAUDE.md). Act as a senior peer: be concise, skip basics, recommend rather than survey. Prefer the simplest solution and challenge unclear requirements before coding. Git discipline: small logical commits, ask before any commit/push/branch, never add Co-Authored-By trailers. Write PR and code-review output in English. State assumptions explicitly.\"}}'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty' 2>/dev/null); case \"$cmd\" in *\"git commit\"*) ;; *) exit 0;; esac; cur=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || exit 0; def=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@'); [ -n \"$def\" ] || def=main; case \"$cur\" in \"$def\"|main|master) jq -n --arg b \"$cur\" '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:(\"On default branch \\($b). Create a feature branch first per your convention, or confirm to commit here.\")}}';; esac; exit 0",
+            "statusMessage": "branch guard"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "c=$(jq -r '(.tool_input.content // \"\") + \"\\n\" + (.tool_input.new_string // \"\")' 2>/dev/null); printf '%s' \"$c\" | grep -Eq -e '-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{10,}' && jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:\"Possible secret in this write (private key or cloud/token pattern). Confirm only if intentional.\"}}'; exit 0",
+            "statusMessage": "secret scan"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); [ -n \"$f\" ] || exit 0; b=${f##*/}; case \"$b\" in .env.example|.env.sample|.env.template|.env.*.example) exit 0;; esac; case \"$b\" in .env|.env.*|*.pem|*.key|id_rsa|id_ed25519|*.p12|*.keystore|package-lock.json|npm-shrinkwrap.json|yarn.lock|pnpm-lock.yaml|bun.lockb) jq -n --arg f \"$b\" '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:(\"Editing protected file \\($f) (secret/key/lockfile). Confirm if intentional; lockfiles should be regenerated via the package manager.\")}}';; esac; exit 0",
+            "statusMessage": "path guard"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "m=$(jq -r '.message // empty' 2>/dev/null | tr -d '\"\\\\`$'); [ -n \"$m\" ] || m=\"Needs your attention\"; osascript -e \"display notification \\\"$m\\\" with title \\\"Claude Code\\\"\" >/dev/null 2>&1 || true"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh"
+  }
+}

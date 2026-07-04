@@ -1,0 +1,4 @@
+interface:
+  display_name: "Context Brief"
+  short_description: "Prepare compact task handoffs"
+  default_prompt: "Create a context brief for this task."

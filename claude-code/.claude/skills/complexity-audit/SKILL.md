@@ -1,0 +1,35 @@
+---
+name: complexity-audit
+argument-hint: "[path to subtree, default: whole repo]"
+description: Scan an entire codebase (or a chosen subtree) for over-engineering — premature abstraction, speculative generality, needless layering, wrapper-only modules, dead config/flags, indirection without payoff — and return a prioritized, deletion-oriented report. Use for "audit complexity", "find over-engineering", "where are we over-built", "complexity-audit". Complements the per-diff /code-review and /simplify (which look at the current change); this looks at the whole tree. Aligned to the persona's anti-pattern list.
+---
+
+# Complexity Audit
+
+Find accidental complexity that already shipped. This is a *standing-codebase* scan, not a diff review — use `/code-review` or `/simplify` for the current change.
+
+## How to run (keep main context lean)
+
+1. **Map the tree first.** If a path argument was given, scope the whole audit to that subtree; otherwise take the whole repo. Identify top-level subsystems / packages from the layout (workspaces, `src/` domains, services).
+2. **Fan out, do not grep inline.** Per the persona's session-hygiene rule, dispatch `Explore` subagents — one per subsystem — each tasked to surface over-engineering only. Each returns a compact findings list, not file dumps. This keeps large intermediate output out of the main conversation.
+3. **Dedup and prioritize** the merged findings before reporting.
+
+## What counts as over-engineering (the persona's anti-patterns)
+
+- Premature abstraction / speculative generality (interfaces with one implementation, config for things that never vary).
+- Pattern-heavy designs where a function would do (factories, managers, base classes added "for the future").
+- Needless layering / indirection with no payoff; wrapper modules that only re-export.
+- Framework-driven architecture: structure dictated by a framework, not the domain.
+- Dead code, unused flags, config that no longer changes behavior.
+- Tight coupling and leaky abstractions hidden behind "clean" names.
+
+Do **not** flag: intentional `// TRADEOFF(...)` annotations (those are tracked by `/debt-ledger`), validation, error handling, security, or tested invariants.
+
+## Output
+
+Prioritized report, most-impactful first. For each finding:
+
+| Severity | Location (`file:line`) | What's over-built | Why it doesn't pay for itself | Proposed simplification | Risk of removing |
+|---|---|---|---|---|---|
+
+Severity = blast radius × how speculative it is. End with a short "highest-leverage deletions" shortlist. State assumptions explicitly. No marketing prose.

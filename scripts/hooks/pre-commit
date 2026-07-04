@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Blocks a commit when the generated codex references have drifted from the
+# canon (persona/ + claude-code/). Enable once per clone:
+#
+#   git config core.hooksPath scripts/hooks
+#
+# Runs through Git Bash on Windows (git invokes hooks with its bundled shell).
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+exec "$REPO_ROOT/scripts/sync-codex-references.sh" --check

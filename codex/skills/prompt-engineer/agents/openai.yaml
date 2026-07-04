@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prompt Engineer"
+  short_description: "Create stronger AI prompts"
+  default_prompt: "Turn this into a reusable prompt."

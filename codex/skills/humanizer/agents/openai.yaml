@@ -1,0 +1,4 @@
+interface:
+  display_name: "Humanizer"
+  short_description: "Make text sound natural"
+  default_prompt: "Humanize this text."

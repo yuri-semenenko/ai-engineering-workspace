@@ -1,0 +1,58 @@
+---
+name: security-pass
+description: Run a security hardening pass using the persona's validated workflow — recon, then a numbered remediation checklist for approval, then atomic commits with a typecheck gate after each task. Use when the user asks for a "security pass", "harden this", "security hardening", "пройди по безопасности", or a staged remediation (not a one-shot scan). Different from the built-in /security-review (single-pass diff scan) — this is the multi-task remediation loop with an approval gate.
+---
+
+# Security Pass
+
+A staged security hardening workflow, distinct from a one-shot scan. The shape is: **recon → numbered checklist → approval → atomic remediation commits, typecheck-gated per task.** This matches the workflow the user validated in prior passes; follow it rather than diving straight into edits.
+
+For a quick read-only scan of the current diff, use the built-in `/security-review` instead. This skill is for when there is real remediation work to plan and land safely.
+
+## Phase 1 — Recon (read-only)
+
+1. Map the attack surface relevant to the change or area: entry points (routes, handlers, server actions), trust boundaries, auth/authz checks, data flowing from untrusted input to sinks (DB, shell, HTML, file system, external calls), secret handling, and dependency surface.
+2. Fan out with `Explore` subagents per subsystem when the surface is broad — keep raw findings out of the main context, per the persona's session-hygiene rule.
+3. Catalog candidate issues with category + severity. Do not fix anything yet.
+
+## Phase 2 — Numbered checklist (for approval)
+
+Produce a single ordered checklist. Each item:
+
+| # | Category | Severity | Location (`file:line`) | Issue | Proposed fix | Effort |
+|---|---|---|---|---|---|---|
+
+- Severity by exploitability × blast radius. Order most-critical first.
+- Each item must be independently committable — that is what makes the next phase atomic.
+- **Stop here and wait for approval.** The user picks which items proceed (and may defer some, as in past passes where later-stage items were deferred behind a product milestone). Do not start remediation until the list is approved.
+
+## Phase 3 — Remediation (atomic, typecheck-gated)
+
+For each approved item, in order:
+
+1. Implement the minimal fix for that one item. Do not bundle unrelated hardening into the same change.
+2. **Typecheck gate:** run the project's typecheck (and targeted tests if they exist) before committing. If it fails, fix before moving on — never commit a red tree.
+3. Commit the single item per the `commit` skill rules (one logical change, no `Co-Authored-By`, ask before pushing). Reference the checklist item in the subject.
+4. Move to the next item only after the current one is green and committed.
+
+## Rationalizations
+
+| Rationalization | Rebuttal |
+|---|---|
+| "Small fix, skip the checklist and approval." | The gate exists to keep scope and rollback visible. Small items go on the list too — they're cheap to approve. |
+| "These two fixes are related, bundle them." | One item, one commit. Bundling breaks atomic rollback — the reason this workflow exists. |
+| "Typecheck passed last item, skip it this time." | The per-item gate is what guarantees every commit is green. Skipping it once breaks the invariant. |
+| "It's low severity, just drop it." | Defer explicitly and record why. A silently dropped finding is invisible attack surface. |
+| "Recon is done, I remember the surface." | The checklist is the contract with the user, not your memory. Write it down; get it approved. |
+
+## Rules
+
+- Recon before fixes. A fix without an understood threat is guesswork.
+- One item, one commit. Atomic remediation keeps rollback granular and review easy.
+- Typecheck (and tests where present) must pass per item — the gate is non-negotiable.
+- Don't auto-push or open a PR; that is a separate explicit ask.
+- Deferring items is legitimate — record what was deferred and why, so the remaining surface stays visible.
+
+## Output
+
+Phase 1: a recon summary (surface + candidate issues), no edits. Phase 2: the numbered checklist, then stop for approval. Phase 3: per item, a one-line confirmation (`<#> <sha> <subject> — typecheck green`). End with what landed and what was deferred.

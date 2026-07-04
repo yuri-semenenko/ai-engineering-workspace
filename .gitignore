@@ -1,0 +1,40 @@
+# This repo tracks only the config and templates we mean to publish.
+# Everything below is a defensive backstop so secrets, local state, or a
+# user's own filled-in persona never slip in by accident.
+
+.DS_Store
+*.log
+*.bak
+*.pre-claude-config.*
+*.pre-copilot-config.*
+
+# Wizard output: create-persona writes the user's own persona here.
+# These are personal and must never be committed to a fork of this repo.
+persona/persona.md
+persona/CLAUDE.md
+claude-code/.claude/CLAUDE.md
+claude-code/.claude/persona.md
+claude-code/.claude/settings.json
+
+# Never track machine-local overrides or credentials, even if copied in by mistake.
+**/settings.local.json
+**/.credentials.json
+**/credentials*
+**/token*
+**/auth*
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Session state / transcripts / caches must never be committed.
+**/projects/
+**/sessions/
+**/history.jsonl
+**/logs/
+**/cache/
+**/.cache/
+**/telemetry/
+**/shell-snapshots/
+**/memory/

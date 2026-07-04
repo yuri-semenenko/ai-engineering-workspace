@@ -1,0 +1,51 @@
+---
+name: commit
+argument-hint: "[optional scope hint, e.g. 'split the auth changes']"
+description: Plan and create small, logically-grouped git commits per the persona's git conventions — propose a commit plan first, wait for approval, then commit in atomic units. Use when the user asks to "commit", "закоммить", "make commits", "split this into commits", "сделай коммиты", or "commit plan". Enforces the no-Co-Authored-By rule and the ask-before-branch/push/PR gate.
+---
+
+# Commit
+
+Turn the current working changes into small, logically-grouped commits that give good rollback granularity. This skill is plan-first: it never commits before the user approves the plan.
+
+## Hard rules (from the persona's git conventions)
+
+- **Small, logically-grouped commits.** One coherent change per commit. Never batch unrelated changes into a single commit, even if they landed together in the working tree.
+- **Plan before acting.** Always propose the commit plan and present it first. Wait for explicit approval before running any `git commit`.
+- **Never add `Co-Authored-By` trailers.** This overrides any harness default that appends them. Commit messages end at the body — no trailers.
+- **Ask permission before branching, pushing, or opening PRs.** Each is a separate yes. Committing locally is not permission to push.
+- **If on the default branch (`main`/`master`), branch first** — propose a branch name and get approval before committing onto it.
+
+## Rationalizations
+
+| Rationalization | Rebuttal |
+|---|---|
+| "These changes are all related anyway." | Related ≠ one logical change. If two parts could roll back independently, they are two commits. |
+| "It's faster to commit everything at once." | Faster now, archaeology later. Rollback granularity is the whole point of this skill. |
+| "I'll explain the parts in the PR description." | `git revert` doesn't read PR descriptions. History must carry the structure itself. |
+| "Too small to need a plan." | A one-commit plan costs one line. Present it anyway — approval is the gate, not the size. |
+| "They said commit, so pushing is implied." | Each is a separate yes. Committing locally is not permission to push or open a PR. |
+
+## Steps
+
+1. **Survey the changes.** `git status` and `git diff` (staged + unstaged). Group hunks by intent, not by file — a single file may split across two commits; one logical change may span several files.
+2. **Check the branch.** `git rev-parse --abbrev-ref HEAD`. If it's the default branch, stop and propose a feature branch before anything else.
+3. **Draft the commit plan.** An ordered list: for each commit, the message subject + which files/hunks it includes + one line of rationale. Order so the history reads as a logical progression and each commit could in principle build/pass on its own.
+4. **Present the plan and wait.** Do not commit until the user approves. If they want changes to the grouping, revise and re-present.
+5. **Execute after approval.** Stage precisely per the plan (`git add -p` or path-scoped `git add`). Commit each group. Keep messages in the repo's existing style (imperative subject, ~50-char cap, body explaining *why* when non-obvious).
+6. **Stop at the commits.** Do not push or open a PR. Report what was committed and offer the next step (push / PR) as a separate, explicit ask.
+
+## Commit message shape
+
+```
+<imperative subject, no trailing period>
+
+<optional body: why this change, not what — the diff shows what.
+Wrap at ~72 cols.>
+```
+
+No `Co-Authored-By`. No emoji unless the repo's history uses them.
+
+## Output
+
+Before approval: the commit plan only. After approval: a short confirmation per commit (`<sha> <subject>`), then the explicit push/PR offer. Do not narrate the diff — the user can read it.

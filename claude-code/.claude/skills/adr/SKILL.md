@@ -1,0 +1,70 @@
+---
+name: adr
+argument-hint: "[decision title or slug]"
+description: Scaffold an Architecture Decision Record (ADR) for a concrete decision that's already been made or is being made now. Use when the user says "ADR for X", "write up that decision", "ADR по <решение>", or wants to record a choice for future readers. Different from /rfc — RFC explores options; ADR commits to one.
+---
+
+# ADR
+
+Record a concrete architectural decision in a format optimized for future readers — typically the team member six months from now wondering "why did we do it this way?"
+
+ADRs are not exploratory. If the user is still weighing options, redirect to `/rfc`. ADRs assume the decision is made (or being made in this moment) and the job is to capture context + reasoning before they decay.
+
+## Steps
+
+1. **Confirm the decision is actually settled.** If the user describes multiple options without picking one, say so and suggest `/rfc` instead.
+2. **Find the repo's ADR location.** Check `docs/adr/`, `docs/decisions/`, `adr/`, `.adr/`. Mirror existing numbering and naming (`0042-use-postgres-jsonb-for-events.md` style). If none exists, propose `docs/adr/0001-<slug>.md` and let the user confirm.
+3. **Look for an ADR template** in the repo (`docs/adr/template.md`, `adr-template.md`). If present, follow it exactly. Otherwise use the structure below.
+4. **Date the ADR.** Use today's date in `YYYY-MM-DD`.
+5. **Status starts as "Accepted"** unless the user is recording a historical decision now superseded (then `Superseded by ADR-NNNN`) or one still in review (`Proposed`).
+
+## Default structure (when no repo template exists)
+
+```markdown
+# ADR-NNNN: <Short decision title>
+
+- **Status:** Accepted
+- **Date:** YYYY-MM-DD
+- **Deciders:** <names or roles>
+
+## Context
+
+What forces are at play? What's the problem and constraints? Keep it to what's
+needed to understand the decision — not the full history of the project.
+
+## Decision
+
+We will <action verb> <thing>. State the choice plainly. One paragraph max.
+
+## Consequences
+
+### Positive
+- ...
+
+### Negative
+- ...
+
+### Neutral
+- What changes operationally / for new contributors / for adjacent systems.
+
+## Alternatives Considered
+
+Brief — one or two sentences each. Why each was rejected. This is not an RFC;
+do not re-litigate the full trade-off table.
+
+## References
+
+- Linked RFC, PR, ticket, prior ADR, external doc.
+```
+
+## Rules
+
+- **One decision per ADR.** If the user is describing two decisions, write two ADRs.
+- **Don't invent Deciders.** Infer from git config, PR author, or commit author. If you can't determine them, write `<TBD>` and ask the user — never fabricate names or roles.
+- **No marketing prose.** "We have decided to leverage the strategic synergies of..." — no. "We will use Postgres jsonb instead of a separate events table because..." — yes.
+- **Past-tense context, present-tense decision, future-tense consequences.** ("X was painful because... → We will use Y → New contributors will need to...")
+- **Immutable after acceptance.** If the decision changes, write a new ADR that supersedes this one. Do not silently edit history. Mention this rule to the user when they ask to "update" an accepted ADR.
+
+## Output
+
+Write the file to the determined path. Print the path + a short summary of what was recorded. Do not output the full ADR body in chat unless asked — the file is the artifact.

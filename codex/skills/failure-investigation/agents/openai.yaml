@@ -1,0 +1,4 @@
+interface:
+  display_name: "Failure Investigation"
+  short_description: "Find root causes"
+  default_prompt: "Investigate why this is failing."
