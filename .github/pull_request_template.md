@@ -29,11 +29,6 @@
 - [ ] Affected installer(s) run against a scratch `$HOME` / `$CODEX_HOME`
 - [ ] CI (`verify`) is green
 
-## Sterility check
-
-- [ ] No personal or employer/client/project names, emails, private paths, tokens, or transcripts
-- [ ] Anything project- or person-specific ships as a template with `{{PLACEHOLDERS}}`, not filled-in
-
 ## Notes for reviewers
 
 <!--
