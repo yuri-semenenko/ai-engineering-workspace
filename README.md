@@ -8,8 +8,7 @@
 A methodology for driving AI coding assistants — Claude Code, OpenAI Codex,
 GitHub Copilot — the way a senior engineer works, from one portable source of
 truth. This is about *using* AI to do software engineering, not about building AI
-systems and not about prompt tricks. You define how you work once; it follows you
-across whichever assistant your employer allows.
+systems and not about prompt tricks.
 
 > AI tools change. Engineering principles don't. Encode the principles once and
 > let them outlive the tools.
