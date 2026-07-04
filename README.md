@@ -50,6 +50,7 @@ scripts/create-persona.sh          # Windows: scripts\create-persona.ps1
 claude-code/scripts/install.macos-linux.sh      # symlinks ~/.claude
 codex/scripts/install.macos-linux.sh            # provisions $CODEX_HOME
 copilot/scripts/install.macos-linux.sh [$HOME] [/path/to/workspace]
+gemini/scripts/install.macos-linux.sh           # provisions ~/.gemini
 ```
 
 Windows equivalents: `install.windows.ps1` in each `scripts/` folder. The Claude
@@ -77,16 +78,19 @@ behind it as records in [`adr/`](adr/).
 
 ## Supported tools
 
-| | Claude Code | Codex | Copilot |
-| --- | --- | --- | --- |
-| Persona | `~/.claude/CLAUDE.md` (condensed) + `~/persona.md` (full) | `references/persona.md` (mirror) | `home/.copilot` instructions |
-| Skills / prompts | 16 process skills | 9 skill ports (`+ agents/openai.yaml`) | 11 workspace prompts + instruction files |
-| Guardrails | `settings.json` permissions + 6 hooks | always-on `AGENTS.md` | corporate-safe instructions |
-| Install mode | symlink (copy on Windows) | copy into `$CODEX_HOME` | Markdown copy only |
-| Assumed constraint | full local control | portable seed, on-demand references | locked-down corporate laptop, Markdown-only |
+| | Claude Code | Codex | Copilot | Gemini CLI |
+| --- | --- | --- | --- | --- |
+| Persona | `~/.claude/CLAUDE.md` (condensed) + `~/persona.md` (full) | `references/persona.md` (mirror) | `home/.copilot` instructions | `~/.gemini/GEMINI.md` (condensed, always-on) |
+| Skills / prompts | 16 process skills | 9 skill ports (`+ agents/openai.yaml`) | 11 workspace prompts + instruction files | 16 command ports (`.gemini/commands/*.toml`) |
+| Guardrails | `settings.json` permissions + 6 hooks | always-on `AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
+| Install mode | symlink (copy on Windows) | copy into `$CODEX_HOME` | Markdown copy only | copy into `~/.gemini` |
+| Assumed constraint | full local control | portable seed, on-demand references | locked-down corporate laptop, Markdown-only | local control, sandbox available |
 
-The architecture is tool-agnostic by design; adding an assistant (Gemini CLI,
-OpenCode, Cursor, and others) is an install target, not a rewrite.
+The architecture is tool-agnostic by design. Gemini CLI, the fourth tool, was
+added as a new install target plus command ports with no change to the canon or
+the other tools — the walk-through is in
+[`docs/guides/adding-a-tool.md`](docs/guides/adding-a-tool.md). OpenCode, Cursor,
+and others follow the same path.
 
 ## The persona concept
 
