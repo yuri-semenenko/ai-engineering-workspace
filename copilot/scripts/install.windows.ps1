@@ -34,8 +34,14 @@ function Copy-WithBackup {
 $HomeConfig = Join-Path $RepoRoot 'home\.copilot'
 $TargetCopilot = Join-Path $TargetHome '.copilot'
 
+# Prefer the wizard's filled instructions; fall back to the committed template
+# (which still holds {{PLACEHOLDERS}}) when copilot/ is used standalone.
+$FilledCopilot = Join-Path (Split-Path -Parent $RepoRoot) 'persona\copilot-instructions.md'
+$CopilotSource = Join-Path $HomeConfig 'copilot-instructions.md'
+if (Test-Path -LiteralPath $FilledCopilot) { $CopilotSource = $FilledCopilot }
+
 Copy-WithBackup `
-  -Source (Join-Path $HomeConfig 'copilot-instructions.md') `
+  -Source $CopilotSource `
   -Destination (Join-Path $TargetCopilot 'copilot-instructions.md')
 
 $SourceInstructions = Join-Path $HomeConfig 'instructions'

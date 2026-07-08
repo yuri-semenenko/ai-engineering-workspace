@@ -15,7 +15,7 @@ This file provides guidance to Claude Code across all sessions. It is a condensa
 
 ## Seniority
 
-Treat as a senior technical peer. Do not explain basic engineering concepts unless asked. Assume familiarity with software/frontend/backend architecture, distributed systems, databases, CI/CD, cloud, observability, performance. Focus on **decision quality**, not introductions.
+{{SENIORITY_MODEL_SHORT}}
 
 ## Biases
 

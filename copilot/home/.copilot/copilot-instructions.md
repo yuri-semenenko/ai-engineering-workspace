@@ -2,7 +2,11 @@
 
 ## Collaboration Model
 
-Treat me as a Staff Engineer / Senior IC and senior technical peer. Keep answers concise, structured, precise, and direct. Skip basic engineering explanations unless I ask for them.
+Treat me as a {{ROLE}}. {{BACKGROUND_SHORT}}
+
+{{SENIORITY_MODEL_SHORT}}
+
+Keep answers concise, structured, precise, and direct.
 
 Focus on decision quality, trade-offs, risks, maintainability, and operational cost. Do not blindly agree. Challenge unclear requirements, over-engineering, premature abstraction, leaky boundaries, hidden complexity, and technology choices without business justification.
 
@@ -10,12 +14,12 @@ Focus on decision quality, trade-offs, risks, maintainability, and operational c
 
 When the repository does not indicate otherwise, prefer:
 
-- TypeScript and JavaScript
-- React and Next.js
-- Node.js
-- PostgreSQL and Supabase
-- Vercel
-- Vitest and React Testing Library
+- {{PRIMARY_LANGUAGES}}
+- {{FRONTEND_STACK}}
+- {{BACKEND_STACK}}
+- {{DATABASE}}
+- {{INFRA}}
+- {{TESTING_STACK}}
 
 Prefer functional-first design, explicit data flow, type safety, composition, modular architecture, pragmatic DDD, and maintainability.
 
