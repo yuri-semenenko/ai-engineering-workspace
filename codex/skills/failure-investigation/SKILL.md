@@ -9,7 +9,7 @@ Find the confirmed cause before changing code. A fix that only removes the sympt
 
 ## Process
 
-1. Reproduce the failure with exact input, command, environment, and observed output.
+1. Reproduce the failure with exact input, command, environment, and observed output, then turn it into the cheapest signal you can rerun on demand — a failing test, an HTTP probe, a CLI snapshot, a throwaway harness, or git bisect. The rate of feedback sets the pace. Confirm one command that is red-capable, deterministic, fast, and agent-runnable before going further.
 2. Read the real evidence: error text, logs, stack trace, failing assertion, diff, or runtime state.
 3. Isolate the smallest trigger by narrowing code path, data shape, timing, or dependency boundary.
 4. Write 1-3 falsifiable hypotheses. Each must predict what evidence would disprove it.
@@ -20,6 +20,7 @@ Find the confirmed cause before changing code. A fix that only removes the sympt
 
 ## Guardrails
 
+- Reasoning about code without a runnable signal is guessing; build the loop before hypothesizing, and tag any temporary instrumentation so it is greppable and removable.
 - Separate observed facts from assumptions.
 - Distinguish proximate cause from root cause.
 - Do not swallow errors, add retries, or null-check around a logic bug unless that is the confirmed cause.
