@@ -11,7 +11,7 @@ references/
   memory-seed.example/ MIRROR of the Claude memory-seed example
   checklists/          codex-owned: security.md, performance.md
   humanizer/           codex-owned: ai-writing-patterns.md
-skills/                9 hand-authored skill ports + a start onboarding entrypoint, each with agents/openai.yaml
+skills/                11 hand-authored skill ports + a start onboarding entrypoint, each with agents/openai.yaml
 scripts/
   install.macos-linux.sh
   install.windows.ps1
