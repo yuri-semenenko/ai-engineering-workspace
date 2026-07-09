@@ -102,7 +102,7 @@ behind it as records in [`adr/`](adr/).
 | | Claude Code | Codex | Copilot | Gemini CLI |
 | --- | --- | --- | --- | --- |
 | Persona | `~/.claude/CLAUDE.md` (condensed) + `~/persona.md` (full) | `references/persona.md` (mirror) | `home/.copilot` instructions | `~/.gemini/GEMINI.md` (condensed, always-on) |
-| Skills / prompts | 16 process skills + `/start` | 9 skill ports + `start` (`+ agents/openai.yaml`) | 11 workspace prompts + `start` + instruction files | 16 command ports + `start` (`.gemini/commands/*.toml`) |
+| Skills / prompts | 17 process skills + `/start` | 11 skill ports + `start` (`+ agents/openai.yaml`) | 13 workspace prompts + `start` + instruction files | 17 command ports + `start` (`.gemini/commands/*.toml`) |
 | Guardrails | `settings.json` permissions + 6 hooks | always-on `AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
 | Install mode | symlink (copy on Windows) | copy into `$CODEX_HOME` | Markdown copy only | copy into `~/.gemini` |
 | Assumed constraint | full local control | portable seed, on-demand references | locked-down corporate laptop, Markdown-only | local control, sandbox available |
@@ -164,23 +164,24 @@ Read it in [`docs/principles/`](docs/principles/).
 | `adr` | records a decision already made | "ADR for X", "write up that decision" |
 | `spec` | goal / non-goals / acceptance criteria before building | "spec this", "what does done mean" |
 | `lazy` | the laziest-solution-that-works ladder (YAGNI → stdlib → …) | "the lazy way", "minimal diff" |
+| `module-design` | deep modules, small interfaces, when an abstraction earns its keep | "design this module", "is this abstraction worth it" |
 | `complexity-audit` | whole-tree scan for over-engineering | "where are we over-built" |
 | `debt-ledger` | collects `TRADEOFF(...)` annotations into one ledger | "list tradeoffs" |
-| `debug` | reproduce → isolate → hypothesize → fix the cause | "why is X failing", "find root cause" |
+| `debug` | reproduce → build a feedback loop → isolate → fix the cause | "why is X failing", "find root cause" |
 | `pr-classify` | Critical / Important / Optional review triage | "review this PR" |
 | `pr-comment` | fills the repo's PR template as copy-paste markdown | "prepare a PR description" |
 | `pr-recheck` | second-pass re-review after fixes | "recheck the PR" |
 | `security-pass` | staged remediation with an approval gate | "harden this", "security pass" |
 | `commit` | small logical commits, ask-before-push | "commit", "commit plan" |
-| `testing-checklist` | test pyramid, DAMP, failing-test-first | "what should I test here" |
+| `testing-checklist` | test pyramid, DAMP, TDD loop, failing-test-first | "what should I test here" |
 | `web-security-checklist` | OWASP + LLM Top 10, STRIDE | "security review" |
 | `web-performance-checklist` | Core Web Vitals, TTFB, FE/BE levers | "why is this page slow" |
 | `humanizer` | strips telltale AI-writing patterns | "humanize this", "make it less AI" |
 
 Codex ports the RFC/ADR/humanizer plus its own `architect`, `context-brief`,
-`failure-investigation`, `project-onboarding`, `prompt-engineer`, and
-`pull-request-workflow` workflows. Copilot exposes the same ideas as
-`.github/prompts/*.prompt.md`.
+`failure-investigation`, `project-onboarding`, `prompt-engineer`,
+`pull-request-workflow`, `test-strategy`, and `module-design` workflows. Copilot
+exposes the same ideas as `.github/prompts/*.prompt.md`.
 
 ## Examples
 
