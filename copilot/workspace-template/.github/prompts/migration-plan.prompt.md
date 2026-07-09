@@ -19,6 +19,7 @@ Constraints:
 - Capture the invariant (user-visible behavior that must not change) as characterization tests or golden output before touching anything.
 - Feature flags are temporary: name the removal trigger and date when you add one.
 - Prefer incremental over big-bang; if a big-bang cutover is unavoidable, say why and how you rehearse it.
+- Delegate the read-only inventory and characterization (call sites, seam, current behavior) to a focused gathering pass; keep the invariant, migration shape, and rollback criteria as the main judgment.
 
 Output Format:
 

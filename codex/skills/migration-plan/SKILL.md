@@ -23,3 +23,4 @@ Sequence a migration so the system stays releasable and reversible at every step
 - Every slice independently shippable and reversible. No step undone only by a second migration.
 - Feature flags are temporary: name the removal trigger and date, and mark it with TRADEOFF so the cleanup is tracked.
 - Consumes an RFC decision; do not re-litigate whether to migrate. Distinct from rfc (decides whether and what) and module-design (shapes the target interface).
+- Delegate the read-only inventory and characterization (call sites, seam, current behavior) to a cheaper-tier subagent; keep the invariant, migration shape, sequencing, and rollback criteria on the main model.

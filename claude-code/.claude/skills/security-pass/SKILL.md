@@ -53,6 +53,10 @@ For each approved item, in order:
 - Don't auto-push or open a PR; that is a separate explicit ask.
 - Deferring items is legitimate — record what was deferred and why, so the remaining surface stays visible.
 
+## Delegation
+
+Delegate the recon, keep the remediation judgment. Phase 1 already fans the read-only scan out to a cheaper-tier subagent — enumerate entry points and sinks, trace untrusted input, collect evidence per candidate — returning a compact catalog. Keep on the main model the parts that need judgment: whether a finding is real and exploitable, how to fix it without regressing behavior, and whether each applied fix actually closes it. A passing scan is evidence, not a clearance.
+
 ## Output
 
 Phase 1: a recon summary (surface + candidate issues), no edits. Phase 2: the numbered checklist, then stop for approval. Phase 3: per item, a one-line confirmation (`<#> <sha> <subject> — typecheck green`). End with what landed and what was deferred.

@@ -23,6 +23,7 @@ Constraints:
 - For a bug fix, write the failing regression test first (red for the reported reason), then fix (green), then run the surrounding suite.
 - Slice vertically (a thin path through every layer) rather than horizontally.
 - If a test is impossible (non-deterministic or environment-bound), say so plainly rather than implying coverage.
+- Delegate mechanical scaffolding (boilerplate, fixtures, codemods) to a focused pass; keep the seam choice and whether the behavior is actually covered as the main judgment. A green suite is evidence, not proof.
 
 Output Format:
 
