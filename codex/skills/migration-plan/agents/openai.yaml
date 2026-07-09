@@ -1,0 +1,4 @@
+interface:
+  display_name: "Migration Plan"
+  short_description: "Safe incremental migration sequence"
+  default_prompt: "Plan this migration as safe, reversible slices with before/after verification and a rollback plan."
