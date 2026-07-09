@@ -14,6 +14,8 @@ one, not an edit here.
 | --- | --- | --- |
 | [0001](./0001-single-canon-with-generated-mirrors.md) | One canon with generated, drift-guarded mirrors instead of hand-maintaining each tool | Accepted |
 | [0002](./0002-commit-mirrors-instead-of-generating-at-install.md) | Commit the mirrors rather than generating them at install time | Accepted |
+| [0003](./0003-persona-discipline-and-seniority-axes.md) | Persona identity layer gains discipline and seniority axes; methodology canon stays fixed | Accepted |
+| [0004](./0004-persona-workflow-axis.md) | Persona identity layer gains a workflow axis, shaping the recommended-skills view only | Accepted |
 
 For a standalone example of the format applied to a fictional decision, see
 [`examples/adr-sample.md`](../examples/adr-sample.md).

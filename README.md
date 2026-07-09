@@ -104,11 +104,14 @@ The kit splits it in two:
 - **Methodology canon** (fixed, shared by everyone) — simplicity ladder, RFC/ADR
   format, PR-review tiers, verification exit criterion, anti-patterns, git
   conventions, model-tier delegation.
-- **Identity header** (yours) — discipline, seniority, role, stack, tooling,
-  output language. Seniority shapes how the assistant treats you (mid to
-  principal); discipline (frontend or fullstack) shapes the background framing and
-  which skills it recommends first. The methodology canon itself does not change
-  with either (see [`adr/0003-persona-discipline-and-seniority-axes.md`](adr/0003-persona-discipline-and-seniority-axes.md)).
+- **Identity header** (yours) — discipline, seniority, workflow, role, stack,
+  tooling, output language. Seniority shapes how the assistant treats you (mid to
+  principal); discipline (frontend or fullstack) shapes the background framing;
+  workflow (delivery, architecture, review, or learning) shapes which skills the
+  generated `recommended-skills.md` view foregrounds. The methodology canon itself
+  does not change with any of them (see
+  [`adr/0003-persona-discipline-and-seniority-axes.md`](adr/0003-persona-discipline-and-seniority-axes.md)
+  and [`adr/0004-persona-workflow-axis.md`](adr/0004-persona-workflow-axis.md)).
 
 `scripts/create-persona.sh` asks only about the header and stitches it onto the
 canon, producing your `persona/persona.md` (full), `persona/CLAUDE.md`
