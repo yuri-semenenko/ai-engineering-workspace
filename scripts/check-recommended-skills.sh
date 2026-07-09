@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # Guard: the wizard's recommended-skills mapping must only ever reference skills
-# that actually ship, across every discipline x seniority combination. Catches a
-# mapping edit that points at a renamed or nonexistent skill before it reaches a
-# user. Run in CI and locally.
+# that actually ship, across every discipline x seniority x workflow combination.
+# Catches a mapping edit that points at a renamed or nonexistent skill before it
+# reaches a user. Run in CI and locally.
 #
 #   scripts/check-recommended-skills.sh
 
@@ -20,28 +20,30 @@ status=0
 
 for d in frontend fullstack; do
   for s in mid senior staff principal; do
-    if ! DISCIPLINE="$d" SENIORITY="$s" bash "$WIZARD" --defaults >/dev/null 2>&1; then
-      echo "[$d/$s] wizard failed (recommended skill not in catalog)" >&2
-      status=1
-      continue
-    fi
-    # Independently re-check the generated "Recommended" section.
-    names="$(awk '
-      /^## Recommended for your profile/ { f=1; next }
-      /^## / { f=0 }
-      f && /^- / { sub(/^- /,""); print }
-    ' "$REC")"
-    while IFS= read -r name; do
-      [ -z "$name" ] && continue
-      if ! printf '%s\n' "$catalog" | grep -qxF "$name"; then
-        echo "[$d/$s] recommends unknown skill: $name" >&2
+    for w in delivery-focused architecture-focused review-focused learning-focused; do
+      if ! DISCIPLINE="$d" SENIORITY="$s" WORKFLOW="$w" bash "$WIZARD" --defaults >/dev/null 2>&1; then
+        echo "[$d/$s/$w] wizard failed (recommended skill not in catalog)" >&2
         status=1
+        continue
       fi
-    done <<< "$names"
+      # Independently re-check the generated "Recommended" section.
+      names="$(awk '
+        /^## Recommended for your profile/ { f=1; next }
+        /^## / { f=0 }
+        f && /^- / { sub(/^- /,""); print }
+      ' "$REC")"
+      while IFS= read -r name; do
+        [ -z "$name" ] && continue
+        if ! printf '%s\n' "$catalog" | grep -qxF "$name"; then
+          echo "[$d/$s/$w] recommends unknown skill: $name" >&2
+          status=1
+        fi
+      done <<< "$names"
+    done
   done
 done
 
 if [ "$status" -eq 0 ]; then
-  echo "recommended-skills: all references valid across 8 profiles"
+  echo "recommended-skills: all references valid across 32 profiles"
 fi
 exit $status
