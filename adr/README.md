@@ -17,6 +17,8 @@ one, not an edit here.
 | [0003](./0003-persona-discipline-and-seniority-axes.md) | Persona identity layer gains discipline and seniority axes; methodology canon stays fixed | Accepted |
 | [0004](./0004-persona-workflow-axis.md) | Persona identity layer gains a workflow axis, shaping the recommended-skills view only | Accepted |
 | [0005](./0005-start-entrypoint.md) | A thin `/start` onboarding entrypoint per tool, wrapping the central persona wizard | Accepted |
+| [0006](./0006-module-design-skill.md) | A `module-design` skill across all four tools; decline the context-document model | Accepted |
+| [0007](./0007-codebase-map-skill.md) | A `codebase-map` skill across all four tools for fast orientation in unfamiliar code | Accepted |
 
 For a standalone example of the format applied to a fictional decision, see
 [`examples/adr-sample.md`](../examples/adr-sample.md).
