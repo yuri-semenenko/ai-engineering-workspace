@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$CONFIG_DIR/.." && pwd)"
 TARGET_HOME="${1:-$HOME}"
 WORKSPACE_PATH="${2:-}"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
@@ -31,7 +32,14 @@ copy_with_backup() {
 SOURCE_HOME_CONFIG="$CONFIG_DIR/home/.copilot"
 TARGET_COPILOT="$TARGET_HOME/.copilot"
 
-copy_with_backup "$SOURCE_HOME_CONFIG/copilot-instructions.md" "$TARGET_COPILOT/copilot-instructions.md"
+# Prefer the wizard's filled instructions; fall back to the committed template
+# (which still holds {{PLACEHOLDERS}}) when copilot/ is used standalone.
+FILLED_COPILOT="$REPO_ROOT/persona/copilot-instructions.md"
+if [ -f "$FILLED_COPILOT" ]; then
+  copy_with_backup "$FILLED_COPILOT" "$TARGET_COPILOT/copilot-instructions.md"
+else
+  copy_with_backup "$SOURCE_HOME_CONFIG/copilot-instructions.md" "$TARGET_COPILOT/copilot-instructions.md"
+fi
 
 mkdir -p "$TARGET_COPILOT/instructions"
 for source in "$SOURCE_HOME_CONFIG"/instructions/*.instructions.md; do

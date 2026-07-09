@@ -33,6 +33,9 @@ jobs:
             echo "Unfilled placeholders in generated persona"; exit 1
           fi
 
+      - name: Recommended skills reference only shipped skills
+        run: bash scripts/check-recommended-skills.sh
+
       - name: Claude Code installer smoke test
         run: |
           home="$(mktemp -d)"
@@ -60,6 +63,9 @@ jobs:
           test -f "$cop_home/.copilot/copilot-instructions.md"
           test -f "$ws/.github/copilot-instructions.md"
           test -f "$ws/AGENTS.md"
+          if grep -R '{{' "$cop_home/.copilot/copilot-instructions.md"; then
+            echo "Installed Copilot instructions still have placeholders"; exit 1
+          fi
 
       - name: Gemini CLI installer smoke test
         run: |

@@ -42,6 +42,8 @@ powershell -NoProfile -File .\scripts\install.windows.ps1 -TargetHome $env:USERP
 
 The installer copies Markdown instruction files into `~/.copilot` and, when a workspace path is given, the `.github/` instructions and prompts into that repo. Existing files are backed up before replacement. No auth, hooks, MCP config, or automation is ever touched.
 
+Run `scripts/create-persona.sh` (repo root) first so the installer uses your filled `copilot-instructions.md` — personalized by seniority and stack. Copying `copilot/` standalone without the wizard falls back to the committed template, which still contains `{{PLACEHOLDERS}}`.
+
 ## Why it is deliberately limited
 
 Copilot here assumes the strictest environment: managed laptop, execution-policy restrictions, no permission to install tooling or configure background agents. The instruction files reinforce that posture (do not bypass policy, do not exfiltrate data, prefer manual auditable steps). If you have full local control, the Claude Code package gives you far more leverage. See [`SECURITY.md`](SECURITY.md).

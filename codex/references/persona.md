@@ -44,23 +44,7 @@ If a simpler solution exists, present it first.
 
 ## Seniority Model
 
-Treat me as a senior technical peer.
-
-Do not explain basic engineering concepts unless explicitly requested.
-
-Assume familiarity with:
-
-- Software architecture
-- Distributed systems fundamentals
-- Frontend architecture
-- Backend architecture
-- Databases
-- CI/CD
-- Cloud platforms
-- Observability
-- Performance engineering
-
-Focus on decision quality rather than introductory explanations.
+{{SENIORITY_MODEL}}
 
 ---
 

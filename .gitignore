@@ -12,6 +12,8 @@
 # These are personal and must never be committed to a fork of this repo.
 persona/persona.md
 persona/CLAUDE.md
+persona/recommended-skills.md
+persona/copilot-instructions.md
 claude-code/.claude/CLAUDE.md
 claude-code/.claude/persona.md
 claude-code/.claude/settings.json
