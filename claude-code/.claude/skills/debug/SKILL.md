@@ -15,12 +15,23 @@ Work through these in order and state which phase you're in. Don't skip ahead �
 
 1. **Reproduce and build a feedback loop.** Get a deterministic, minimal reproduction first — exact inputs, environment, failing path. Then turn it into the cheapest signal you can rerun on demand: the rate of feedback is the speed limit on the whole investigation. Take the first rung that fits — a failing unit/integration test, an HTTP probe (`curl`), a one-shot CLI snapshot, a headless-browser script, a replay of a captured trace or log, a throwaway harness, `git bisect`, a property/fuzz case — then tighten it until it is faster, sharper (fails for one reason), and deterministic. Gate before moving on: name one command you have already run that is red-capable, deterministic, fast, and agent-runnable. No such command means no reliable signal — say so and treat any fix as unconfirmed.
 2. **Observe.** Read the actual evidence — error message, stack trace, logs, failing assertion — before theorizing. Separate what you *know* (observed) from what you *assume*. Quote the real error; do not paraphrase from memory.
-3. **Isolate.** Shrink the surface. Binary-search the code path or input (`git bisect`, disabling halves, narrowing the dataset), add tracing at boundaries. Goal: the smallest trigger.
+3. **Isolate and minimize the case.** Shrink to the smallest input and shortest code path that still triggers the bug. Binary-search the code path or input (`git bisect`, disabling halves, narrowing the dataset, deleting unrelated setup), add tracing at boundaries. A minimal reproducer is often the diagnosis: each thing you remove without the bug disappearing is a thing that was not the cause.
 4. **Hypothesize.** Form 1-3 explicit, falsifiable hypotheses ranked by likelihood. Each must predict something observable and state what would *disprove* it. Distinguish the proximate cause (the line that threw) from the root cause (why the bad state existed at all).
 5. **Test the hypothesis.** Run the cheapest disproving experiment first. Confirm the cause before touching the fix. Change one variable at a time.
 6. **Fix at the root.** Minimal change that addresses the confirmed cause. Resist masking — a swallowed error, a defensive null-check that hides why the value was null, a retry wrapped around a logic bug. Do not refactor while debugging; that is a separate change.
 7. **Verify genuinely.** The original reproduction now passes, the fix matches the confirmed hypothesis, and a regression test fails without the fix. Check you didn't just move the bug or break an adjacent path. Remove any temporary instrumentation.
 8. **Prevent (if systemic).** Ask whether a type, invariant, test, or lint rule would have caught this class of bug. Surface it; don't force it.
+
+## When it's flaky (non-deterministic)
+
+A bug that only fails sometimes is a reproduction problem before it is a cause problem. Do not chase the cause until you can make it fail on demand. Force determinism by pinning one axis at a time:
+
+- **Timing / async** — unawaited promises, effect races, missing `await`, fake vs real timers. Pin by serializing, injecting a clock, or forcing the slow or fast path.
+- **Shared state** — order-dependent tests, module-level singletons, a dirty DB or cache between runs. Pin by isolating state and running the single case alone.
+- **Test ordering** — passes alone but fails in the suite, or the reverse. Pin the runner's seed to make order reproducible, then bisect the suite to find the polluting neighbor.
+- **Environment** — timezone, locale, CPU count, network latency, local vs CI. Pin by matching the failing environment and varying one knob.
+
+Raise the failure rate before you debug: loop the case, add contention, or shrink timeouts until it fails most runs. A flake you cannot make deterministic is not fixed, no matter how green the retry.
 
 ## Rationalizations
 

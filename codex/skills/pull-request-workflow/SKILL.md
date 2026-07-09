@@ -18,9 +18,11 @@ Lead with findings. Classify every meaningful comment:
 Rules:
 
 - Verify PR scope with `gh pr view`, PR URL/number, or `git diff <base>...HEAD`.
+- Read the tests and PR description first to recover intended behavior, then read the implementation against that intent.
 - Read enough surrounding code to validate each finding.
 - Cite `path:line` for every issue.
 - Order by severity, not by file.
+- Classification is severity, not certainty: when unsure a finding is real, phrase it as a question, not an assertion, and do not inflate a Critical you cannot fully trace.
 - End with verdict: approve, request changes, or needs discussion.
 
 Format:

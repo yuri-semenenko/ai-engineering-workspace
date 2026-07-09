@@ -16,7 +16,7 @@ Review the current branch (or a specified PR) and produce structured feedback in
 ## Steps
 
 1. **Identify the PR scope.** If invoked on a branch, run `gh pr view --json title,body,baseRefName,headRefName,files` or `git diff <base>...HEAD`. If invoked with a PR number/URL, fetch via `gh pr view <id>`.
-2. **Read the diff fully**, not just changed-line context. Cross-reference touched files for callers and tests.
+2. **Read the tests first, then the diff fully.** Start with the tests and the PR description to recover intended behavior — what the change is supposed to do — then read the implementation against that intent, not just changed-line context. Cross-reference touched files for callers and tests.
 3. **For each finding, decide the bucket BEFORE writing it.** If it's borderline Important/Optional and you can't articulate the cost of ignoring it, drop it.
 4. **Group findings by bucket**, not by file. Within each bucket, order by severity.
 5. **Cite file:line for every comment.** Never describe an issue abstractly.
@@ -49,6 +49,10 @@ Style, preferences, "would be nice". Examples:
 - Consistency with a pattern used elsewhere — only when the inconsistency genuinely costs something
 
 **If a finding is Optional and the cost of ignoring it is "none" — do not include it.** This is the explicit anti-nitpick rule from persona.md.
+
+## Confidence
+
+Classification is severity, not certainty — track the two separately. When you are not sure a finding is real (you could not fully trace the path, or it depends on context you cannot see), say so and phrase it as a question, not an assertion: "Is `x` guaranteed non-null here? If not, this throws." A confident wrong Critical costs more trust than a hedged correct one. Never inflate confidence to make a finding land; never drop a real concern because you are only 60% sure — ask.
 
 ## Output format
 
