@@ -22,6 +22,10 @@ Sequence a migration so the system stays releasable and reversible at every step
 - Feature flags are temporary: name the removal trigger and date when you add one, and mark it with the `TRADEOFF(...)` convention so /debt-ledger tracks the cleanup.
 - Consumes an RFC decision; do not re-litigate whether to migrate here.
 
+## Delegation
+
+Delegate the mapping, keep the risk judgment. Hand the read-only inventory to a cheaper-tier subagent — find every call site and usage of what you are migrating, locate the seam, capture the characterization of current behavior — returning a compact map. Keep on the main model the parts that need judgment: pinning the invariant, choosing the migration shape, sequencing the slices, and the rollback criteria. A green characterization run is evidence the behavior held, not proof the plan is safe.
+
 ## Output
 
 A migration plan: the invariant and how it is captured, current-to-target with the seam, the chosen shape with its justification, the ordered slices (each with its verification, flag, and rollback criteria), and the rollout plus flag-cleanup sequence. End with the highest-risk step and its mitigation. English prose, no em dashes, per persona.
