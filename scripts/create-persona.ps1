@@ -207,13 +207,13 @@ if (Test-Path $SkillsDir) {
     'delivery-focused'     { $rec += @('spec', 'lazy', 'commit', 'pr-comment') }
     'architecture-focused' { $rec += @('rfc', 'adr', 'module-design', 'complexity-audit') }
     'review-focused'       { $rec += @('pr-classify', 'pr-recheck', 'pr-comment') }
-    'learning-focused'     { $rec += @('debug', 'testing-checklist', 'spec', 'lazy') }
+    'learning-focused'     { $rec += @('codebase-map', 'debug', 'testing-checklist', 'spec', 'lazy') }
   }
   $emphasis = switch ($Workflow) {
     'delivery-focused'     { 'ship-oriented skills: specs, the laziest-solution ladder, small commits, and PR descriptions.' }
     'architecture-focused' { 'design-first skills: RFCs, ADRs, module design, and whole-tree complexity checks.' }
     'review-focused'       { 'review skills: tiered PR classification, second-pass re-review, and PR descriptions.' }
-    'learning-focused'     { 'understanding-first skills: reproduce-then-fix debugging, specs, and test coverage.' }
+    'learning-focused'     { 'understanding-first skills: orienting in an unfamiliar codebase, reproduce-then-fix debugging, specs, and test coverage.' }
   }
 
   $recSorted = $rec | Sort-Object -Unique
