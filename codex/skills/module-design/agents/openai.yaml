@@ -1,0 +1,4 @@
+interface:
+  display_name: "Module Design"
+  short_description: "Deep modules, small interfaces"
+  default_prompt: "Design the interface for this module and say what stays hidden."
