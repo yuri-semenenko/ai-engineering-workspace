@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research"
+  short_description: "Cited decision matrix for a tech choice"
+  default_prompt: "Research this question and produce a cited decision matrix with a recommendation and its uncertainty."
