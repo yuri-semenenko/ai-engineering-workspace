@@ -6,10 +6,13 @@ set -euo pipefail
 # The methodology (simplicity ladder, RFC/ADR format, PR-review tiers, git
 # rules, verification criterion, ...) is fixed canon and applies to everyone.
 # This wizard only asks about the identity header: discipline, seniority,
-# stack, and tooling. Two of those shape the output beyond text substitution:
+# workflow, stack, and tooling. These shape the output beyond text substitution:
 #   - seniority  -> the "Seniority Model" section (how to treat you)
 #   - discipline -> background framing + the recommended-skills list
-# The methodology canon does not change with either.
+#   - workflow   -> which skills recommended-skills.md foregrounds, plus a
+#                   user-facing interaction-emphasis line in that view
+# The methodology canon and the persona files do not change with any of them;
+# workflow fills no template placeholder and touches only the generated view.
 #
 # Output (all gitignored, they are YOUR files, not the repo's):
 #   persona/persona.md            full persona
@@ -53,9 +56,11 @@ echo
 # --- Axes that shape the persona beyond plain substitution -------------------
 ask DISCIPLINE "Discipline (frontend/fullstack)"        "fullstack"
 ask SENIORITY  "Seniority (mid/senior/staff/principal)" "staff"
+ask WORKFLOW   "Workflow (delivery-focused/architecture-focused/review-focused/learning-focused)" "architecture-focused"
 
 DISCIPLINE="$(printf '%s' "$DISCIPLINE" | tr '[:upper:]' '[:lower:]')"
 SENIORITY="$(printf '%s' "$SENIORITY" | tr '[:upper:]' '[:lower:]')"
+WORKFLOW="$(printf '%s' "$WORKFLOW" | tr '[:upper:]' '[:lower:]')"
 
 case "$DISCIPLINE" in
   frontend|fullstack) ;;
@@ -64,6 +69,10 @@ esac
 case "$SENIORITY" in
   mid|senior|staff|principal) ;;
   *) echo "Unknown seniority: '$SENIORITY' (expected mid|senior|staff|principal)" >&2; exit 1;;
+esac
+case "$WORKFLOW" in
+  delivery-focused|architecture-focused|review-focused|learning-focused) ;;
+  *) echo "Unknown workflow: '$WORKFLOW' (expected delivery-focused|architecture-focused|review-focused|learning-focused)" >&2; exit 1;;
 esac
 
 # Defaults that depend on the chosen axes (staff/fullstack reproduce the
@@ -228,6 +237,20 @@ write_recommended_skills() {
     staff)     rec="$rec rfc adr complexity-audit debt-ledger security-pass" ;;
     principal) rec="$rec rfc adr complexity-audit debt-ledger" ;;
   esac
+  # Workflow foregrounds an emphasis set. The default 'architecture-focused' adds
+  # only skills already recommended for staff+fullstack, so the default profile's
+  # list stays unchanged; the axis just surfaces in the header + emphasis line.
+  local emphasis
+  case "$WORKFLOW" in
+    delivery-focused)     rec="$rec spec lazy commit pr-comment"
+                          emphasis="ship-oriented skills: specs, the laziest-solution ladder, small commits, and PR descriptions." ;;
+    architecture-focused) rec="$rec rfc adr complexity-audit"
+                          emphasis="design-first skills: RFCs, ADRs, and whole-tree complexity checks." ;;
+    review-focused)       rec="$rec pr-classify pr-recheck pr-comment"
+                          emphasis="review skills: tiered PR classification, second-pass re-review, and PR descriptions." ;;
+    learning-focused)     rec="$rec debug testing-checklist spec lazy"
+                          emphasis="understanding-first skills: reproduce-then-fix debugging, specs, and test coverage." ;;
+  esac
 
   local rec_sorted catalog also s
   rec_sorted="$(printf '%s\n' $rec | awk 'NF' | sort -u)"
@@ -244,7 +267,8 @@ write_recommended_skills() {
   also="$(comm -23 <(printf '%s\n' "$catalog") <(printf '%s\n' "$rec_sorted"))"
 
   printf '# Recommended skills\n\n'
-  printf 'Profile: discipline=%s, seniority=%s.\n\n' "$DISCIPLINE" "$SENIORITY"
+  printf 'Profile: discipline=%s, seniority=%s, workflow=%s.\n\n' "$DISCIPLINE" "$SENIORITY" "$WORKFLOW"
+  printf 'Workflow (%s) foregrounds %s\n\n' "$WORKFLOW" "$emphasis"
   printf 'All skills ship with the kit. This list is which to reach for first; see the\n'
   printf 'skill catalog in the top-level README for what each one enforces.\n\n'
   printf '## Recommended for your profile\n\n'

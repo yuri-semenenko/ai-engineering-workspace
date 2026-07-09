@@ -7,10 +7,12 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # Generate your own persona.md + CLAUDE.md from the shared templates.
-# Only the identity header is asked; the methodology is fixed canon. Two axes
+# Only the identity header is asked; the methodology is fixed canon. Three axes
 # shape the output beyond text substitution:
 #   - seniority  -> the "Seniority Model" section
 #   - discipline -> background framing + the recommended-skills list
+#   - workflow   -> which skills recommended-skills.md foregrounds + its emphasis
+#                   line (generated view only; no template placeholder)
 #
 #   powershell -NoProfile -File .\scripts\create-persona.ps1            # interactive
 #   powershell -NoProfile -File .\scripts\create-persona.ps1 -Defaults   # accept all defaults
@@ -37,12 +39,16 @@ Write-Host "Creating your persona. Press Enter to accept each default.`n"
 # --- Axes that shape the persona beyond plain substitution -------------------
 $Discipline = (Ask 'Discipline (frontend/fullstack)' 'fullstack').ToLower()
 $Seniority  = (Ask 'Seniority (mid/senior/staff/principal)' 'staff').ToLower()
+$Workflow   = (Ask 'Workflow (delivery-focused/architecture-focused/review-focused/learning-focused)' 'architecture-focused').ToLower()
 
 if ($Discipline -notin @('frontend', 'fullstack')) {
   Write-Error "Unknown discipline: '$Discipline' (expected frontend|fullstack)"; exit 1
 }
 if ($Seniority -notin @('mid', 'senior', 'staff', 'principal')) {
   Write-Error "Unknown seniority: '$Seniority' (expected mid|senior|staff|principal)"; exit 1
+}
+if ($Workflow -notin @('delivery-focused', 'architecture-focused', 'review-focused', 'learning-focused')) {
+  Write-Error "Unknown workflow: '$Workflow' (expected delivery-focused|architecture-focused|review-focused|learning-focused)"; exit 1
 }
 
 # Defaults that depend on the chosen axes (staff/fullstack reproduce the
@@ -194,6 +200,21 @@ if (Test-Path $SkillsDir) {
     'staff'     { $rec += @('rfc', 'adr', 'complexity-audit', 'debt-ledger', 'security-pass') }
     'principal' { $rec += @('rfc', 'adr', 'complexity-audit', 'debt-ledger') }
   }
+  # Workflow foregrounds an emphasis set. The default 'architecture-focused' adds
+  # only skills already recommended for staff+fullstack, so the default profile's
+  # list stays unchanged; the axis just surfaces in the header + emphasis line.
+  switch ($Workflow) {
+    'delivery-focused'     { $rec += @('spec', 'lazy', 'commit', 'pr-comment') }
+    'architecture-focused' { $rec += @('rfc', 'adr', 'complexity-audit') }
+    'review-focused'       { $rec += @('pr-classify', 'pr-recheck', 'pr-comment') }
+    'learning-focused'     { $rec += @('debug', 'testing-checklist', 'spec', 'lazy') }
+  }
+  $emphasis = switch ($Workflow) {
+    'delivery-focused'     { 'ship-oriented skills: specs, the laziest-solution ladder, small commits, and PR descriptions.' }
+    'architecture-focused' { 'design-first skills: RFCs, ADRs, and whole-tree complexity checks.' }
+    'review-focused'       { 'review skills: tiered PR classification, second-pass re-review, and PR descriptions.' }
+    'learning-focused'     { 'understanding-first skills: reproduce-then-fix debugging, specs, and test coverage.' }
+  }
 
   $recSorted = $rec | Sort-Object -Unique
   $catalog   = Get-ChildItem -Directory -LiteralPath $SkillsDir | Select-Object -ExpandProperty Name | Sort-Object
@@ -207,7 +228,9 @@ if (Test-Path $SkillsDir) {
   $lines = @()
   $lines += '# Recommended skills'
   $lines += ''
-  $lines += "Profile: discipline=$Discipline, seniority=$Seniority."
+  $lines += "Profile: discipline=$Discipline, seniority=$Seniority, workflow=$Workflow."
+  $lines += ''
+  $lines += "Workflow ($Workflow) foregrounds $emphasis"
   $lines += ''
   $lines += 'All skills ship with the kit. This list is which to reach for first; see the'
   $lines += 'skill catalog in the top-level README for what each one enforces.'
