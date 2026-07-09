@@ -1,0 +1,30 @@
+# Ported from claude-code/.claude/skills/research/SKILL.md — Gemini CLI custom command.
+description = "Gather evidence from primary sources into a cited decision matrix with a recommendation and its uncertainty, ready to hand to an RFC or ADR."
+prompt = '''
+# Research
+
+Turn a technical question into a decision you can defend: evidence from primary sources, a cited comparison, and a recommendation that states its own uncertainty. The output feeds an RFC or ADR; it is not the decision document itself. Depth is proportional to the blast radius of the decision, not to how much you could read.
+
+## The loop
+
+1. **Frame the question and the criteria.** Pin down the decision this feeds and the axes that will matter (performance, DX, bundle size, maintenance, license, lock-in, team familiarity — whichever apply). Those axes become the columns of the matrix. If the question is too broad to answer (no budget, scale, or constraint), ask one or two clarifiers and stop; a vague question yields a vague matrix.
+2. **Go to primary sources.** Prefer official docs, specs, changelogs, benchmarks, and the source itself over blog posts and SEO content. Read the repo's own constraints too (existing deps, runtime, team). Date volatile facts — ecosystem claims rot.
+3. **Capture evidence, cite as you go.** Each finding is a claim plus where it came from. Separate what the source says from your inference. Keep a short trail of sources kept and dropped, with the reason, so the evidence is auditable.
+4. **Surface contradictions, do not smooth them.** When sources conflict, say so explicitly and say which you trust and why. What you cannot resolve becomes an open question, not a silent pick.
+5. **Build the decision matrix.** Options as rows (always include "do nothing / defer"), the criteria from step 1 as columns. Fill cells with cited evidence, not impressions.
+6. **Recommend with uncertainty.** State the recommendation, your confidence, what would change it, and what remains unknown. Do not overstate a thin evidence base.
+7. **Hand off.** The matrix and recommendation are the input to /rfc (Options, Trade-offs) or /adr (Alternatives Considered). Stop there — research is not the decision doc.
+
+## Rules
+
+- Primary sources over secondary. Cite every load-bearing claim; date the volatile ones.
+- Not a literature review and not a full research-report harness: bound the search to what the decision needs.
+- Flag uncertainty explicitly; keep contradictions visible rather than resolving them by omission.
+- No marketing prose, no false confidence. A recommendation the evidence does not support is worse than "we don't know yet, here is how to find out".
+
+## Output
+
+A short research brief: the question and criteria, the decision matrix (options x criteria, cells cited), the key findings with citations, the contradictions and gaps, and a recommendation with an explicit confidence level and what would change it. End with the handoff: which decision doc this feeds (/rfc or /adr) and the one-line framing for it. English prose, no em dashes, per persona.
+
+User request / arguments: {{args}}
+'''
