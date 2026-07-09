@@ -56,6 +56,12 @@ gemini/scripts/install.macos-linux.sh           # provisions ~/.gemini
 Windows equivalents: `install.windows.ps1` in each `scripts/` folder. The Claude
 installer runs the persona wizard for you on first install if you skipped step 1.
 
+Already working inside a tool? The `/start` entrypoint (a Claude Code and Codex
+skill, a Gemini command, or the Copilot `start` prompt) explains the wizard and
+hands you the exact command for your shell. It is a thin pointer to
+`scripts/create-persona.{sh,ps1}`, not a second copy of the wizard (see
+[`adr/0005-start-entrypoint.md`](adr/0005-start-entrypoint.md)).
+
 Nothing personal is committed: your generated `persona.md`, `CLAUDE.md`, and
 `settings.json` are gitignored. The repo ships templates and a generator, not one
 person's profile.
@@ -81,7 +87,7 @@ behind it as records in [`adr/`](adr/).
 | | Claude Code | Codex | Copilot | Gemini CLI |
 | --- | --- | --- | --- | --- |
 | Persona | `~/.claude/CLAUDE.md` (condensed) + `~/persona.md` (full) | `references/persona.md` (mirror) | `home/.copilot` instructions | `~/.gemini/GEMINI.md` (condensed, always-on) |
-| Skills / prompts | 16 process skills | 9 skill ports (`+ agents/openai.yaml`) | 11 workspace prompts + instruction files | 16 command ports (`.gemini/commands/*.toml`) |
+| Skills / prompts | 16 process skills + `/start` | 9 skill ports + `start` (`+ agents/openai.yaml`) | 11 workspace prompts + `start` + instruction files | 16 command ports + `start` (`.gemini/commands/*.toml`) |
 | Guardrails | `settings.json` permissions + 6 hooks | always-on `AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
 | Install mode | symlink (copy on Windows) | copy into `$CODEX_HOME` | Markdown copy only | copy into `~/.gemini` |
 | Assumed constraint | full local control | portable seed, on-demand references | locked-down corporate laptop, Markdown-only | local control, sandbox available |
