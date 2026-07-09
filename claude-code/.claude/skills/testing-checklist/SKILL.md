@@ -1,6 +1,6 @@
 ---
 name: testing-checklist
-description: Testing checklist — test pyramid, what to test vs skip, DAMP over DRY, failing-test-first for bug fixes, Vitest / React Testing Library patterns. Use when writing or reviewing tests, deciding test coverage for a change, fixing a bug (regression test), or when the user asks "what should I test here", "покрой тестами", "review the tests". Pairs with /verify (runtime verification) and the persona's Verification Exit Criterion. Sibling of /web-security-checklist and /web-performance-checklist.
+description: Testing checklist — test pyramid, what to test vs skip, DAMP over DRY, the TDD red-green-refactor loop for new code, failing-test-first for bug fixes, Vitest / React Testing Library patterns. Use when writing or reviewing tests, deciding test coverage for a change, driving new code test-first, fixing a bug (regression test), or when the user asks "what should I test here", "покрой тестами", "review the tests". Pairs with /verify (runtime verification) and the persona's Verification Exit Criterion. Sibling of /web-security-checklist and /web-performance-checklist.
 ---
 
 # Testing Checklist
@@ -16,6 +16,7 @@ A pragmatic checklist for writing and reviewing tests. Read the relevant section
 | "This code is too simple to break." | Simple code with branch logic breaks at the boundaries. Test the boundaries, skip the trivial middle. |
 | "Coverage is at N%, we're good." | Coverage measures execution, not assertion. A test with no meaningful assert inflates N and catches nothing. |
 | "The bug is fixed, no test needed." | A fix without a regression test is a bug on a return ticket. Red first, then green. |
+| "I'll write the code first, then add tests." | Test-after validates the code you happened to write, not the behavior you wanted. Red first keeps the test honest. |
 | "I'll DRY up these tests with helpers." | Test code is spec, not production code. DAMP wins: some duplication beats indirection the reader must unfold. |
 
 ## What to test (in priority order)
@@ -55,6 +56,17 @@ A pragmatic checklist for writing and reviewing tests. Read the relevant section
 - [ ] Async UI: `await findBy…` / `waitFor` with a real assertion inside — never sleep-and-hope.
 - [ ] Assert what the user sees/experiences, not component internals (`state`, props of children, hook return values).
 - [ ] MSW (or fetch-mock at the boundary) for network — don't mock your own data-fetching wrapper; mock the wire.
+
+## TDD loop (new behavior)
+
+For new code, not just bug fixes — let the test drive the design, red before green.
+
+1. **Agree the seam first.** Decide where the test attaches — a public function, an API route, a component's rendered output — and confirm it before writing the test. Testing below an agreed seam couples the suite to internals; testing above it asserts nothing of yours.
+2. **Red.** Write one failing test for the next thin slice of behavior. Run it, watch it fail for the intended reason.
+3. **Green.** Write the least code that makes it pass. No more.
+4. **Refactor — outside the loop.** Clean up with the test green as the safety net. Refactoring is its own step, never folded into red or green.
+
+Slice **vertically** — a tracer bullet, one thin path through every layer, demoable — not horizontally (a whole layer at once, testable only much later). One slice at a time.
 
 ## Bug-fix protocol
 
