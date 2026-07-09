@@ -1,0 +1,4 @@
+interface:
+  display_name: "Start"
+  short_description: "Generate your persona from the shared templates"
+  default_prompt: "Explain the persona wizard and give me the exact command to run it for my shell."
