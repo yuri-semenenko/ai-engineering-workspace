@@ -11,7 +11,7 @@ references/
   memory-seed.example/ MIRROR of the Claude memory-seed example
   checklists/          codex-owned: security.md, performance.md
   humanizer/           codex-owned: ai-writing-patterns.md
-skills/                9 hand-authored skill ports, each with agents/openai.yaml
+skills/                9 hand-authored skill ports + a start onboarding entrypoint, each with agents/openai.yaml
 scripts/
   install.macos-linux.sh
   install.windows.ps1
@@ -42,6 +42,7 @@ See [`../docs/architecture.md`](../docs/architecture.md).
 
 Trigger a narrower workflow explicitly:
 
+- `$start` — generate your persona from the shared templates (onboarding)
 - `$architect` — architecture decision, trade-off analysis, system design
 - `$rfc` — RFC in the canonical 10-section format
 - `$adr` — record an accepted decision

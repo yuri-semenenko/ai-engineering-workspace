@@ -17,7 +17,7 @@ workspace-template/
   .github/
     copilot-instructions.md
     instructions/                   backend, frontend, performance, security
-    prompts/                        11 prompts: rfc, adr, debug, lazy, pr-*, humanize, ...
+    prompts/                        12 prompts: start, rfc, adr, debug, lazy, pr-*, humanize, ...
 scripts/
   install.macos-linux.sh
   install.windows.ps1
