@@ -34,3 +34,4 @@ Slice vertically (one thin path through every layer), not horizontally. One slic
 - Deterministic only: no real time, no real network, no order dependence, no logic inside a test.
 - Keep the pyramid: mostly unit, integration at real seams, few end-to-end.
 - If a test is impossible (non-deterministic or environment-bound), say so plainly rather than implying coverage.
+- Delegate mechanical scaffolding (boilerplate, fixtures, codemods) to a cheaper-tier subagent; keep the seam choice and the "is the behavior actually covered" judgment on the main model. A green suite is evidence, not proof.

@@ -75,3 +75,7 @@ Slice **vertically** — a tracer bullet, one thin path through every layer, dem
 3. Run the surrounding suite — the fix didn't move the bug next door.
 
 If step 1 is impossible (non-deterministic, environment-bound), say so explicitly per the Verification Exit Criterion — never imply tested-and-covered when it isn't.
+
+## Delegation
+
+Delegate the scaffolding, keep the coverage judgment. Hand mechanical generation to a cheaper-tier subagent — test boilerplate, fixtures, obvious table-driven cases, a codemod across many test files — returning ready-to-review tests. Keep on the main model the parts that need judgment: choosing the seam, deciding what is worth testing, and confirming the behavior is actually covered. A green suite is evidence, not proof the acceptance criteria are met.
