@@ -234,8 +234,8 @@ write_recommended_skills() {
   case "$SENIORITY" in
     mid)       rec="$rec lazy" ;;
     senior)    rec="$rec adr pr-comment pr-recheck" ;;
-    staff)     rec="$rec rfc adr complexity-audit debt-ledger security-pass" ;;
-    principal) rec="$rec rfc adr complexity-audit debt-ledger" ;;
+    staff)     rec="$rec rfc adr module-design complexity-audit debt-ledger security-pass" ;;
+    principal) rec="$rec rfc adr module-design complexity-audit debt-ledger" ;;
   esac
   # Workflow foregrounds an emphasis set. The default 'architecture-focused' adds
   # only skills already recommended for staff+fullstack, so the default profile's
@@ -244,8 +244,8 @@ write_recommended_skills() {
   case "$WORKFLOW" in
     delivery-focused)     rec="$rec spec lazy commit pr-comment"
                           emphasis="ship-oriented skills: specs, the laziest-solution ladder, small commits, and PR descriptions." ;;
-    architecture-focused) rec="$rec rfc adr complexity-audit"
-                          emphasis="design-first skills: RFCs, ADRs, and whole-tree complexity checks." ;;
+    architecture-focused) rec="$rec rfc adr module-design complexity-audit"
+                          emphasis="design-first skills: RFCs, ADRs, module design, and whole-tree complexity checks." ;;
     review-focused)       rec="$rec pr-classify pr-recheck pr-comment"
                           emphasis="review skills: tiered PR classification, second-pass re-review, and PR descriptions." ;;
     learning-focused)     rec="$rec debug testing-checklist spec lazy"
