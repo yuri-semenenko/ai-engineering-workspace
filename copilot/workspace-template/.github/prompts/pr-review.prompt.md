@@ -14,9 +14,11 @@ Task:
 Find correctness, security, reliability, maintainability, scalability, and readability issues.
 
 Constraints:
+- Read the tests and PR description first to recover intended behavior, then read the implementation against that intent.
 - Read enough surrounding code to understand the changed behavior.
 - Cite file and line references when possible.
 - Classify every finding before writing it.
+- Classification is severity, not certainty: when unsure a finding is real, phrase it as a question rather than an assertion, and do not inflate a Critical you cannot fully trace.
 - Drop Optional findings if ignoring them has no concrete cost.
 - Write in English unless explicitly requested otherwise.
 
