@@ -23,6 +23,7 @@ Rules:
 - Cite `path:line` for every issue.
 - Order by severity, not by file.
 - Classification is severity, not certainty: when unsure a finding is real, phrase it as a question, not an assertion, and do not inflate a Critical you cannot fully trace.
+- Delegate the reading, keep the ruling: on a large diff, fan the first pass out to cheaper-tier subagents by file-group or angle, but classify and decide the verdict on the main model.
 - End with verdict: approve, request changes, or needs discussion.
 
 Format:

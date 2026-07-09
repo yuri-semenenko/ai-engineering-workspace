@@ -52,6 +52,10 @@ Style, preferences, "would be nice". Examples:
 
 Classification is severity, not certainty — track the two separately. When you are not sure a finding is real (you could not fully trace the path, or it depends on context you cannot see), say so and phrase it as a question, not an assertion: "Is `x` guaranteed non-null here? If not, this throws." A confident wrong Critical costs more trust than a hedged correct one. Never inflate confidence to make a finding land; never drop a real concern because you are only 60% sure — ask.
 
+## Delegation
+
+Delegate the reading, keep the ruling. On a large diff, hand the first pass to cheaper-tier subagents — one per file-group or review angle (correctness, tests, security, perf) — each returning compact candidate findings, not file dumps. Keep the classification, the confidence call, and the verdict on the main model: whether a finding actually holds is judgment, not gathering.
+
 ## Output format
 
 ```
