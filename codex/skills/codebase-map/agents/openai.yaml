@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codebase Map"
+  short_description: "Orient fast in unfamiliar code"
+  default_prompt: "Map this repository: entry points, architecture, domain glossary, seams, risky areas, and how to run it."

@@ -248,8 +248,8 @@ write_recommended_skills() {
                           emphasis="design-first skills: RFCs, ADRs, module design, and whole-tree complexity checks." ;;
     review-focused)       rec="$rec pr-classify pr-recheck pr-comment"
                           emphasis="review skills: tiered PR classification, second-pass re-review, and PR descriptions." ;;
-    learning-focused)     rec="$rec debug testing-checklist spec lazy"
-                          emphasis="understanding-first skills: reproduce-then-fix debugging, specs, and test coverage." ;;
+    learning-focused)     rec="$rec codebase-map debug testing-checklist spec lazy"
+                          emphasis="understanding-first skills: orienting in an unfamiliar codebase, reproduce-then-fix debugging, specs, and test coverage." ;;
   esac
 
   local rec_sorted catalog also s

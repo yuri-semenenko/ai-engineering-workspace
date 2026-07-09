@@ -1,0 +1,44 @@
+# Ported from claude-code/.claude/skills/codebase-map/SKILL.md — Gemini CLI custom command.
+description = "Orient fast in unfamiliar code and produce a short, high-signal map: what it is, entry points, architecture, domain glossary, key seams, risky areas, and how to run and test."
+prompt = '''
+# Codebase Map
+
+Build a fast, honest orientation to code you don't know yet, so you (or an agent you're about to point at it) can work in it safely. This is reconnaissance for comprehension: what the code is, where it starts, how it flows, and what not to touch. It is a map, not a tour — pointers over prose, evidence over guesses.
+
+## How to run (keep main context lean)
+
+1. **Scope it.** If a path argument was given, map that subtree; otherwise the whole repo. Read the obvious roots first: README, `package.json` (scripts + deps), the top-level layout, and any existing `AGENTS.md` / `CLAUDE.md` / architecture docs.
+2. **Fan out, do not grep inline.** Per the persona's session-hygiene rule, dispatch `Explore` subagents — one per subsystem or question (entry points, data flow, domain terms, tests/tooling) — each returning a compact findings list, not file dumps. This keeps large intermediate output out of the main conversation.
+3. **Assemble the map** from what came back. Merge, resolve contradictions rather than smoothing them over, and cite where each fact lives.
+
+## What the map captures
+
+- **What it is.** One paragraph: the purpose and the domain it serves. From the README and the shape of the code, not the marketing.
+- **Entry points.** Where execution actually starts — server/main, routes or pages, CLI commands, cron/queue workers, build entry. The "start here" files.
+- **Architecture sketch.** The handful of layers or modules that matter and how data flows between them. A few boxes and arrows in prose, not a file tree.
+- **Domain glossary.** The ubiquitous language: the 5-15 domain nouns and verbs that recur, one line each. The vocabulary you need to read the code and talk to the team.
+- **Key seams.** The stable interfaces and boundaries where behavior is substituted or extended (see /module-design for the vocabulary). Where you would attach a test or a new implementation.
+- **Risky / don't-touch areas.** Load-bearing, security-sensitive, or historically fragile code, and the invariants not to regress. Mark it; do not "fix" it (Chesterton's Fence).
+- **How to run and test.** Build/dev/test/single-test commands, local setup, required env vars — from repo evidence, not guesses. Say so when something is unknown.
+- **Known tradeoffs.** Existing `TRADEOFF(...)` annotations, TODOs of record, and documented debt (feeds /debt-ledger).
+
+## Skip (noise)
+
+- Full file-tree dumps (derivable from `ls`).
+- Restating the stack that `package.json` already shows.
+- Generic advice ("write tests", "use strict mode").
+- Line-by-line or file-by-file summaries. A map longer than the territory is useless.
+
+## Rules
+
+- Read evidence; do not invent structure. Flag uncertainty explicitly rather than guessing.
+- Comprehension, not critique. Note over-engineering in passing, but hand a real audit to /complexity-audit.
+- Respect Chesterton's Fence: unclear or load-bearing code is "risky", not "delete me".
+- Keep it short and proportional — aim for a map that fits on a screen or two (~80-150 lines), longer only if the repo genuinely needs it.
+
+## Output
+
+A short orientation doc in the sections above, with `file:line` / path pointers throughout. End with a **Start here** shortlist (2-4 files to open first) and the **open questions** a reader would still need answered. If the run-and-test facts are worth persisting for an agent, offer to distill them into an `AGENTS.md` (that is the project-onboarding job — cross-reference it, don't duplicate it here). English prose, no em dashes, per persona.
+
+User request / arguments: {{args}}
+'''

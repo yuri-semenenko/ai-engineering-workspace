@@ -102,7 +102,7 @@ behind it as records in [`adr/`](adr/).
 | | Claude Code | Codex | Copilot | Gemini CLI |
 | --- | --- | --- | --- | --- |
 | Persona | `~/.claude/CLAUDE.md` (condensed) + `~/persona.md` (full) | `references/persona.md` (mirror) | `home/.copilot` instructions | `~/.gemini/GEMINI.md` (condensed, always-on) |
-| Skills / prompts | 17 process skills + `/start` | 11 skill ports + `start` (`+ agents/openai.yaml`) | 13 workspace prompts + `start` + instruction files | 17 command ports + `start` (`.gemini/commands/*.toml`) |
+| Skills / prompts | 18 process skills + `/start` | 12 skill ports + `start` (`+ agents/openai.yaml`) | 14 workspace prompts + `start` + instruction files | 18 command ports + `start` (`.gemini/commands/*.toml`) |
 | Guardrails | `settings.json` permissions + 6 hooks | always-on `AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
 | Install mode | symlink (copy on Windows) | copy into `$CODEX_HOME` | Markdown copy only | copy into `~/.gemini` |
 | Assumed constraint | full local control | portable seed, on-demand references | locked-down corporate laptop, Markdown-only | local control, sandbox available |
@@ -167,6 +167,7 @@ Read it in [`docs/principles/`](docs/principles/).
 | `module-design` | deep modules, small interfaces, when an abstraction earns its keep | "design this module", "is this abstraction worth it" |
 | `complexity-audit` | whole-tree scan for over-engineering | "where are we over-built" |
 | `debt-ledger` | collects `TRADEOFF(...)` annotations into one ledger | "list tradeoffs" |
+| `codebase-map` | orient in unfamiliar code: entry points, domain glossary, seams, risky areas | "map this repo", "where do I start" |
 | `debug` | reproduce → build a feedback loop → isolate → fix the cause | "why is X failing", "find root cause" |
 | `pr-classify` | Critical / Important / Optional review triage | "review this PR" |
 | `pr-comment` | fills the repo's PR template as copy-paste markdown | "prepare a PR description" |
@@ -180,8 +181,8 @@ Read it in [`docs/principles/`](docs/principles/).
 
 Codex ports the RFC/ADR/humanizer plus its own `architect`, `context-brief`,
 `failure-investigation`, `project-onboarding`, `prompt-engineer`,
-`pull-request-workflow`, `test-strategy`, and `module-design` workflows. Copilot
-exposes the same ideas as `.github/prompts/*.prompt.md`.
+`pull-request-workflow`, `test-strategy`, `module-design`, and `codebase-map`
+workflows. Copilot exposes the same ideas as `.github/prompts/*.prompt.md`.
 
 ## Examples
 
