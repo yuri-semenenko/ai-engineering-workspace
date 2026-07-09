@@ -197,21 +197,21 @@ if (Test-Path $SkillsDir) {
   switch ($Seniority) {
     'mid'       { $rec += @('lazy') }
     'senior'    { $rec += @('adr', 'pr-comment', 'pr-recheck') }
-    'staff'     { $rec += @('rfc', 'adr', 'module-design', 'complexity-audit', 'debt-ledger', 'security-pass') }
-    'principal' { $rec += @('rfc', 'adr', 'module-design', 'complexity-audit', 'debt-ledger') }
+    'staff'     { $rec += @('rfc', 'adr', 'module-design', 'complexity-audit', 'debt-ledger', 'security-pass', 'research') }
+    'principal' { $rec += @('rfc', 'adr', 'module-design', 'complexity-audit', 'debt-ledger', 'research') }
   }
   # Workflow foregrounds an emphasis set. The default 'architecture-focused' adds
   # only skills already recommended for staff+fullstack, so the default profile's
   # list stays unchanged; the axis just surfaces in the header + emphasis line.
   switch ($Workflow) {
     'delivery-focused'     { $rec += @('spec', 'lazy', 'commit', 'pr-comment') }
-    'architecture-focused' { $rec += @('rfc', 'adr', 'module-design', 'complexity-audit') }
+    'architecture-focused' { $rec += @('rfc', 'adr', 'module-design', 'complexity-audit', 'research') }
     'review-focused'       { $rec += @('pr-classify', 'pr-recheck', 'pr-comment') }
     'learning-focused'     { $rec += @('codebase-map', 'debug', 'testing-checklist', 'spec', 'lazy') }
   }
   $emphasis = switch ($Workflow) {
     'delivery-focused'     { 'ship-oriented skills: specs, the laziest-solution ladder, small commits, and PR descriptions.' }
-    'architecture-focused' { 'design-first skills: RFCs, ADRs, module design, and whole-tree complexity checks.' }
+    'architecture-focused' { 'design-first skills: evidence-backed option research, RFCs, ADRs, module design, and whole-tree complexity checks.' }
     'review-focused'       { 'review skills: tiered PR classification, second-pass re-review, and PR descriptions.' }
     'learning-focused'     { 'understanding-first skills: orienting in an unfamiliar codebase, reproduce-then-fix debugging, specs, and test coverage.' }
   }
