@@ -27,6 +27,7 @@ Constraints:
   AI-sounding phrasing.
 - Anti-nitpick gate: drop Optional findings whose cost of ignoring is none.
 - Cite file and line for every point.
+- Gather then judge: read the open threads and the new work first, then build the matrix and rule. The gathering pass is evidence, not the verdict.
 
 Decision gate:
 - Clean path: if every open thread is `addressed` AND there are zero new findings of

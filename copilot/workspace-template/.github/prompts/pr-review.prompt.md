@@ -19,7 +19,7 @@ Constraints:
 - Cite file and line references when possible.
 - Classify every finding before writing it.
 - Classification is severity, not certainty: when unsure a finding is real, phrase it as a question rather than an assertion, and do not inflate a Critical you cannot fully trace.
-- On a large diff, gather findings in a first pass (by file-group or angle) before ruling; keep the classification and verdict as the main judgment, not the gathering.
+- Run the same gather-then-judge sequence every review, not only on large diffs: first orient on the changed surface, then gather findings by angle (correctness, tests, security when the surface is sensitive, performance), then classify and rule as one judgment pass. Gathering is evidence, not the verdict.
 - Drop Optional findings if ignoring them has no concrete cost.
 - Write in English unless explicitly requested otherwise.
 
