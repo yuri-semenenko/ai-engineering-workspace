@@ -26,6 +26,8 @@ skills/commands/prompts, and tool-specific adapters.
 - A `/start` onboarding entrypoint inside each supported tool.
 - Drift guards and CI checks so templates, mirrors, and skill references do not
   silently rot.
+- Experimental report-only loops that compose existing skills into repeatable,
+  inspectable workflows without introducing an agent runtime.
 - ADRs that document why the architecture works this way.
 
 ## Why
@@ -156,6 +158,18 @@ peer. This is the durable core of the kit.
 
 Read it in [`docs/principles/`](docs/principles/).
 
+## Loops
+
+[Loops](loops/README.md) are a small, canonical coordination layer above skills:
+they compose existing procedures around a goal, state, verification, and stable
+report. The initial references are **L1 — Report Only** PR Review and Repository
+Health loops. They may inspect and report, but cannot modify a consumer project,
+post reviews, create commits, or perform other outbound actions.
+
+Loops do not make this an automation platform. There is no scheduler, runtime,
+auto-fix, or tool-specific loop port. See the [contract](loops/contract.md) and
+[ADR-0011](adr/0011-declarative-engineering-loops.md).
+
 ## Skill catalog (Claude Code)
 
 | Skill | Enforces | Trigger |
@@ -241,6 +255,8 @@ Conservative and honest — where the kit is going, not a wish list.
 - Print a short profile summary after the wizard runs.
 - Add README walk-throughs for common adoption paths: Claude-first, Codex-first,
   Copilot-only, and multi-tool.
+- Evaluate whether the report-only loop examples are useful before considering a
+  tool adapter experiment or an invocation command.
 
 ### Later
 
@@ -258,6 +274,7 @@ Conservative and honest — where the kit is going, not a wish list.
 - No profile-specific methodology forks.
 - No per-profile skill installation or hidden filtering.
 - No Node.js build step or YAML resolver while the shell wizard stays manageable.
+- No scheduler, autonomous runtime, auto-fix, or unattended loop execution.
 
 ## Contributing
 

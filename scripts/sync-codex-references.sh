@@ -39,6 +39,7 @@ MIRROR_MEMORY="$REPO_ROOT/codex/references/memory-seed.example"
 MIRROR_GEMINI="$REPO_ROOT/gemini/references/GEMINI.md"
 SKILLS_DIR="$REPO_ROOT/codex/skills"
 GEMINI_COMMANDS_DIR="$REPO_ROOT/gemini/commands"
+LOOPS_VALIDATOR="$REPO_ROOT/scripts/validate-loops.sh"
 
 # Validate the owned-here Codex skills. Returns nonzero and prints each problem
 # to stderr. There is no auto-fix: skills have no canon to regenerate from.
@@ -121,6 +122,7 @@ validate_gemini_commands() {
 if [ "${1:-}" = "--check" ]; then
   mirror_status=0
   skills_status=0
+  loops_status=0
   if ! diff -q "$CANON_PERSONA" "$MIRROR_PERSONA" >/dev/null 2>&1; then
     echo "DRIFT: codex/references/persona.md differs from canon" >&2
     mirror_status=1
@@ -141,10 +143,14 @@ if [ "${1:-}" = "--check" ]; then
     echo "Fix the Gemini command structure above (no auto-fix: owned-here ports)." >&2
     skills_status=1
   fi
+  if ! bash "$LOOPS_VALIDATOR" --root "$REPO_ROOT"; then
+    echo "Fix the canonical loop contracts above." >&2
+    loops_status=1
+  fi
   if [ "$mirror_status" -ne 0 ]; then
     echo "Run: scripts/sync-codex-references.sh && git add codex/references gemini/references" >&2
   fi
-  exit $((mirror_status | skills_status))
+  exit $((mirror_status | skills_status | loops_status))
 elif [ -n "${1:-}" ]; then
   echo "Unknown argument: $1" >&2
   echo "Usage: sync-codex-references.sh [--check]" >&2
@@ -163,6 +169,10 @@ if [ ! -f "$CANON_CONDENSED" ]; then
 fi
 if [ ! -d "$CANON_MEMORY" ]; then
   echo "Canon memory-seed missing: $CANON_MEMORY" >&2
+  exit 1
+fi
+if ! bash "$LOOPS_VALIDATOR" --root "$REPO_ROOT"; then
+  echo "Canonical loop contracts invalid; no mirror files were changed." >&2
   exit 1
 fi
 

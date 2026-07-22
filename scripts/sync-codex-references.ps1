@@ -15,6 +15,7 @@ $MirrorMemory = Join-Path $RepoRoot 'codex\references\memory-seed.example'
 $MirrorGemini = Join-Path $RepoRoot 'gemini\references\GEMINI.md'
 $SkillsRoot = Join-Path $RepoRoot 'codex\skills'
 $GeminiCommandsRoot = Join-Path $RepoRoot 'gemini\commands'
+$LoopsValidator = Join-Path $RepoRoot 'scripts\validate-loops.ps1'
 
 # Read the frontmatter `name:` from a SKILL.md, or $null if absent.
 function Get-SkillName {
@@ -182,6 +183,7 @@ Assert-PathExists -Path $CanonMemory -Label 'Canon memory-seed'
 if ($Check) {
     $mirrorOk = $true
     $skillsOk = $true
+    $loopsOk = $true
 
     if (-not (Test-Path -LiteralPath $MirrorPersona)) {
         Write-Error 'DRIFT: codex\references\persona.md mirror missing'
@@ -213,11 +215,22 @@ if ($Check) {
         $skillsOk = $false
     }
 
+    & $LoopsValidator -Root $RepoRoot
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error 'Fix the canonical loop contracts above.'
+        $loopsOk = $false
+    }
+
     if (-not $mirrorOk) {
         Write-Error 'Run: scripts\sync-codex-references.ps1; git add codex\references gemini\references'
     }
 
-    if ($mirrorOk -and $skillsOk) { exit 0 } else { exit 1 }
+    if ($mirrorOk -and $skillsOk -and $loopsOk) { exit 0 } else { exit 1 }
+}
+
+& $LoopsValidator -Root $RepoRoot
+if ($LASTEXITCODE -ne 0) {
+    throw 'Canonical loop contracts invalid; no mirror files were changed.'
 }
 
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $MirrorPersona) | Out-Null

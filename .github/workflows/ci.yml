@@ -36,6 +36,9 @@ jobs:
       - name: Recommended skills reference only shipped skills
         run: bash scripts/check-recommended-skills.sh
 
+      - name: Loop validation fixtures
+        run: bash tests/loop-validation.sh
+
       - name: Claude Code installer smoke test
         run: |
           home="$(mktemp -d)"

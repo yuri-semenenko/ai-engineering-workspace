@@ -22,6 +22,7 @@ one, not an edit here.
 | [0008](./0008-research-skill.md) | A `research` skill across all four tools for evidence-backed technical decisions | Accepted |
 | [0009](./0009-migration-plan-skill.md) | A `migration-plan` skill across all four tools for safe incremental migrations | Accepted |
 | [0010](./0010-tiered-delegation-in-skills.md) | Operationalize tiered delegation inside the skills: cheap subagents gather, the main loop judges | Accepted |
+| [0011](./0011-declarative-engineering-loops.md) | Declarative, report-only engineering loops as a layer separate from skills | Accepted |
 
 For a standalone example of the format applied to a fictional decision, see
 [`examples/adr-sample.md`](../examples/adr-sample.md).

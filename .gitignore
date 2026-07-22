@@ -40,3 +40,6 @@ claude-code/.claude/settings.json
 **/telemetry/
 **/shell-snapshots/
 **/memory/
+
+# Loop run state belongs to a consuming project, not to this methodology canon.
+.ai-workspace/loops/
