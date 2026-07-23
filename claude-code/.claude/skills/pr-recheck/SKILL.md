@@ -34,6 +34,10 @@ If merged or closed, surface that and stop.
    Classify them Critical / Important / Optional per pr-classify rules — the
    anti-nitpick gate applies (drop Optional whose cost of ignoring is "none").
 
+## Delegation
+
+Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the open threads, load the new work and read the changed code) to cheaper-tier subagents, each returning compact evidence: the unresolved threads, and what changed since the last review with `file:line`. Keep on the main model the addressed / partial / not-addressed matrix (step 3), the new-findings classification (step 4), and the decision gate below. Resolving threads, posting comments, and approving are gated actions — never delegated to a subagent.
+
 ## Decision gate
 
 **Clean path.** If AND only if every prior open thread is `addressed`

@@ -23,7 +23,7 @@ Rules:
 - Cite `path:line` for every issue.
 - Order by severity, not by file.
 - Classification is severity, not certainty: when unsure a finding is real, phrase it as a question, not an assertion, and do not inflate a Critical you cannot fully trace.
-- Delegate the reading, keep the ruling: on a large diff, fan the first pass out to cheaper-tier subagents by file-group or angle, but classify and decide the verdict on the main model.
+- Delegate the reading, keep the ruling. Run the same sequence every review, not only on large diffs: a cheaper-tier subagent orients on the changed surface, subagents gather by angle (correctness, tests, security when the surface is sensitive, performance) returning compact findings with `path:line`, and classification plus the verdict stay on the main model. A subagent finding is evidence, not a ruling.
 - End with verdict: approve, request changes, or needs discussion.
 
 Format:
@@ -54,6 +54,8 @@ For non-trivial PRs or when the user asks for a deeper pass, run the review as a
 3. Merge findings into one ordered review. Do not duplicate comments across angles.
 4. Split feedback into fixes worth doing now, optional improvements, and items to defer or ignore with a short reason.
 5. If the user asks for `autofix`, apply only fixes worth doing now, then rerun targeted verification and inspect the final diff.
+
+On a re-review after fixes, delegate the gather — the prior review comments plus the new work since them — to a cheaper-tier subagent, and keep the addressed / not-addressed judgment and the verdict on the main model.
 
 Do not blindly apply every review suggestion. If a finding depends on an unapproved product, scope, or architecture decision, pause and ask for that decision instead of coding around it.
 

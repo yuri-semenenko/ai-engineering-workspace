@@ -56,7 +56,13 @@ Classification is severity, not certainty — track the two separately. When you
 
 ## Delegation
 
-Delegate the reading, keep the ruling. On a large diff, hand the first pass to cheaper-tier subagents — one per file-group or review angle (correctness, tests, security, perf) — each returning compact candidate findings, not file dumps. Keep the classification, the confidence call, and the verdict on the main model: whether a finding actually holds is judgment, not gathering.
+Delegate the reading, keep the ruling. Run the same gather/judge sequence every review, not only on large diffs — repeatability is the point:
+
+1. **Orient.** A cheaper-tier subagent maps the changed surface (the `codebase-map` lens): entry points, touched invariants, risky areas. Compact map back, not file dumps.
+2. **Gather by angle, in parallel.** One cheaper-tier subagent per angle — correctness, tests (the `testing-checklist` lens), security (the `security-pass` recon lens, only when the changed surface is sensitive), performance. Each returns compact candidate findings with `file:line`, not conclusions.
+3. **Judge.** Classification, the confidence call, and the verdict stay on the main model. A candidate finding from a subagent is evidence, not a ruling.
+
+Scale the number of gather subagents to the diff; never skip the orient-gather-judge split or fold judgment into a subagent.
 
 ## Output format
 
