@@ -543,6 +543,14 @@ The main-loop model can't self-downgrade; the lever for cheaper tiers is delegat
 - Ask first when the split is ambiguous: the task mixes judgment with mechanics, touches architecture or security, or is hard to scope cleanly.
 - Keep on the main loop: architecture, code/security review, RFC/ADR, hard debugging, anything needing cross-file judgment.
 
+Stable delegation workflows:
+
+- Gather -> judge: subagents gather compact evidence; the main loop interprets and decides.
+- Explore -> implement -> review: discovery first, scoped implementation second, independent review third.
+- Explore -> architect -> decide -> implement -> review: use this for ambiguous, cross-cutting, or architecture-sensitive work.
+
+Do not delegate trivial work or split agents across overlapping write sets. Prefer tier labels over hardcoded model names because concrete model slugs change faster than the engineering policy.
+
 ---
 
 ## Tooling Defaults

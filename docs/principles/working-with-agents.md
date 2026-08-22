@@ -59,6 +59,21 @@ of grinding it on the main loop:
 - **Keep on the main loop** anything needing cross-file judgment: architecture,
   review, RFC/ADR, hard debugging.
 
+Use workflows, not model names, as the stable policy:
+
+- **Gather -> judge.** Delegate broad read-only gathering, then make the
+  interpretation and verdict on the main loop.
+- **Explore -> implement -> review.** For meaningful implementation work, first
+  map the relevant surface, then make the scoped change, then get an independent
+  review of the result.
+- **Explore -> architect -> decide -> implement -> review.** For ambiguous or
+  architecture-sensitive work, separate discovery, trade-off analysis, parent
+  decision, implementation, and review.
+
+Do not delegate just because subagents exist. Skip delegation when the work is
+trivial, when the coordination overhead exceeds the work, or when multiple agents
+would edit overlapping files.
+
 ## Session hygiene
 
 Context is a budget. Spend it on the current problem:
