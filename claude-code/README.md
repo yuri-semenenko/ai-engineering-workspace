@@ -6,14 +6,14 @@ The canon of the kit. Skills, agents, hooks, and the persona all originate here;
 
 ```
 .claude/
-  skills/               17 process skills + a /start onboarding entrypoint (see the root README catalog)
+  skills/               20 process skills + a /start onboarding entrypoint (see the root README catalog)
   agents/
     independent-review.md       shipped agent: independent second read, read-only
     project-agent.template.md   how-to template for a project-specific agent
   hooks/
     model-reminder.sh    UserPromptSubmit hook
   memory-seed.example/   fictional example memories (format demo; also the sync canon)
-  settings.example.json  permissions + 5 hooks (no model pin / theme / plugins)
+  settings.example.json  permissions + 6 guardrail hooks + a notifier (no model pin / theme / plugins)
   statusline.sh          model · branch · dir status line
 scripts/
   install.macos-linux.sh
