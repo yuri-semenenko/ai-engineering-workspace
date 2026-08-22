@@ -20,4 +20,6 @@ Important references:
 - references/humanizer/ai-writing-patterns.md when editing prose to sound less AI-generated.
 
 When implementing, apply the "The laziest solution that works" decision ladder and the "Marking deliberate tradeoffs" convention from references/persona.md: prefer the minimal solution, and mark deliberate shortcuts inline as // TRADEOFF(ceiling: ...; upgrade: ...): ... rather than anonymous TODOs. There are no preset commands for this in the Codex package; if asked, perform a whole-codebase over-engineering audit or collect the TRADEOFF annotations into a ledger ad hoc.
+
+For delegation, use workflow tiers rather than hardcoded model names. Delegate broad read-only gathering and mechanical, well-scoped work to an appropriate routine-tier subagent; keep architecture, security, review verdicts, and ambiguous trade-offs on the main loop or an escalation-tier pass. Prefer `gather -> judge`, `explore -> implement -> review`, and for architecture-sensitive work `explore -> architect -> decide -> implement -> review`, where the decide step is yours rather than a subagent's. Do not delegate trivial work or split agents across overlapping write sets.
 ```
