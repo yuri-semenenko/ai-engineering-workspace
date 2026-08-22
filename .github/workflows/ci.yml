@@ -33,6 +33,18 @@ jobs:
             echo "Unfilled placeholders in generated persona"; exit 1
           fi
 
+      - name: Committed model fields name a tier, not a version
+        run: |
+          bad=$(git ls-files -z \
+            | xargs -0 grep -HnE '^ *model: *' \
+            | grep -vE ':[[:space:]]*model:[[:space:]]*(opus|sonnet|haiku|inherit)$' || true)
+          if [ -n "$bad" ]; then
+            echo "A committed model field must name a tier alias (opus/sonnet/haiku/inherit),"
+            echo "not a version slug. See adr/0012-tier-labels-over-pinned-model-slugs.md."
+            echo "$bad"
+            exit 1
+          fi
+
       - name: Recommended skills reference only shipped skills
         run: bash scripts/check-recommended-skills.sh
 
