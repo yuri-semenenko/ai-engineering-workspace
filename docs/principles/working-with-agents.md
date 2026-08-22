@@ -70,6 +70,10 @@ Use workflows, not model names, as the stable policy:
   architecture-sensitive work, separate discovery, trade-off analysis, parent
   decision, implementation, and review.
 
+The step names are roles, not skill names. Each tool maps them onto its own
+inventory: the `architect` step is an RFC, an ADR, or a module-design pass,
+depending on what the decision needs.
+
 Do not delegate just because subagents exist. Skip delegation when the work is
 trivial, when the coordination overhead exceeds the work, or when multiple agents
 would edit overlapping files.

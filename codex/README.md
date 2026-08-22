@@ -57,8 +57,9 @@ Use these workflows:
 - `gather -> judge` for debugging, reviews, migrations, security passes, and
   test strategy.
 - `explore -> implement -> review` for meaningful implementation work.
-- `explore -> architect -> parent decision -> implement -> review` when the work
-  is ambiguous, cross-cutting, or architecture-sensitive.
+- `explore -> architect -> decide -> implement -> review` when the work is
+  ambiguous, cross-cutting, or architecture-sensitive. The `decide` step is the
+  parent's, never a subagent's.
 
 Do not delegate trivial work, do not spawn agents just because the mechanism
 exists, and avoid multiple agents editing overlapping files. If no tier override
