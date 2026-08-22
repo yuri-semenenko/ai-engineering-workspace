@@ -11,9 +11,13 @@ not see. That is the entire point of dispatching you: the context that produced
 the code is the worst context to judge it from. Read the code, not an argument
 for the code.
 
-You have no write tools. Do not attempt edits, commits, comments, or approvals
-through the shell either. Your output is evidence for the main loop, which owns
-the verdict.
+You have no Edit or Write tool, but you do have Bash, and this kit's permission
+allowlist passes a few state-changing commands through it (`git add`,
+`git commit -m`, `git switch`, `npm install`). So read-only is your contract, not
+a boundary the harness enforces on your behalf. Use Bash for reads only:
+`git diff`, `git log`, `gh pr view`. Do not stage, commit, switch branches,
+install anything, or post or approve anything. Your output is evidence for the
+main loop, which owns the verdict.
 
 ## What to read
 

@@ -34,11 +34,15 @@ inert documentation, which shapes what form a shipped agent should take.
 Ship exactly one agent for Claude Code, and enforce the alias rule in CI.
 
 1. **`claude-code/.claude/agents/independent-review.md`** is a working agent, not
-   a template. Its `model` is a tier alias, its `tools` list carries no write
-   capability, and it needs no per-project values. It reads the intent first, then
-   the implementation against that intent, and returns candidate findings with
+   a template. Its `model` is the default-tier alias, it carries no Edit or Write
+   tool, and it needs no per-project values. It reads the intent first, then the
+   implementation against that intent, and returns candidate findings with
    `file:line` in the kit's Critical / Important / Optional buckets, plus an
-   explicit list of what it could not check.
+   explicit list of what it could not check. It keeps Bash, because `git diff`
+   and `gh pr view` are most of what makes a review possible, so its read-only
+   posture is a contract in the prompt plus the shipped denylist rather than a
+   capability boundary. Nothing ships on the escalation alias: the canon treats
+   escalation as a manual session-level switch, not an agent-file setting.
 2. **No gather agent.** Built-in `Explore` is the routine-tier read-only
    gatherer. Shipping our own would put custom code where the platform already
    provides, against the simplicity ladder.
@@ -74,6 +78,11 @@ concrete model, which is Codex and Gemini.
 - An independent read removes the writer's context but not the reader's blind
   spots. A subagent can be confidently wrong, so the main loop still pays a
   triage pass over what comes back.
+- The reviewer is not read-only by capability. The shipped allowlist passes some
+  state-changing commands through Bash (`git add`, `git commit -m`, `git switch`,
+  `npm install`), so a misbehaving run could touch the tree. Removing Bash would
+  make the boundary real at the cost of the diff, which is the input the review
+  exists to read.
 
 ### Neutral
 
@@ -98,6 +107,15 @@ concrete model, which is Codex and Gemini.
 - **Make the reviewer a skill instead of an agent.** Rejected: a skill runs in
   the calling context, and independence from that context is the entire value
   here.
+- **Drop Bash so the read-only property is capability-enforced.** Rejected for
+  now: without it the agent cannot read the diff, and passing the diff in the
+  dispatch spends the main-loop context that delegating was meant to save. The
+  trade is recorded rather than hidden, and the option is documented in
+  `claude-code/README.md` for anyone who wants the harder boundary.
+- **Ship the reviewer on the routine alias, matching the project agent.**
+  Rejected: the canon puts code review on the default tier, and a reviewer that
+  misses defects costs more than it saves. The project agent works inside
+  conventions its own file spells out; the reviewer does not.
 
 ## References
 

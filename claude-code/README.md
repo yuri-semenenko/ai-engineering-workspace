@@ -8,7 +8,7 @@ The canon of the kit. Skills, agents, hooks, and the persona all originate here;
 .claude/
   skills/               20 process skills + a /start onboarding entrypoint (see the root README catalog)
   agents/
-    independent-review.md       shipped agent: independent second read, read-only
+    independent-review.md       shipped agent: independent second read, no write tools
     project-agent.template.md   how-to template for a project-specific agent
   hooks/
     model-reminder.sh    UserPromptSubmit hook
@@ -52,14 +52,30 @@ into config instead of only described. See
 [`../adr/0012-tier-labels-over-pinned-model-slugs.md`](../adr/0012-tier-labels-over-pinned-model-slugs.md)
 and [`../adr/0013-claude-review-agent.md`](../adr/0013-claude-review-agent.md).
 
+The aliases map onto the canon's tiers like this: `haiku` and `sonnet` are the
+routine tier, `opus` is the default tier. Nothing ships on the escalation tier,
+because the canon treats escalation as a manual session-level switch and burst
+capacity rather than something to bake into an agent file.
+
 | Work | Mechanism | Tier |
 | --- | --- | --- |
 | Broad search, orientation, evidence gathering | built-in `Explore`, read-only | routine |
 | Planning a multi-step change | built-in `Plan` | routine |
-| Mechanical edits, fixtures, codemods | `general-purpose`, or a project agent | routine |
-| Implementation with real judgment | project agent from the template | default |
-| Independent read of a finished change | shipped `independent-review` agent | default |
-| Architecture, the verdict, the decision | main loop, no subagent | default or escalation |
+| Mechanical edits, fixtures, codemods | `general-purpose` | routine |
+| Implementation inside a project's known conventions | project agent from the template, which ships `sonnet` | routine |
+| Independent read of a finished change | shipped `independent-review`, which ships `opus` | default |
+| Architecture, the verdict, the decision, hard debugging | main loop, no subagent | whatever the session is on |
+
+Raise a project agent's alias when that project's work carries more judgment than
+its conventions cover. The shipped reviewer sits a tier above the project agent
+on purpose: catching a defect is worth more than producing one cheaply.
+
+The reviewer has no Edit or Write tool, but it does have Bash, and the allowlist
+in `settings.example.json` passes a few state-changing commands through
+(`git add`, `git commit -m`, `git switch`, `npm install`). Its read-only posture
+is a contract in its prompt plus the denylist, not a capability boundary. If you
+want it capability-enforced, drop `Bash` from its `tools` and hand it the diff in
+the dispatch instead.
 
 The canon's workflow steps are roles. They land here as:
 
