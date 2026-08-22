@@ -24,6 +24,7 @@ one, not an edit here.
 | [0010](./0010-tiered-delegation-in-skills.md) | Operationalize tiered delegation inside the skills: cheap subagents gather, the main loop judges | Accepted |
 | [0011](./0011-declared-review-orchestration.md) | Declared, repeatable gather/judge sequence for the review skills (`pr-classify`, `pr-recheck`) | Accepted |
 | [0012](./0012-tier-labels-over-pinned-model-slugs.md) | Delegation policy is tier labels plus named workflows; tier aliases may be committed, version slugs may not | Accepted |
+| [0013](./0013-claude-review-agent.md) | Claude Code ships one tier-keyed review agent; no gather agent, because the platform already has one | Accepted |
 
 For a standalone example of the format applied to a fictional decision, see
 [`examples/adr-sample.md`](../examples/adr-sample.md).
