@@ -8,6 +8,7 @@ The canon of the kit. Skills, agents, hooks, and the persona all originate here;
 .claude/
   skills/               17 process skills + a /start onboarding entrypoint (see the root README catalog)
   agents/
+    independent-review.md       shipped agent: independent second read, read-only
     project-agent.template.md   how-to template for a project-specific agent
   hooks/
     model-reminder.sh    UserPromptSubmit hook
@@ -38,8 +39,53 @@ The installer:
 
 `CLAUDE.md`, `persona.md`, and `settings.json` are gitignored — they are yours, not the repo's.
 
+## Delegation
+
+The canon states the policy in tiers and workflows
+([`../docs/principles/working-with-agents.md`](../docs/principles/working-with-agents.md)).
+This is how it maps onto the mechanisms Claude Code actually has.
+
+Claude Code is the one supported tool whose config names a **tier** rather than a
+version: `model: sonnet` in an agent file, and the model argument on a delegation
+call, take the same vocabulary the canon uses. So here the policy can be written
+into config instead of only described. See
+[`../adr/0012-tier-labels-over-pinned-model-slugs.md`](../adr/0012-tier-labels-over-pinned-model-slugs.md)
+and [`../adr/0013-claude-review-agent.md`](../adr/0013-claude-review-agent.md).
+
+| Work | Mechanism | Tier |
+| --- | --- | --- |
+| Broad search, orientation, evidence gathering | built-in `Explore`, read-only | routine |
+| Planning a multi-step change | built-in `Plan` | routine |
+| Mechanical edits, fixtures, codemods | `general-purpose`, or a project agent | routine |
+| Implementation with real judgment | project agent from the template | default |
+| Independent read of a finished change | shipped `independent-review` agent | default |
+| Architecture, the verdict, the decision | main loop, no subagent | default or escalation |
+
+The canon's workflow steps are roles. They land here as:
+
+| Role | Claude Code |
+| --- | --- |
+| `explore` | `Explore`, or `/codebase-map` when you want the map written down |
+| `architect` | `/rfc` while options are open, `/module-design` for one interface |
+| `decide` | the main loop; `/adr` records what it settles |
+| `implement` | project agent |
+| `review` | `independent-review`, then `/pr-classify` for the classification |
+| `judge` | always the main loop |
+
+Two mechanisms the other tools do not have:
+
+- **Fan out in one message.** Subagents dispatched together run concurrently, so
+  a four-angle gather costs one round trip rather than four.
+- **Worktree isolation.** The canon forbids parallel agents over overlapping
+  write sets. A worktree per agent is how you lift that limit instead of obeying
+  it: separate checkouts, no shared index.
+
+What never leaves the main loop: architecture, the review verdict, security
+judgment, RFC and ADR authoring, hard debugging. A subagent finding is evidence,
+not a ruling.
+
 ## Customizing
 
-- **Agents:** copy `agents/project-agent.template.md`, rename it, fill the placeholders. One agent per project encodes that project's stack, conventions, and quality gate.
+- **Agents:** copy `agents/project-agent.template.md`, rename it, fill the placeholders. One agent per project encodes that project's stack, conventions, and quality gate. `agents/independent-review.md` ships ready to use and needs no per-project values; delete it if you do not want the review step delegated.
 - **Memory:** replace `memory-seed.example/` with your own memories or delete it. Note it is also the sync canon for the Codex mirror — run `scripts/sync-codex-references.sh` after editing.
 - **Permissions/hooks:** edit `settings.example.json` for the shipped defaults, or your local `settings.json` for machine-specific tweaks. See [`../docs/hardening.md`](../docs/hardening.md).
