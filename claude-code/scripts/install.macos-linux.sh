@@ -44,3 +44,9 @@ fi
 echo "Claude config installed."
 echo "Claude config target: $TARGET_DIR"
 echo "Codex references are provisioned separately by codex/scripts/install.macos-linux.sh."
+
+# The hooks and statusline read their input with jq. Say so at install time: a
+# missing dependency turns the guardrails into no-ops rather than into an error.
+if ! command -v jq >/dev/null 2>&1; then
+  echo "WARNING: jq is not on PATH. The hooks and statusline parse their input with jq, so until it is installed the branch guard, secret scan, and protected-path guard do nothing at all." >&2
+fi

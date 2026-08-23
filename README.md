@@ -54,6 +54,11 @@ diverge. The config is the delivery mechanism; **the methodology is the product.
 
 ## Quick start
 
+Prerequisites: `git`, plus `bash` and `jq` for the Claude Code hooks and
+statusline. On Windows, Git for Windows supplies bash and `winget install
+jqlang.jq` supplies jq. Without jq the hooks still exit cleanly but do nothing,
+which is why the installer warns and the statusline says so.
+
 ```bash
 git clone <your-fork-url> ai-engineering-workspace
 cd ai-engineering-workspace
