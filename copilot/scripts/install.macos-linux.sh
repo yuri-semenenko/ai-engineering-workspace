@@ -6,7 +6,9 @@ CONFIG_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$CONFIG_DIR/.." && pwd)"
 TARGET_HOME="${1:-$HOME}"
 WORKSPACE_PATH="${2:-}"
-TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
+# Random tail: the timestamp alone collides when the installer runs twice in
+# the same second, and the second run would then overwrite its own backup.
+TIMESTAMP="$(date +%Y%m%d-%H%M%S)-$(printf '%04d' $((RANDOM % 10000)))"
 
 copy_with_backup() {
   local source="$1"

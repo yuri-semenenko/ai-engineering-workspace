@@ -21,7 +21,10 @@ if [ -e "$TARGET_DIR" ] || [ -L "$TARGET_DIR" ]; then
   if [ -L "$TARGET_DIR" ] && [ "$(readlink "$TARGET_DIR")" = "$CONFIG_DIR/.claude" ]; then
     echo "Claude config symlink already points to this repository."
   else
-    backup="$HOME/.claude.backup.$(date +%Y%m%d%H%M%S)"
+    # Random tail: the timestamp alone collides when the installer runs twice
+    # in the same second, and mv onto an existing directory nests instead of
+    # replacing.
+    backup="$HOME/.claude.backup.$(date +%Y%m%d%H%M%S)-$(printf '%04d' $((RANDOM % 10000)))"
     mv "$TARGET_DIR" "$backup"
     ln -s "$CONFIG_DIR/.claude" "$TARGET_DIR"
     echo "Moved previous Claude config to $backup."
