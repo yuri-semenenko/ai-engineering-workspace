@@ -16,6 +16,11 @@ $ErrorActionPreference = 'Stop'
 #
 #   powershell -NoProfile -File .\scripts\create-persona.ps1            # interactive
 #   powershell -NoProfile -File .\scripts\create-persona.ps1 -Defaults   # accept all defaults
+#
+# Any answer can also come from an environment variable of the same name, which
+# is how a scripted run picks a profile without driving the prompts:
+#
+#   $env:SENIORITY = 'principal'; .\scripts\create-persona.ps1 -Defaults
 
 $RepoRoot        = Split-Path -Parent $PSScriptRoot
 $PersonaDir      = Join-Path $RepoRoot 'persona'
@@ -27,7 +32,12 @@ foreach ($f in @($PersonaTemplate, $ClaudeTemplate)) {
   if (-not (Test-Path $f)) { Write-Error "Template not found: $f"; exit 1 }
 }
 
-function Ask([string]$Prompt, [string]$Default) {
+# Ask NAME "Prompt" "default" -> environment override, else default, else prompt.
+# NAME is the environment variable that overrides this answer, and matches the
+# name the bash wizard uses for the same question.
+function Ask([string]$Name, [string]$Prompt, [string]$Default) {
+  $override = [Environment]::GetEnvironmentVariable($Name)
+  if (-not [string]::IsNullOrWhiteSpace($override)) { return $override }
   if ($Defaults) { return $Default }
   $reply = Read-Host "$Prompt [$Default]"
   if ([string]::IsNullOrWhiteSpace($reply)) { return $Default }
@@ -37,9 +47,9 @@ function Ask([string]$Prompt, [string]$Default) {
 Write-Host "Creating your persona. Press Enter to accept each default.`n"
 
 # --- Axes that shape the persona beyond plain substitution -------------------
-$Discipline = (Ask 'Discipline (frontend/fullstack)' 'fullstack').ToLower()
-$Seniority  = (Ask 'Seniority (mid/senior/staff/principal)' 'staff').ToLower()
-$Workflow   = (Ask 'Workflow (delivery-focused/architecture-focused/review-focused/learning-focused)' 'architecture-focused').ToLower()
+$Discipline = (Ask 'DISCIPLINE' 'Discipline (frontend/fullstack)' 'fullstack').ToLower()
+$Seniority  = (Ask 'SENIORITY' 'Seniority (mid/senior/staff/principal)' 'staff').ToLower()
+$Workflow   = (Ask 'WORKFLOW' 'Workflow (delivery-focused/architecture-focused/review-focused/learning-focused)' 'architecture-focused').ToLower()
 
 if ($Discipline -notin @('frontend', 'fullstack')) {
   Write-Error "Unknown discipline: '$Discipline' (expected frontend|fullstack)"; exit 1
@@ -142,18 +152,18 @@ $SeniorityModelShort = switch ($Seniority) {
 }
 
 $vals = [ordered]@{
-  ROLE              = Ask 'Role / title' $RoleDefault
-  BACKGROUND        = Ask "Background (fragment: 'my background is ...')" $BackgroundDefault
-  PRIMARY_LANGUAGES = Ask 'Primary languages' 'TypeScript, JavaScript'
-  FRONTEND_STACK    = Ask 'Frontend stack' 'React, Next.js'
-  BACKEND_STACK     = Ask 'Backend stack' 'Node.js (TypeScript)'
-  DATABASE          = Ask 'Database' 'PostgreSQL'
-  TESTING_STACK     = Ask 'Testing stack' 'Vitest, React Testing Library'
-  INFRA             = Ask 'Infrastructure' 'Vercel'
-  PACKAGE_MANAGER   = Ask 'Package manager' 'npm'
-  REPO_LAYOUT       = Ask 'Repo layout' 'Monorepo'
-  ISSUE_TRACKER     = Ask 'Issue tracker' 'Jira'
-  OUTPUT_LANGUAGE   = Ask 'Output language for PR/review text' 'English'
+  ROLE              = Ask 'ROLE' 'Role / title' $RoleDefault
+  BACKGROUND        = Ask 'BACKGROUND' "Background (fragment: 'my background is ...')" $BackgroundDefault
+  PRIMARY_LANGUAGES = Ask 'PRIMARY_LANGUAGES' 'Primary languages' 'TypeScript, JavaScript'
+  FRONTEND_STACK    = Ask 'FRONTEND_STACK' 'Frontend stack' 'React, Next.js'
+  BACKEND_STACK     = Ask 'BACKEND_STACK' 'Backend stack' 'Node.js (TypeScript)'
+  DATABASE          = Ask 'DATABASE' 'Database' 'PostgreSQL'
+  TESTING_STACK     = Ask 'TESTING_STACK' 'Testing stack' 'Vitest, React Testing Library'
+  INFRA             = Ask 'INFRA' 'Infrastructure' 'Vercel'
+  PACKAGE_MANAGER   = Ask 'PACKAGE_MANAGER' 'Package manager' 'npm'
+  REPO_LAYOUT       = Ask 'REPO_LAYOUT' 'Repo layout' 'Monorepo'
+  ISSUE_TRACKER     = Ask 'ISSUE_TRACKER' 'Issue tracker' 'Jira'
+  OUTPUT_LANGUAGE   = Ask 'OUTPUT_LANGUAGE' 'Output language for PR/review text' 'English'
 }
 
 $bg = $vals['BACKGROUND']
