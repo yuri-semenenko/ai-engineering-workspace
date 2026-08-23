@@ -27,7 +27,11 @@ function Backup-ExistingPath {
     param([string]$Path)
 
     if (Test-Path -LiteralPath $Path) {
-        $backup = "$Path.backup.$(Get-Date -Format yyyyMMddHHmmss)"
+        # Random tail: the timestamp alone collides when the installer runs
+        # twice in the same second, and Move-Item onto an existing backup is a
+        # hard error.
+        $stamp = '{0}-{1:D4}' -f (Get-Date -Format 'yyyyMMddHHmmss'), (Get-Random -Maximum 10000)
+        $backup = "$Path.backup.$stamp"
         Move-Item -LiteralPath $Path -Destination $backup
         Write-Host "Moved existing path to $backup"
     }

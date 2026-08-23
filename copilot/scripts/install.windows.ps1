@@ -6,7 +6,9 @@ $ErrorActionPreference = 'Stop'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptDir
-$Timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+# Random tail: the timestamp alone collides when the installer runs twice in
+# the same second, and Move-Item onto an existing backup is a hard error.
+$Timestamp = '{0}-{1:D4}' -f (Get-Date -Format 'yyyyMMdd-HHmmss'), (Get-Random -Maximum 10000)
 
 function Copy-WithBackup {
   param(
