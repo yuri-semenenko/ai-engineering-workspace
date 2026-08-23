@@ -36,8 +36,11 @@ scripts/install.macos-linux.sh "$HOME" /path/to/your/repo
 ```
 
 ```powershell
+# personal instructions only:
 powershell -NoProfile -File .\scripts\install.windows.ps1
-powershell -NoProfile -File .\scripts\install.windows.ps1 -TargetHome $env:USERPROFILE
+
+# personal instructions + a workspace template into a repo:
+powershell -NoProfile -File .\scripts\install.windows.ps1 -TargetHome $env:USERPROFILE -WorkspacePath C:\path\to\your\repo
 ```
 
 The installer copies Markdown instruction files into `~/.copilot` and, when a workspace path is given, the `.github/` instructions and prompts into that repo. Existing files are backed up before replacement. No auth, hooks, MCP config, or automation is ever touched.

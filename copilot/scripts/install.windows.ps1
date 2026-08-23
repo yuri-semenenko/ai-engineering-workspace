@@ -1,5 +1,6 @@
 param(
-  [string]$TargetHome = $env:USERPROFILE
+  [string]$TargetHome = $env:USERPROFILE,
+  [string]$WorkspacePath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -54,6 +55,29 @@ Get-ChildItem -LiteralPath $SourceInstructions -Filter '*.instructions.md' | For
   Copy-WithBackup -Source $_.FullName -Destination (Join-Path $TargetInstructions $_.Name)
 }
 
+# Repository-level setup, when a workspace was named. Optional: personal
+# instructions above are useful on their own.
+if ($WorkspacePath) {
+  $Template = Join-Path $RepoRoot 'workspace-template'
+  $TargetGithub = Join-Path $WorkspacePath '.github'
+
+  Copy-WithBackup -Source (Join-Path $Template 'AGENTS.md') -Destination (Join-Path $WorkspacePath 'AGENTS.md')
+  Copy-WithBackup `
+    -Source (Join-Path $Template '.github\copilot-instructions.md') `
+    -Destination (Join-Path $TargetGithub 'copilot-instructions.md')
+
+  foreach ($set in @(@('instructions', '*.instructions.md'), @('prompts', '*.prompt.md'))) {
+    $sourceDir = Join-Path $Template ".github\$($set[0])"
+    $targetDir = Join-Path $TargetGithub $set[0]
+    New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
+    Get-ChildItem -LiteralPath $sourceDir -Filter $set[1] | ForEach-Object {
+      Copy-WithBackup -Source $_.FullName -Destination (Join-Path $targetDir $_.Name)
+    }
+  }
+}
+
 Write-Host ''
 Write-Host 'Done. No auth files, hooks, MCP config, or memory files were copied.'
-Write-Host 'For repository-level setup, manually review and copy files from workspace-template/.'
+if (-not $WorkspacePath) {
+  Write-Host 'For repository-level setup, re-run with -WorkspacePath <path to your repo>.'
+}
