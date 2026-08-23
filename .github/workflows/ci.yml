@@ -90,3 +90,15 @@ jobs:
           if grep -R '{{' "$gem_home/GEMINI.md"; then
             echo "Installed GEMINI.md still has placeholders"; exit 1
           fi
+
+  # The job above covers the .sh side only. Every one of those scripts has a
+  # PowerShell port that a Windows user actually runs, so run those too.
+  verify-windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Windows script suite (drift guard, persona wizard, installers)
+        shell: pwsh
+        run: .\scripts\test-windows.ps1

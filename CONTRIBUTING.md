@@ -49,6 +49,7 @@ The sync script validates this structure; there is no auto-fix.
 - Do not add `Co-Authored-By` trailers or AI-attribution footers to commits or PR text.
 - Write PR descriptions and review comments in English.
 - Run `scripts/sync-codex-references.sh --check` and confirm the installers still run (`claude-code/scripts/install.macos-linux.sh`, `codex/scripts/install.macos-linux.sh`, `copilot/scripts/install.macos-linux.sh`) against a scratch `$HOME`/`$CODEX_HOME` before opening a PR that touches them.
+- Touching a `.ps1` port, or anything the installers copy, means running the Windows suite too: `pwsh scripts\test-windows.ps1`. It drives the wizard and all four installers under both PowerShell 7 and Windows PowerShell, against a sandbox copy of the tree with `HOME` redirected, so it never touches your own `~/.claude`. CI runs it on `windows-latest`.
 
 ## What not to add
 
