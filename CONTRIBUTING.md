@@ -17,11 +17,12 @@ git config core.hooksPath scripts/hooks   # enable the drift-guard pre-commit ho
 
 ## The canon → mirror workflow
 
-Claude Code is the canon. The Codex references are **generated mirrors**, committed so `codex/` stays standalone-portable. Never hand-edit a mirror.
+Claude Code is the canon. The Codex and Gemini references are **generated mirrors**, committed so those folders stay standalone-portable. Never hand-edit a mirror.
 
 ```
-persona/persona.template.md            (canon)  ->  codex/references/persona.md          (mirror)
-claude-code/.claude/memory-seed.example/ (canon) ->  codex/references/memory-seed.example/ (mirror)
+persona/persona.template.md              (canon) ->  codex/references/persona.md           (mirror)
+claude-code/.claude/memory-seed.example/ (canon) ->  codex/references/memory-seed.example/  (mirror)
+persona/CLAUDE.template.md               (canon) ->  gemini/references/GEMINI.md           (mirror)
 ```
 
 After editing any canon file:
@@ -29,7 +30,7 @@ After editing any canon file:
 ```bash
 scripts/sync-codex-references.sh        # regenerate mirrors + validate codex skill structure
 scripts/sync-codex-references.sh --check # what the pre-commit hook runs; must pass
-git add codex/references
+git add codex/references gemini/references
 ```
 
 A stale mirror is a hard error (the pre-commit hook blocks the commit). See [`docs/architecture.md`](docs/architecture.md).

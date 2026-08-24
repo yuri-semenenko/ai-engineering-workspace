@@ -43,7 +43,7 @@ diverge. The config is the delivery mechanism; **the methodology is the product.
 ## What makes it different
 
 1. **Multi-assistant architecture.** One canonical persona plus a curated skill
-   set, mirrored to Codex and Copilot with a sync script and a drift guard. Edit
+   set, mirrored to Codex and Gemini with a sync script and a drift guard. Edit
    the canon, regenerate the mirrors, commit both.
 2. **Process skills, not codegen skills.** RFC, ADR, spec, the lazy-ladder,
    debt-ledger, complexity-audit, and a tiered PR-review flow. These encode
@@ -137,9 +137,11 @@ The project deliberately separates methodology from identity:
   (mid, senior, staff, or principal), workflow (delivery, architecture, review, or
   learning focused), plus role, stack, package manager, repo layout, issue tracker,
   and output language.
-- **Tool adapters — per assistant.** The same canon and identity are rendered into
-  each tool's native format — Claude `CLAUDE.md`, the Codex mirror, Gemini
-  `GEMINI.md`, Copilot instructions — by the sync layer.
+- **Tool adapters — per assistant.** The same canon and identity reach each tool
+  in its native format, by one of two routes. The **sync layer** generates the
+  drift-guarded mirrors: the Codex references and Gemini `GEMINI.md`. The
+  **wizard** renders your filled `CLAUDE.md` and Copilot instructions, which are
+  per-machine and gitignored, so no guard applies to them.
 
 Seniority shapes how the assistant treats you (mid to principal); discipline
 shapes the background framing; workflow shapes which skills the generated
