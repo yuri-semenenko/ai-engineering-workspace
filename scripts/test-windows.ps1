@@ -102,11 +102,9 @@ function Assert-NoPlaceholders {
 # --- sandbox -----------------------------------------------------------------
 
 function Get-RepoFiles {
-    param([switch]$TrackedOnly)
-
     Push-Location $RepoRoot
     try {
-        $files = if ($TrackedOnly) { @(& git ls-files) } else { @(& git ls-files -c -o --exclude-standard) }
+        $files = @(& git ls-files -c -o --exclude-standard)
         if ($LASTEXITCODE -ne 0) { throw 'git ls-files failed; this suite needs git and a checkout' }
         return $files
     } finally { Pop-Location }
@@ -305,19 +303,17 @@ Add-Check 'sh-line-endings' {
 }
 
 Add-Check 'model-tier-fields' {
-    # Windows port of the ADR-0012 guard: a committed model: field names a tier.
-    $allowed = @('opus', 'sonnet', 'haiku', 'inherit')
-    $bad = @()
-    foreach ($rel in (Get-RepoFiles -TrackedOnly)) {
-        $path = Join-Path $RepoRoot ($rel -replace '/', '\')
-        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { continue }
-        foreach ($hit in @(Select-String -LiteralPath $path -Pattern '^ *model: *(.*)$')) {
-            if ($allowed -notcontains $hit.Matches[0].Groups[1].Value.Trim()) {
-                $bad += "$rel line $($hit.LineNumber): $($hit.Line.Trim())"
-            }
-        }
+    # The ADR-0012 guard is one script that both CI jobs run. This used to be a
+    # hand-written PowerShell port of the same grep, and the two copies had
+    # already drifted into matching YAML only, so there is no port any more:
+    # run the real thing through bash, which this suite already needs for the
+    # hooks.
+    if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
+        Skip-Check 'no bash on PATH (Git for Windows provides it)'
     }
-    Assert-That ($bad.Count -eq 0) "model fields must name a tier alias, not a version slug (adr/0012): $($bad -join '; ')"
+    $guard = ConvertTo-BashPath (Join-Path $RepoRoot 'scripts\check-model-tiers.sh')
+    $out = (& bash $guard 2>&1 | Out-String).Trim()
+    Assert-That ($LASTEXITCODE -eq 0) "check-model-tiers.sh exited $LASTEXITCODE : $out"
 }
 
 # --- checks: sync / drift guard ---------------------------------------------
