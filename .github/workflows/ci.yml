@@ -34,16 +34,7 @@ jobs:
           fi
 
       - name: Committed model fields name a tier, not a version
-        run: |
-          bad=$(git ls-files -z \
-            | xargs -0 grep -HnE '^ *model: *' \
-            | grep -vE ':[[:space:]]*model:[[:space:]]*(opus|sonnet|haiku|inherit)$' || true)
-          if [ -n "$bad" ]; then
-            echo "A committed model field must name a tier alias (opus/sonnet/haiku/inherit),"
-            echo "not a version slug. See adr/0012-tier-labels-over-pinned-model-slugs.md."
-            echo "$bad"
-            exit 1
-          fi
+        run: bash scripts/test-check-model-tiers.sh
 
       - name: Recommended skills reference only shipped skills
         run: bash scripts/check-recommended-skills.sh
@@ -86,7 +77,13 @@ jobs:
           test -f "$gem_home/GEMINI.md"
           test -d "$gem_home/commands"
           test -f "$gem_home/settings.json"
-          test "$(ls -1 "$gem_home"/commands/*.toml | wc -l)" -ge 16
+          # Every port the repo ships must land, not "enough of them": a
+          # threshold passes while an installer silently drops files.
+          expected="$(ls -1 gemini/commands/*.toml | wc -l | tr -d ' ')"
+          installed="$(ls -1 "$gem_home"/commands/*.toml | wc -l | tr -d ' ')"
+          if [ "$installed" != "$expected" ]; then
+            echo "Installed $installed of $expected Gemini commands"; exit 1
+          fi
           if grep -R '{{' "$gem_home/GEMINI.md"; then
             echo "Installed GEMINI.md still has placeholders"; exit 1
           fi
@@ -101,4 +98,6 @@ jobs:
 
       - name: Windows script suite (drift guard, persona wizard, installers)
         shell: pwsh
-        run: .\scripts\test-windows.ps1
+        # The runner image provides bash and jq, so a check that skips for want
+        # of either has lost coverage rather than adapted to the machine.
+        run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,hook-scripts
