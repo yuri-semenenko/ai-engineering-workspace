@@ -667,10 +667,35 @@ Add-Check 'hook-scripts-without-jq' {
     $rendered = ('{"model":{"display_name":"Opus"}}' | & bash $statusline 2>&1 | Out-String).Trim()
     Assert-That ($rendered -match 'jq') "statusline hid the missing dependency instead of naming it: '$rendered'"
 
-    $reminder = ConvertTo-BashPath (Join-Path $sb.Repo 'claude-code\.claude\hooks\model-reminder.sh')
-    $notice = ('{"prompt":"anything"}' | & bash $reminder 2>&1 | Out-String)
-    Assert-That ($LASTEXITCODE -eq 0) "model-reminder.sh exited $LASTEXITCODE : $notice"
-    Assert-That ($notice -match 'jq is not on PATH') 'the prompt hook did not report that the guardrails are inactive'
+    # The notice is once per session, and the marker that enforces that lives in
+    # the temp directory. Point it at this sandbox: a marker left in the real
+    # temp directory would silence the notice on the suite's next run, and the
+    # assertion below would fail for a reason that has nothing to do with the
+    # hook.
+    $markerDir = Join-Path $sb.Root 'hook temp'
+    New-Item -ItemType Directory -Force -Path $markerDir | Out-Null
+    $previousTmp = $env:TMPDIR
+    $env:TMPDIR = (ConvertTo-BashPath $markerDir) + '/'
+    try {
+        $reminder = ConvertTo-BashPath (Join-Path $sb.Repo 'claude-code\.claude\hooks\model-reminder.sh')
+        $notice = ('{"session_id":"suite","prompt":"anything"}' | & bash $reminder 2>&1 | Out-String)
+        Assert-That ($LASTEXITCODE -eq 0) "model-reminder.sh exited $LASTEXITCODE : $notice"
+        Assert-That ($notice -match 'jq is not on PATH') 'the prompt hook did not report that the guardrails are inactive'
+
+        $repeat = ('{"session_id":"suite","prompt":"anything else"}' | & bash $reminder 2>&1 | Out-String)
+        Assert-That ([string]::IsNullOrWhiteSpace($repeat)) "the setup notice repeated within one session: $repeat"
+
+        $other = ('{"session_id":"another","prompt":"anything"}' | & bash $reminder 2>&1 | Out-String)
+        Assert-That ($other -match 'jq is not on PATH') 'a new session did not get the setup notice'
+    } finally {
+        # Windows does not normally set TMPDIR, so restoring a null means
+        # removing the variable rather than blanking it.
+        if ($null -eq $previousTmp) {
+            Remove-Item Env:TMPDIR -ErrorAction SilentlyContinue
+        } else {
+            $env:TMPDIR = $previousTmp
+        }
+    }
 }
 
 # --- run ---------------------------------------------------------------------
