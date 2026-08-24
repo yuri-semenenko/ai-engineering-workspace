@@ -8,7 +8,7 @@ Build a fast, honest orientation to code you don't know yet, so you (or an agent
 ## How to run (keep main context lean)
 
 1. **Scope it.** If a path argument was given, map that subtree; otherwise the whole repo. Read the obvious roots first: README, `package.json` (scripts + deps), the top-level layout, and any existing `AGENTS.md` / `CLAUDE.md` / architecture docs.
-2. **Fan out, do not grep inline.** Per the persona's session-hygiene rule, dispatch `Explore` subagents — one per subsystem or question (entry points, data flow, domain terms, tests/tooling) — each returning a compact findings list, not file dumps. This keeps large intermediate output out of the main conversation.
+2. **Fan out, do not grep inline.** Per the persona's session-hygiene rule, delegate to the built-in `codebase_investigator` — one dispatch per subsystem or question (entry points, data flow, domain terms, tests/tooling) — each returning a compact findings list, not file dumps. This keeps large intermediate output out of the main conversation.
 3. **Assemble the map** from what came back. Merge, resolve contradictions rather than smoothing them over, and cite where each fact lives.
 
 ## What the map captures
