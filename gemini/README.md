@@ -57,13 +57,14 @@ concrete model, and concrete model names churn faster than the methodology, so
 committing them would make this repo track runtime naming
 ([`../adr/0012-tier-labels-over-pinned-model-slugs.md`](../adr/0012-tier-labels-over-pinned-model-slugs.md)).
 
-Be clear about what that costs: with no agent files installed there is no
-per-subagent tier to override. `codebase_investigator` runs on whatever model the
-session is on, and so does anything else you delegate. The tier below is the tier
-the work *wants* — you get it by picking the session model deliberately, or by
-writing your own agent file with a concrete model in it and accepting that the
-name will churn. Treat the table as a boundary map, not as a switch this package
-wires up:
+Be clear about model control: the built-in `codebase_investigator` does not run
+the session's concrete model directly. Gemini CLI applies its own routing, using
+the session model as an input. You can override that choice without an agent file
+by setting `agents.overrides.codebase_investigator.modelConfig.model` in
+`settings.json`. A custom agent file can also pin a concrete model, but this
+package installs neither an override nor an agent file. The tier below is the
+tier the work *wants*. Treat the table as a boundary map, not as a switch this
+package wires up:
 
 | Work | Tier the work wants | Boundary |
 | --- | --- | --- |
@@ -77,7 +78,8 @@ map onto the command ports: `explore` is `codebase_investigator` or
 `/codebase-map`, `architect` is `/rfc` or `/module-design`, `decide` is yours with
 `/adr` recording it, `review` is `/pr-classify`. `judge` never leaves the parent.
 
-Inheriting the session's model is the default here, not a fallback. Do not
+This package leaves model selection to Gemini CLI's built-in routing or to user
+settings. Do not assume built-in agents inherit the session model, do not
 delegate trivial work, and do not put two agents on overlapping files.
 
 ## Guardrails
