@@ -10,7 +10,7 @@ For a quick read-only scan of the current diff, use the built-in `/security-revi
 ## Phase 1 — Recon (read-only)
 
 1. Map the attack surface relevant to the change or area: entry points (routes, handlers, server actions), trust boundaries, auth/authz checks, data flowing from untrusted input to sinks (DB, shell, HTML, file system, external calls), secret handling, and dependency surface.
-2. Fan out with `Explore` subagents per subsystem when the surface is broad — keep raw findings out of the main context, per the persona's session-hygiene rule.
+2. Fan out with the built-in `codebase_investigator` per subsystem when the surface is broad — keep raw findings out of the main context, per the persona's session-hygiene rule.
 3. Catalog candidate issues with category + severity. Do not fix anything yet.
 
 ## Phase 2 — Numbered checklist (for approval)

@@ -175,7 +175,7 @@ The main-loop model can't self-downgrade; the lever for cheaper tiers is delegat
 
 - **Auto-delegate, no need to ask** — well-scoped mechanical work: bulk/repetitive file edits, test scaffolding, doc/comment updates, codemod-style refactors, broad searches. Dispatch a subagent on the routine tier.
 - **Ask first** — when the split is ambiguous: the task mixes judgment with mechanics, touches architecture/security, or is hard to scope cleanly. Propose the delegation + tier in one line, then proceed on approval.
-- **Keep on the main loop** — architecture, code/security review, RFC/ADR, hard debugging, anything needing cross-file judgment or the conversation's full context.
+- **Keep on the main loop** — architecture, the review verdict, security judgment, RFC/ADR, hard debugging, anything needing cross-file judgment or the conversation's full context. An independent read of a finished change is delegable; the classification and the ruling are not.
 - **Use stable workflows, not model names** — `gather -> judge`, `explore -> implement -> review`, and for architecture-sensitive work `explore -> architect -> decide -> implement -> review`. Skip delegation for trivial work or overlapping write sets.
 
 ## Tooling Defaults

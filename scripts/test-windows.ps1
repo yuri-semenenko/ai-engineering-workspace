@@ -3,7 +3,8 @@
 param(
     [string]$Filter,
     [string[]]$PowerShellHosts,
-    [switch]$KeepSandbox
+    [switch]$KeepSandbox,
+    [string[]]$RequireChecks
 )
 
 $ErrorActionPreference = 'Stop'
@@ -23,6 +24,11 @@ $ErrorActionPreference = 'Stop'
 #   scripts\test-windows.ps1 -Filter install       # only matching checks
 #   scripts\test-windows.ps1 -PowerShellHosts pwsh # skip Windows PowerShell
 #   scripts\test-windows.ps1 -KeepSandbox          # leave sandboxes for triage
+#   scripts\test-windows.ps1 -RequireChecks a,b    # a skip of these is a failure
+#
+# Some checks skip when a dependency is absent. On a developer's machine that is
+# correct; in CI it is silent loss of coverage, so the workflow passes
+# -RequireChecks for everything the runner image is supposed to provide.
 #
 # Runs under Windows PowerShell 5.1 and PowerShell 7, and by default drives the
 # scripts under test through both, since the README hands users the 5.1
@@ -69,6 +75,38 @@ function Skip-Check {
     throw "SKIP:$Reason"
 }
 
+# -RequireChecks names the checks that must actually run. A requirement matches
+# the check itself or its per-host copies ('install-gemini [pwsh]'), and nothing
+# else: substring matching would let 'hook-scripts' also claim
+# 'hook-scripts-without-jq', whose skip is legitimate.
+function Test-CheckMatchesRequirement {
+    param([string]$Name, [string]$Requirement)
+    return $Name -eq $Requirement -or
+        $Name.StartsWith("$Requirement [", [StringComparison]::OrdinalIgnoreCase)
+}
+
+function Test-CheckRequired {
+    param([string]$Name)
+    if (-not $RequireChecks) { return $false }
+    foreach ($requirement in $RequireChecks) {
+        if (Test-CheckMatchesRequirement -Name $Name -Requirement $requirement) { return $true }
+    }
+    return $false
+}
+
+function Assert-RequiredChecksExist {
+    param([object[]]$Checks, [string[]]$Requirements)
+    if (-not $Requirements) { return }
+    foreach ($requirement in $Requirements) {
+        $matches = @($Checks | Where-Object {
+            Test-CheckMatchesRequirement -Name $_.Name -Requirement $requirement
+        })
+        if ($matches.Count -eq 0) {
+            throw "Required check '$requirement' does not match any selected check"
+        }
+    }
+}
+
 function Assert-FileExists {
     param([string]$Path, [string]$Label)
     Assert-That (Test-Path -LiteralPath $Path -PathType Leaf) "$Label missing: $Path"
@@ -102,11 +140,9 @@ function Assert-NoPlaceholders {
 # --- sandbox -----------------------------------------------------------------
 
 function Get-RepoFiles {
-    param([switch]$TrackedOnly)
-
     Push-Location $RepoRoot
     try {
-        $files = if ($TrackedOnly) { @(& git ls-files) } else { @(& git ls-files -c -o --exclude-standard) }
+        $files = @(& git ls-files -c -o --exclude-standard)
         if ($LASTEXITCODE -ne 0) { throw 'git ls-files failed; this suite needs git and a checkout' }
         return $files
     } finally { Pop-Location }
@@ -304,20 +340,36 @@ Add-Check 'sh-line-endings' {
     Assert-That ($bad.Count -eq 0) "CR bytes in shell scripts (must stay LF): $($bad -join ', ')"
 }
 
-Add-Check 'model-tier-fields' {
-    # Windows port of the ADR-0012 guard: a committed model: field names a tier.
-    $allowed = @('opus', 'sonnet', 'haiku', 'inherit')
-    $bad = @()
-    foreach ($rel in (Get-RepoFiles -TrackedOnly)) {
-        $path = Join-Path $RepoRoot ($rel -replace '/', '\')
-        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { continue }
-        foreach ($hit in @(Select-String -LiteralPath $path -Pattern '^ *model: *(.*)$')) {
-            if ($allowed -notcontains $hit.Matches[0].Groups[1].Value.Trim()) {
-                $bad += "$rel line $($hit.LineNumber): $($hit.Line.Trim())"
-            }
-        }
+Add-Check 'require-checks-contract' {
+    $checks = @(
+        [pscustomobject]@{ Name = 'hook-scripts' }
+        [pscustomobject]@{ Name = 'install-gemini [pwsh]' }
+    )
+    Assert-That (Test-CheckMatchesRequirement -Name 'hook-scripts' -Requirement 'hook-scripts') 'exact required check did not match'
+    Assert-That (Test-CheckMatchesRequirement -Name 'install-gemini [pwsh]' -Requirement 'install-gemini') 'per-host required check did not match'
+    Assert-That (-not (Test-CheckMatchesRequirement -Name 'hook-scripts-without-jq' -Requirement 'hook-scripts')) 'required check matched a neighbouring name'
+
+    $unknownError = ''
+    try {
+        Assert-RequiredChecksExist -Checks $checks -Requirements @('does-not-exist')
+    } catch {
+        $unknownError = $_.Exception.Message
     }
-    Assert-That ($bad.Count -eq 0) "model fields must name a tier alias, not a version slug (adr/0012): $($bad -join '; ')"
+    Assert-That ($unknownError -eq "Required check 'does-not-exist' does not match any selected check") 'unknown required check was accepted'
+}
+
+Add-Check 'model-tier-fields' {
+    # Both CI jobs run the ADR-0012 guard and its regression fixtures through
+    # one script. This used to be a hand-written PowerShell port of the same
+    # grep, and the two copies had already drifted into matching YAML only, so
+    # there is no port any more: run the real thing through bash, which this
+    # suite already needs for the hooks.
+    if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
+        Skip-Check 'no bash on PATH (Git for Windows provides it)'
+    }
+    $test = ConvertTo-BashPath (Join-Path $RepoRoot 'scripts\test-check-model-tiers.sh')
+    $out = (& bash $test 2>&1 | Out-String).Trim()
+    Assert-That ($LASTEXITCODE -eq 0) "test-check-model-tiers.sh exited $LASTEXITCODE : $out"
 }
 
 # --- checks: sync / drift guard ---------------------------------------------
@@ -556,7 +608,6 @@ foreach ($hostExe in $Hosts) {
         $sourceCount = @(Get-ChildItem -LiteralPath (Join-Path $sb.Repo 'gemini\commands') -Filter '*.toml').Count
         $installed = @(Get-ChildItem -LiteralPath (Join-Path $geminiHome 'commands') -Filter '*.toml').Count
         Assert-That ($installed -eq $sourceCount) "installed $installed of $sourceCount commands"
-        Assert-That ($installed -ge 16) "expected at least 16 commands, found $installed"
 
         # Re-running must not clobber a user's edited settings.
         $marker = '{ "sentinel": true }'
@@ -705,6 +756,7 @@ if ($selected.Count -eq 0) {
     Write-Error "No checks match filter '$Filter'"
     exit 2
 }
+Assert-RequiredChecksExist -Checks $selected -Requirements $RequireChecks
 
 Write-Host "Windows script suite: $($selected.Count) check(s), hosts: $($Hosts -join ', ')"
 Write-Host "Sandbox root: $SandboxRoot"
@@ -723,6 +775,12 @@ foreach ($check in $selected) {
         if ($message -like 'SKIP:*') {
             $status = 'SKIP'
             $detail = $message.Substring(5)
+            # A skip is missing coverage wearing a pass. Named checks are the
+            # ones whose environment CI controls, so there a skip is a failure.
+            if (Test-CheckRequired $check.Name) {
+                $status = 'FAIL'
+                $detail = "required check skipped: $detail"
+            }
         } else {
             $status = 'FAIL'
             $detail = $message

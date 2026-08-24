@@ -42,9 +42,10 @@ diverge. The config is the delivery mechanism; **the methodology is the product.
 
 ## What makes it different
 
-1. **Multi-assistant architecture.** One canonical persona plus a curated skill
-   set, mirrored to Codex and Copilot with a sync script and a drift guard. Edit
-   the canon, regenerate the mirrors, commit both.
+1. **Multi-assistant architecture.** One canonical persona, mirrored to Codex
+   and Gemini with a sync script and a drift guard, plus curated, hand-authored
+   skill and command ports whose structure the same guard validates. Edit the
+   canon, regenerate the mirrors, commit both.
 2. **Process skills, not codegen skills.** RFC, ADR, spec, the lazy-ladder,
    debt-ledger, complexity-audit, and a tiered PR-review flow. These encode
    judgment and discipline, not "write my code for me".
@@ -108,7 +109,7 @@ behind it as records in [`adr/`](adr/).
 | --- | --- | --- | --- | --- |
 | Persona | `~/.claude/CLAUDE.md` (condensed) + `~/persona.md` (full) | `references/persona.md` (mirror) | `home/.copilot` instructions | `~/.gemini/GEMINI.md` (condensed, always-on) |
 | Skills / prompts | 20 process skills + `/start` | 14 skill ports + `start` (`+ agents/openai.yaml`) | 16 workspace prompts + `start` + instruction files | 20 command ports + `start` (`.gemini/commands/*.toml`) |
-| Delegation | tier alias in agent config, one shipped reviewer | runtime tier override, no agent files | model picker per request | runtime tier override, built-in investigator |
+| Delegation | tier alias in agent config, one shipped reviewer | runtime tier override, no agent files | model picker per request | built-in agent routing + `agents.overrides` |
 | Guardrails | `settings.json` permissions + 6 hooks | always-on `AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
 | Install mode | symlink (copy on Windows) | copy into `$CODEX_HOME` | Markdown copy only | copy into `~/.gemini` |
 | Assumed constraint | full local control | portable seed, on-demand references | locked-down corporate laptop, Markdown-only | local control, sandbox available |
@@ -137,9 +138,11 @@ The project deliberately separates methodology from identity:
   (mid, senior, staff, or principal), workflow (delivery, architecture, review, or
   learning focused), plus role, stack, package manager, repo layout, issue tracker,
   and output language.
-- **Tool adapters — per assistant.** The same canon and identity are rendered into
-  each tool's native format — Claude `CLAUDE.md`, the Codex mirror, Gemini
-  `GEMINI.md`, Copilot instructions — by the sync layer.
+- **Tool adapters — per assistant.** The same canon and identity reach each tool
+  in its native format, by one of two routes. The **sync layer** generates the
+  drift-guarded mirrors: the Codex references and Gemini `GEMINI.md`. The
+  **wizard** renders your filled `CLAUDE.md` and Copilot instructions, which are
+  per-machine and gitignored, so no guard applies to them.
 
 Seniority shapes how the assistant treats you (mid to principal); discipline
 shapes the background framing; workflow shapes which skills the generated

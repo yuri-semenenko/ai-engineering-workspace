@@ -47,8 +47,8 @@ This is how it maps onto the mechanisms Claude Code actually has.
 
 Claude Code is the one supported tool whose config names a **tier** rather than a
 version: `model: sonnet` in an agent file, and the model argument on a delegation
-call, take the same vocabulary the canon uses. So here the policy can be written
-into config instead of only described. See
+call, take the same vocabulary the canon uses. So for the agents this kit ships a
+file for, the policy is written into config rather than only described. See
 [`../adr/0012-tier-labels-over-pinned-model-slugs.md`](../adr/0012-tier-labels-over-pinned-model-slugs.md)
 and [`../adr/0013-claude-review-agent.md`](../adr/0013-claude-review-agent.md).
 
@@ -57,14 +57,21 @@ routine tier, `opus` is the default tier. Nothing ships on the escalation tier,
 because the canon treats escalation as a manual session-level switch and burst
 capacity rather than something to bake into an agent file.
 
-| Work | Mechanism | Tier |
-| --- | --- | --- |
-| Broad search, orientation, evidence gathering | built-in `Explore`, read-only | routine |
-| Planning a multi-step change | built-in `Plan` | routine |
-| Mechanical edits, fixtures, codemods | `general-purpose` | routine |
-| Implementation inside a project's known conventions | project agent from the template, which ships `sonnet` | routine |
-| Independent read of a finished change | shipped `independent-review`, which ships `opus` | default |
-| Architecture, the verdict, the decision, hard debugging | main loop, no subagent | whatever the session is on |
+| Work | Mechanism | Tier | Where the tier comes from |
+| --- | --- | --- | --- |
+| Broad search, orientation, evidence gathering | built-in `Explore`, read-only | routine | the dispatch |
+| Planning a multi-step change | built-in `Plan` | routine | the dispatch |
+| Mechanical edits, fixtures, codemods | `general-purpose` | routine | the dispatch |
+| Implementation inside a project's known conventions | project agent from the template, which ships `sonnet` | routine | its agent file |
+| Independent read of a finished change | shipped `independent-review`, which ships `opus` | default | its agent file |
+| Architecture, the verdict, the decision, hard debugging | main loop, no subagent | whatever the session is on | — |
+
+The last column is the part that bites. The three built-ins have no agent file to
+carry a `model:`, so their tier is whatever the dispatch asks for — and a
+dispatch that asks for nothing inherits the session's model. Sending broad search
+to `Explore` without naming a tier does not save anything; it runs your current
+model with a narrower toolset. The two agents this kit ships a file for are the
+ones whose tier holds on its own.
 
 Raise a project agent's alias when that project's work carries more judgment than
 its conventions cover. The shipped reviewer sits a tier above the project agent

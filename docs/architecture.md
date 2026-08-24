@@ -11,13 +11,14 @@ Those two goals conflict unless you commit generated artifacts on purpose.
 One canon, committed mirrors, a guard that fails on drift.
 
 ```
-persona/persona.template.md          (canon)  ─┐
-claude-code/.claude/memory-seed.example/ (canon) ─┤ sync ─▶ codex/references/persona.md          (mirror)
-                                                  └────────▶ codex/references/memory-seed.example/ (mirror)
+persona/persona.template.md              (canon) ── sync ─▶ codex/references/persona.md            (mirror, full)
+claude-code/.claude/memory-seed.example/ (canon) ── sync ─▶ codex/references/memory-seed.example/  (mirror)
+persona/CLAUDE.template.md               (canon) ── sync ─▶ gemini/references/GEMINI.md            (mirror, condensed)
 ```
 
 - **Canon** lives in `persona/` and `claude-code/`. You edit only here.
-- **Mirrors** under `codex/references/` are byte-for-byte copies, committed so `codex/` is self-contained.
+- **Mirrors** under `codex/references/` and `gemini/references/` are byte-for-byte copies, committed so each tool folder is self-contained.
+- Codex takes the **full** persona, because it loads references on demand. Gemini takes the **condensed** one, because `GEMINI.md` is re-sent on every prompt.
 - `scripts/sync-codex-references.{sh,ps1}` regenerates the mirrors from the canon.
 - `--check` mode diffs canon against mirror and exits non-zero on any difference. Wire it as a pre-commit hook with `git config core.hooksPath scripts/hooks`.
 
@@ -28,6 +29,8 @@ If the mirrors were generated at install time, `codex/` could not be copied on i
 ## Codex skills are not mirrors
 
 `codex/skills/` are hand-authored Codex ports (each with `SKILL.md` + `agents/openai.yaml`). There is no canon to generate them from, so the sync script does not touch their content. Instead it **validates their structure**: every skill directory has both files, the frontmatter `name:` matches the directory name, and the skills root holds only directories. The same drift guard enforces this on commit. There is no auto-fix — a malformed skill is a hard error you correct by hand.
+
+`gemini/commands/` is the same kind of thing: hand-authored ports, owned where they live, validated rather than generated. The guard there checks that the directory holds only `*.toml` and that each file has a `prompt` field.
 
 ## The two layers of persona
 
