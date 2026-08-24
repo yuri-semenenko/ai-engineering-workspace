@@ -108,7 +108,7 @@ behind it as records in [`adr/`](adr/).
 | --- | --- | --- | --- | --- |
 | Persona | `~/.claude/CLAUDE.md` (condensed) + `~/persona.md` (full) | `references/persona.md` (mirror) | `home/.copilot` instructions | `~/.gemini/GEMINI.md` (condensed, always-on) |
 | Skills / prompts | 20 process skills + `/start` | 14 skill ports + `start` (`+ agents/openai.yaml`) | 16 workspace prompts + `start` + instruction files | 20 command ports + `start` (`.gemini/commands/*.toml`) |
-| Delegation | tier alias in agent config, one shipped reviewer | runtime tier override, no agent files | model picker per request | runtime tier override, built-in investigator |
+| Delegation | tier alias in agent config, one shipped reviewer | runtime tier override, no agent files | model picker per request | session-level tier, built-in investigator |
 | Guardrails | `settings.json` permissions + 6 hooks | always-on `AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
 | Install mode | symlink (copy on Windows) | copy into `$CODEX_HOME` | Markdown copy only | copy into `~/.gemini` |
 | Assumed constraint | full local control | portable seed, on-demand references | locked-down corporate laptop, Markdown-only | local control, sandbox available |

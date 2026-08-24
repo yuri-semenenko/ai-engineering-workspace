@@ -56,9 +56,16 @@ package deliberately installs **no agent files**. Gemini's config names a
 concrete model, and concrete model names churn faster than the methodology, so
 committing them would make this repo track runtime naming
 ([`../adr/0012-tier-labels-over-pinned-model-slugs.md`](../adr/0012-tier-labels-over-pinned-model-slugs.md)).
-Choose the tier at runtime instead:
 
-| Work | Tier | Boundary |
+Be clear about what that costs: with no agent files installed there is no
+per-subagent tier to override. `codebase_investigator` runs on whatever model the
+session is on, and so does anything else you delegate. The tier below is the tier
+the work *wants* — you get it by picking the session model deliberately, or by
+writing your own agent file with a concrete model in it and accepting that the
+name will churn. Treat the table as a boundary map, not as a switch this package
+wires up:
+
+| Work | Tier the work wants | Boundary |
 | --- | --- | --- |
 | Broad search, orientation, evidence gathering | routine, read-only | Lean on the built-in `codebase_investigator`; it returns evidence, you interpret it. |
 | Mechanical edits, fixtures, codemod-style work | routine | Well-scoped, non-overlapping write sets only. |
@@ -70,9 +77,8 @@ map onto the command ports: `explore` is `codebase_investigator` or
 `/codebase-map`, `architect` is `/rfc` or `/module-design`, `decide` is yours with
 `/adr` recording it, `review` is `/pr-classify`. `judge` never leaves the parent.
 
-If a tier override has no clear reason, let the subagent inherit the current
-model. Do not delegate trivial work, and do not put two agents on overlapping
-files.
+Inheriting the session's model is the default here, not a fallback. Do not
+delegate trivial work, and do not put two agents on overlapping files.
 
 ## Guardrails
 
