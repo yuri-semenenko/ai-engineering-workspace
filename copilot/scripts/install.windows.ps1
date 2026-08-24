@@ -1,12 +1,15 @@
 param(
-  [string]$TargetHome = $env:USERPROFILE
+  [string]$TargetHome = $env:USERPROFILE,
+  [string]$WorkspacePath
 )
 
 $ErrorActionPreference = 'Stop'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptDir
-$Timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+# Random tail: the timestamp alone collides when the installer runs twice in
+# the same second, and Move-Item onto an existing backup is a hard error.
+$Timestamp = '{0}-{1:D4}' -f (Get-Date -Format 'yyyyMMdd-HHmmss'), (Get-Random -Maximum 10000)
 
 function Copy-WithBackup {
   param(
@@ -52,6 +55,29 @@ Get-ChildItem -LiteralPath $SourceInstructions -Filter '*.instructions.md' | For
   Copy-WithBackup -Source $_.FullName -Destination (Join-Path $TargetInstructions $_.Name)
 }
 
+# Repository-level setup, when a workspace was named. Optional: personal
+# instructions above are useful on their own.
+if ($WorkspacePath) {
+  $Template = Join-Path $RepoRoot 'workspace-template'
+  $TargetGithub = Join-Path $WorkspacePath '.github'
+
+  Copy-WithBackup -Source (Join-Path $Template 'AGENTS.md') -Destination (Join-Path $WorkspacePath 'AGENTS.md')
+  Copy-WithBackup `
+    -Source (Join-Path $Template '.github\copilot-instructions.md') `
+    -Destination (Join-Path $TargetGithub 'copilot-instructions.md')
+
+  foreach ($set in @(@('instructions', '*.instructions.md'), @('prompts', '*.prompt.md'))) {
+    $sourceDir = Join-Path $Template ".github\$($set[0])"
+    $targetDir = Join-Path $TargetGithub $set[0]
+    New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
+    Get-ChildItem -LiteralPath $sourceDir -Filter $set[1] | ForEach-Object {
+      Copy-WithBackup -Source $_.FullName -Destination (Join-Path $targetDir $_.Name)
+    }
+  }
+}
+
 Write-Host ''
 Write-Host 'Done. No auth files, hooks, MCP config, or memory files were copied.'
-Write-Host 'For repository-level setup, manually review and copy files from workspace-template/.'
+if (-not $WorkspacePath) {
+  Write-Host 'For repository-level setup, re-run with -WorkspacePath <path to your repo>.'
+}

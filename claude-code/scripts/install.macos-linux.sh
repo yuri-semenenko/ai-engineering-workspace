@@ -21,7 +21,10 @@ if [ -e "$TARGET_DIR" ] || [ -L "$TARGET_DIR" ]; then
   if [ -L "$TARGET_DIR" ] && [ "$(readlink "$TARGET_DIR")" = "$CONFIG_DIR/.claude" ]; then
     echo "Claude config symlink already points to this repository."
   else
-    backup="$HOME/.claude.backup.$(date +%Y%m%d%H%M%S)"
+    # Random tail: the timestamp alone collides when the installer runs twice
+    # in the same second, and mv onto an existing directory nests instead of
+    # replacing.
+    backup="$HOME/.claude.backup.$(date +%Y%m%d%H%M%S)-$(printf '%04d' $((RANDOM % 10000)))"
     mv "$TARGET_DIR" "$backup"
     ln -s "$CONFIG_DIR/.claude" "$TARGET_DIR"
     echo "Moved previous Claude config to $backup."
@@ -44,3 +47,9 @@ fi
 echo "Claude config installed."
 echo "Claude config target: $TARGET_DIR"
 echo "Codex references are provisioned separately by codex/scripts/install.macos-linux.sh."
+
+# The hooks and statusline read their input with jq. Say so at install time: a
+# missing dependency turns the guardrails into no-ops rather than into an error.
+if ! command -v jq >/dev/null 2>&1; then
+  echo "WARNING: jq is not on PATH. The hooks and statusline parse their input with jq, so until it is installed the branch guard, secret scan, and protected-path guard do nothing at all." >&2
+fi

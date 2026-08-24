@@ -27,7 +27,11 @@ function Backup-ExistingPath {
     param([string]$Path)
 
     if (Test-Path -LiteralPath $Path) {
-        $backup = "$Path.backup.$(Get-Date -Format yyyyMMddHHmmss)"
+        # Random tail: the timestamp alone collides when the installer runs
+        # twice in the same second, and Move-Item onto an existing backup is a
+        # hard error.
+        $stamp = '{0}-{1:D4}' -f (Get-Date -Format 'yyyyMMddHHmmss'), (Get-Random -Maximum 10000)
+        $backup = "$Path.backup.$stamp"
         Move-Item -LiteralPath $Path -Destination $backup
         Write-Host "Moved existing path to $backup"
     }
@@ -80,3 +84,11 @@ if ($Mode -eq 'Symlink') {
 Write-Host "Claude config installed in $Mode mode."
 Write-Host "Claude config target: $TargetClaude"
 Write-Host "Codex references are provisioned separately by codex\scripts\install.windows.ps1."
+
+# The hooks and statusline are shell scripts that read their input with jq. Say
+# so at install time: a missing dependency turns the guardrails into no-ops
+# rather than into an error.
+$missing = @('bash', 'jq') | Where-Object { -not (Get-Command $_ -ErrorAction SilentlyContinue) }
+if ($missing) {
+    Write-Warning ("Not on PATH: {0}. The hooks and statusline are shell scripts that parse their input with jq, so until both exist the branch guard, secret scan, and protected-path guard do nothing at all. Git for Windows provides bash; for jq: winget install jqlang.jq" -f ($missing -join ', '))
+}

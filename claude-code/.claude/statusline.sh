@@ -7,6 +7,13 @@ set -uo pipefail
 
 input=$(cat)
 
+# Every field below comes out of jq. Without it this would render as a bare
+# separator and look like a styling bug, so name the cause instead.
+if ! command -v jq >/dev/null 2>&1; then
+  printf 'statusline needs jq (not on PATH)'
+  exit 0
+fi
+
 model=$(printf '%s' "$input" | jq -r '.model.display_name // "Claude"' 2>/dev/null)
 cwd=$(printf '%s' "$input" | jq -r '.workspace.current_dir // .workspace.cwd // empty' 2>/dev/null)
 style=$(printf '%s' "$input" | jq -r '.output_style.name // empty' 2>/dev/null)

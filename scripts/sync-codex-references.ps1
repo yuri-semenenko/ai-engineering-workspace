@@ -116,6 +116,21 @@ function Assert-PathExists {
     }
 }
 
+# SHA-256 straight from .NET rather than Get-FileHash. That cmdlet goes missing
+# when a Windows PowerShell process inherits PowerShell 7's PSModulePath, which
+# is what happens if this script is started as `powershell -File ...` from a
+# pwsh session; the failure looks like a bug in this script.
+function Get-Sha256 {
+    param([string]$Path)
+
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return [BitConverter]::ToString($sha.ComputeHash([IO.File]::ReadAllBytes($Path))).Replace('-', '')
+    } finally {
+        $sha.Dispose()
+    }
+}
+
 function Get-RelativeFileHashes {
     param([string]$Root)
 
@@ -126,7 +141,7 @@ function Get-RelativeFileHashes {
             $relativePath = $_.FullName.Substring($rootPath.Length).TrimStart('\')
             [pscustomobject]@{
                 Path = $relativePath
-                Hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash
+                Hash = (Get-Sha256 -Path $_.FullName)
             }
         }
 }
@@ -186,7 +201,7 @@ if ($Check) {
     if (-not (Test-Path -LiteralPath $MirrorPersona)) {
         Write-Error 'DRIFT: codex\references\persona.md mirror missing'
         $mirrorOk = $false
-    } elseif ((Get-FileHash -Algorithm SHA256 -LiteralPath $CanonPersona).Hash -ne (Get-FileHash -Algorithm SHA256 -LiteralPath $MirrorPersona).Hash) {
+    } elseif ((Get-Sha256 -Path $CanonPersona) -ne (Get-Sha256 -Path $MirrorPersona)) {
         Write-Error 'DRIFT: codex\references\persona.md differs from canon'
         $mirrorOk = $false
     }
@@ -198,7 +213,7 @@ if ($Check) {
     if (-not (Test-Path -LiteralPath $MirrorGemini)) {
         Write-Error 'DRIFT: gemini\references\GEMINI.md mirror missing'
         $mirrorOk = $false
-    } elseif ((Get-FileHash -Algorithm SHA256 -LiteralPath $CanonCondensed).Hash -ne (Get-FileHash -Algorithm SHA256 -LiteralPath $MirrorGemini).Hash) {
+    } elseif ((Get-Sha256 -Path $CanonCondensed) -ne (Get-Sha256 -Path $MirrorGemini)) {
         Write-Error 'DRIFT: gemini\references\GEMINI.md differs from canon (persona\CLAUDE.template.md)'
         $mirrorOk = $false
     }
