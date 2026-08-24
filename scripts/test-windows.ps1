@@ -75,17 +75,36 @@ function Skip-Check {
     throw "SKIP:$Reason"
 }
 
-# -RequireChecks names the checks that must actually run. A name matches the
-# check itself or its per-host copies ('install-gemini [pwsh]'), and nothing
+# -RequireChecks names the checks that must actually run. A requirement matches
+# the check itself or its per-host copies ('install-gemini [pwsh]'), and nothing
 # else: substring matching would let 'hook-scripts' also claim
 # 'hook-scripts-without-jq', whose skip is legitimate.
+function Test-CheckMatchesRequirement {
+    param([string]$Name, [string]$Requirement)
+    return $Name -eq $Requirement -or
+        $Name.StartsWith("$Requirement [", [StringComparison]::OrdinalIgnoreCase)
+}
+
 function Test-CheckRequired {
     param([string]$Name)
     if (-not $RequireChecks) { return $false }
-    foreach ($pattern in $RequireChecks) {
-        if ($Name -eq $pattern -or $Name -like "$pattern [[]*]") { return $true }
+    foreach ($requirement in $RequireChecks) {
+        if (Test-CheckMatchesRequirement -Name $Name -Requirement $requirement) { return $true }
     }
     return $false
+}
+
+function Assert-RequiredChecksExist {
+    param([object[]]$Checks, [string[]]$Requirements)
+    if (-not $Requirements) { return }
+    foreach ($requirement in $Requirements) {
+        $matches = @($Checks | Where-Object {
+            Test-CheckMatchesRequirement -Name $_.Name -Requirement $requirement
+        })
+        if ($matches.Count -eq 0) {
+            throw "Required check '$requirement' does not match any selected check"
+        }
+    }
 }
 
 function Assert-FileExists {
@@ -321,18 +340,36 @@ Add-Check 'sh-line-endings' {
     Assert-That ($bad.Count -eq 0) "CR bytes in shell scripts (must stay LF): $($bad -join ', ')"
 }
 
+Add-Check 'require-checks-contract' {
+    $checks = @(
+        [pscustomobject]@{ Name = 'hook-scripts' }
+        [pscustomobject]@{ Name = 'install-gemini [pwsh]' }
+    )
+    Assert-That (Test-CheckMatchesRequirement -Name 'hook-scripts' -Requirement 'hook-scripts') 'exact required check did not match'
+    Assert-That (Test-CheckMatchesRequirement -Name 'install-gemini [pwsh]' -Requirement 'install-gemini') 'per-host required check did not match'
+    Assert-That (-not (Test-CheckMatchesRequirement -Name 'hook-scripts-without-jq' -Requirement 'hook-scripts')) 'required check matched a neighbouring name'
+
+    $unknownError = ''
+    try {
+        Assert-RequiredChecksExist -Checks $checks -Requirements @('does-not-exist')
+    } catch {
+        $unknownError = $_.Exception.Message
+    }
+    Assert-That ($unknownError -eq "Required check 'does-not-exist' does not match any selected check") 'unknown required check was accepted'
+}
+
 Add-Check 'model-tier-fields' {
-    # The ADR-0012 guard is one script that both CI jobs run. This used to be a
-    # hand-written PowerShell port of the same grep, and the two copies had
-    # already drifted into matching YAML only, so there is no port any more:
-    # run the real thing through bash, which this suite already needs for the
-    # hooks.
+    # Both CI jobs run the ADR-0012 guard and its regression fixtures through
+    # one script. This used to be a hand-written PowerShell port of the same
+    # grep, and the two copies had already drifted into matching YAML only, so
+    # there is no port any more: run the real thing through bash, which this
+    # suite already needs for the hooks.
     if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
         Skip-Check 'no bash on PATH (Git for Windows provides it)'
     }
-    $guard = ConvertTo-BashPath (Join-Path $RepoRoot 'scripts\check-model-tiers.sh')
-    $out = (& bash $guard 2>&1 | Out-String).Trim()
-    Assert-That ($LASTEXITCODE -eq 0) "check-model-tiers.sh exited $LASTEXITCODE : $out"
+    $test = ConvertTo-BashPath (Join-Path $RepoRoot 'scripts\test-check-model-tiers.sh')
+    $out = (& bash $test 2>&1 | Out-String).Trim()
+    Assert-That ($LASTEXITCODE -eq 0) "test-check-model-tiers.sh exited $LASTEXITCODE : $out"
 }
 
 # --- checks: sync / drift guard ---------------------------------------------
@@ -694,6 +731,7 @@ if ($selected.Count -eq 0) {
     Write-Error "No checks match filter '$Filter'"
     exit 2
 }
+Assert-RequiredChecksExist -Checks $selected -Requirements $RequireChecks
 
 Write-Host "Windows script suite: $($selected.Count) check(s), hosts: $($Hosts -join ', ')"
 Write-Host "Sandbox root: $SandboxRoot"

@@ -34,7 +34,7 @@ jobs:
           fi
 
       - name: Committed model fields name a tier, not a version
-        run: bash scripts/check-model-tiers.sh
+        run: bash scripts/test-check-model-tiers.sh
 
       - name: Recommended skills reference only shipped skills
         run: bash scripts/check-recommended-skills.sh

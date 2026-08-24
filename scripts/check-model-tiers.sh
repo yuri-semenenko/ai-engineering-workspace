@@ -105,18 +105,30 @@ scan_toml() {
 
 # --- json: real parse -------------------------------------------------------
 scan_json() {
-  local file="$1"
+  local file="$1" values
   if ! command -v jq >/dev/null 2>&1; then
     echo "check-model-tiers: jq is required to parse $file" >&2
     bad=1
     return
   fi
   # Keys only: a "model" string appearing inside a hook command is a value and
-  # configures nothing.
+  # configures nothing. Capture jq's status before iterating: a process
+  # substitution would let a parse failure disappear behind the while loop's
+  # successful exit status.
+  if ! values="$(jq -r '
+    .. | objects | to_entries[] | select(.key == "model") |
+    if (.value | type) == "string" then .value
+    else error("model field must be a string")
+    end
+  ' "$file")"; then
+    echo "check-model-tiers: failed to parse or validate $file" >&2
+    bad=1
+    return
+  fi
   while IFS= read -r value; do
     [ -n "$value" ] || continue
     check_value "$file" '?' "$value"
-  done < <(jq -r '[paths(scalars) as $p | select($p[-1] == "model") | getpath($p)] | .[]' "$file")
+  done <<< "$values"
 }
 
 while IFS= read -r file; do
