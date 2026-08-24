@@ -8,7 +8,7 @@ Find accidental complexity that already shipped. This is a *standing-codebase* s
 ## How to run (keep main context lean)
 
 1. **Map the tree first.** If a path argument was given, scope the whole audit to that subtree; otherwise take the whole repo. Identify top-level subsystems / packages from the layout (workspaces, `src/` domains, services).
-2. **Fan out, do not grep inline.** Per the persona's session-hygiene rule, dispatch `Explore` subagents — one per subsystem — each tasked to surface over-engineering only. Each returns a compact findings list, not file dumps. This keeps large intermediate output out of the main conversation.
+2. **Fan out, do not grep inline.** Per the persona's session-hygiene rule, delegate to the built-in `codebase_investigator` — one dispatch per subsystem — each tasked to surface over-engineering only. Each returns a compact findings list, not file dumps. This keeps large intermediate output out of the main conversation.
 3. **Dedup and prioritize** the merged findings before reporting.
 
 ## What counts as over-engineering (the persona's anti-patterns)
