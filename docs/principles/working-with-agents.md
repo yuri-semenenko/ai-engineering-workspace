@@ -57,7 +57,9 @@ of grinding it on the main loop:
 - **Ask first** when the split is ambiguous: the task mixes judgment with
   mechanics, touches architecture or security, or is hard to scope.
 - **Keep on the main loop** anything needing cross-file judgment: architecture,
-  review, RFC/ADR, hard debugging.
+  the review verdict, security judgment, RFC/ADR, hard debugging. The
+  independent read of a finished change is delegable; the classification and the
+  ruling are not.
 
 Use workflows, not model names, as the stable policy:
 
@@ -65,7 +67,8 @@ Use workflows, not model names, as the stable policy:
   interpretation and verdict on the main loop.
 - **Explore -> implement -> review.** For meaningful implementation work, first
   map the relevant surface, then make the scoped change, then get an independent
-  review of the result.
+  review of the result. The reviewer returns findings and proposed severities;
+  the parent classifies them and rules.
 - **Explore -> architect -> decide -> implement -> review.** For ambiguous or
   architecture-sensitive work, separate discovery, trade-off analysis, parent
   decision, implementation, and review.
