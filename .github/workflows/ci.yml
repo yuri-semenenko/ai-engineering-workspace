@@ -98,6 +98,6 @@ jobs:
 
       - name: Windows script suite (drift guard, persona wizard, installers)
         shell: pwsh
-        # The runner image provides bash and jq, so a check that skips for want
-        # of either has lost coverage rather than adapted to the machine.
-        run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,hook-scripts
+        # The runner image provides bash and jq. The degraded-path check hides
+        # jq in an isolated Bash PATH, so all three checks must actually run.
+        run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,hook-scripts,hook-scripts-without-jq

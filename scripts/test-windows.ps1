@@ -78,7 +78,7 @@ function Skip-Check {
 # -RequireChecks names the checks that must actually run. A requirement matches
 # the check itself or its per-host copies ('install-gemini [pwsh]'), and nothing
 # else: substring matching would let 'hook-scripts' also claim
-# 'hook-scripts-without-jq', whose skip is legitimate.
+# 'hook-scripts-without-jq', whose dependency state is exercised separately.
 function Test-CheckMatchesRequirement {
     param([string]$Name, [string]$Requirement)
     return $Name -eq $Requirement -or
@@ -703,25 +703,49 @@ Add-Check 'hook-scripts' {
 }
 
 Add-Check 'hook-scripts-without-jq' {
-    # The other half of the pair above: on a machine with no jq, the failure has
-    # to be visible. Silent guardrails are worse than absent ones. Whichever way
-    # the machine is set up, one of these two checks runs.
-    if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
+    # The other half of the pair above: hide jq inside each Bash invocation so
+    # the degraded path runs even when the host (including CI) has jq installed.
+    # Silent guardrails are worse than absent ones.
+    $bashCommand = Get-Command bash -ErrorAction SilentlyContinue
+    if (-not $bashCommand) {
         Skip-Check 'no bash on PATH (Git for Windows provides it)'
     }
-    if (Get-Command jq -ErrorAction SilentlyContinue) {
-        Skip-Check 'jq is installed, so the degraded path cannot be exercised here (CI covers the working path instead)'
-    }
+    $bashWithoutJq = 'PATH=/usr/bin:/bin; export PATH; exec bash "$@"'
 
     $sb = Get-Sandbox $PrimaryHost
     $statusline = ConvertTo-BashPath (Join-Path $sb.Repo 'claude-code\.claude\statusline.sh')
-    $rendered = ('{"model":{"display_name":"Opus"}}' | & bash $statusline 2>&1 | Out-String).Trim()
+    $rendered = ('{"model":{"display_name":"Opus"}}' | & $bashCommand.Source -c $bashWithoutJq bash $statusline 2>&1 | Out-String).Trim()
     Assert-That ($rendered -match 'jq') "statusline hid the missing dependency instead of naming it: '$rendered'"
 
-    $reminder = ConvertTo-BashPath (Join-Path $sb.Repo 'claude-code\.claude\hooks\model-reminder.sh')
-    $notice = ('{"prompt":"anything"}' | & bash $reminder 2>&1 | Out-String)
-    Assert-That ($LASTEXITCODE -eq 0) "model-reminder.sh exited $LASTEXITCODE : $notice"
-    Assert-That ($notice -match 'jq is not on PATH') 'the prompt hook did not report that the guardrails are inactive'
+    # The notice is once per session, and the marker that enforces that lives in
+    # the temp directory. Point it at this sandbox: a marker left in the real
+    # temp directory would silence the notice on the suite's next run, and the
+    # assertion below would fail for a reason that has nothing to do with the
+    # hook.
+    $markerDir = Join-Path $sb.Root 'hook temp'
+    New-Item -ItemType Directory -Force -Path $markerDir | Out-Null
+    $previousTmp = $env:TMPDIR
+    $env:TMPDIR = (ConvertTo-BashPath $markerDir) + '/'
+    try {
+        $reminder = ConvertTo-BashPath (Join-Path $sb.Repo 'claude-code\.claude\hooks\model-reminder.sh')
+        $notice = ('{"session_id":"suite","prompt":"anything"}' | & $bashCommand.Source -c $bashWithoutJq bash $reminder 2>&1 | Out-String)
+        Assert-That ($LASTEXITCODE -eq 0) "model-reminder.sh exited $LASTEXITCODE : $notice"
+        Assert-That ($notice -match 'jq is not on PATH') 'the prompt hook did not report that the guardrails are inactive'
+
+        $repeat = ('{"session_id":"suite","prompt":"anything else"}' | & $bashCommand.Source -c $bashWithoutJq bash $reminder 2>&1 | Out-String)
+        Assert-That ([string]::IsNullOrWhiteSpace($repeat)) "the setup notice repeated within one session: $repeat"
+
+        $other = ('{"session_id":"another","prompt":"anything"}' | & $bashCommand.Source -c $bashWithoutJq bash $reminder 2>&1 | Out-String)
+        Assert-That ($other -match 'jq is not on PATH') 'a new session did not get the setup notice'
+    } finally {
+        # Windows does not normally set TMPDIR, so restoring a null means
+        # removing the variable rather than blanking it.
+        if ($null -eq $previousTmp) {
+            Remove-Item Env:TMPDIR -ErrorAction SilentlyContinue
+        } else {
+            $env:TMPDIR = $previousTmp
+        }
+    }
 }
 
 # --- run ---------------------------------------------------------------------
