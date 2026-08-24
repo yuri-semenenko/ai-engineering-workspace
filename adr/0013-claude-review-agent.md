@@ -13,7 +13,8 @@ not, and Claude Code's agent frontmatter takes the alias. So for Claude the mode
 argument is no longer an obstacle, and the second reason is the only one left.
 
 That second reason is a real filter, because the platform already ships agents.
-`Explore` is a read-only routine-tier gatherer. `Plan` covers multi-step
+`Explore` is a read-only gatherer, routine-tier when the dispatch says so.
+`Plan` covers multi-step
 planning. `general-purpose` covers bounded mechanical work. Anything this kit
 ships has to be something those do not already do, or it is custom code standing
 where the platform already provides.
@@ -43,9 +44,9 @@ Ship exactly one agent for Claude Code, and enforce the alias rule in CI.
    posture is a contract in the prompt plus the shipped denylist rather than a
    capability boundary. Nothing ships on the escalation alias: the canon treats
    escalation as a manual session-level switch, not an agent-file setting.
-2. **No gather agent.** Built-in `Explore` is the routine-tier read-only
-   gatherer. Shipping our own would put custom code where the platform already
-   provides, against the simplicity ladder.
+2. **No gather agent.** Built-in `Explore` is the read-only gatherer, on the
+   routine tier when the dispatch asks for it. Shipping our own would put custom
+   code where the platform already provides, against the simplicity ladder.
 3. **CI asserts the rule.** Every `model:` field in a committed file must name a
    tier alias. This is what makes ADR-0012 checkable rather than aspirational,
    for the one tool that can express it.
