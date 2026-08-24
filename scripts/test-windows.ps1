@@ -3,7 +3,8 @@
 param(
     [string]$Filter,
     [string[]]$PowerShellHosts,
-    [switch]$KeepSandbox
+    [switch]$KeepSandbox,
+    [string[]]$RequireChecks
 )
 
 $ErrorActionPreference = 'Stop'
@@ -23,6 +24,11 @@ $ErrorActionPreference = 'Stop'
 #   scripts\test-windows.ps1 -Filter install       # only matching checks
 #   scripts\test-windows.ps1 -PowerShellHosts pwsh # skip Windows PowerShell
 #   scripts\test-windows.ps1 -KeepSandbox          # leave sandboxes for triage
+#   scripts\test-windows.ps1 -RequireChecks a,b    # a skip of these is a failure
+#
+# Some checks skip when a dependency is absent. On a developer's machine that is
+# correct; in CI it is silent loss of coverage, so the workflow passes
+# -RequireChecks for everything the runner image is supposed to provide.
 #
 # Runs under Windows PowerShell 5.1 and PowerShell 7, and by default drives the
 # scripts under test through both, since the README hands users the 5.1
@@ -67,6 +73,19 @@ function Assert-That {
 function Skip-Check {
     param([string]$Reason)
     throw "SKIP:$Reason"
+}
+
+# -RequireChecks names the checks that must actually run. A name matches the
+# check itself or its per-host copies ('install-gemini [pwsh]'), and nothing
+# else: substring matching would let 'hook-scripts' also claim
+# 'hook-scripts-without-jq', whose skip is legitimate.
+function Test-CheckRequired {
+    param([string]$Name)
+    if (-not $RequireChecks) { return $false }
+    foreach ($pattern in $RequireChecks) {
+        if ($Name -eq $pattern -or $Name -like "$pattern [[]*]") { return $true }
+    }
+    return $false
 }
 
 function Assert-FileExists {
@@ -693,6 +712,12 @@ foreach ($check in $selected) {
         if ($message -like 'SKIP:*') {
             $status = 'SKIP'
             $detail = $message.Substring(5)
+            # A skip is missing coverage wearing a pass. Named checks are the
+            # ones whose environment CI controls, so there a skip is a failure.
+            if (Test-CheckRequired $check.Name) {
+                $status = 'FAIL'
+                $detail = "required check skipped: $detail"
+            }
         } else {
             $status = 'FAIL'
             $detail = $message
