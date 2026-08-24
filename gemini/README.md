@@ -56,9 +56,17 @@ package deliberately installs **no agent files**. Gemini's config names a
 concrete model, and concrete model names churn faster than the methodology, so
 committing them would make this repo track runtime naming
 ([`../adr/0012-tier-labels-over-pinned-model-slugs.md`](../adr/0012-tier-labels-over-pinned-model-slugs.md)).
-Choose the tier at runtime instead:
 
-| Work | Tier | Boundary |
+Be clear about model control: the built-in `codebase_investigator` does not run
+the session's concrete model directly. Gemini CLI applies its own routing, using
+the session model as an input. You can override that choice without an agent file
+by setting `agents.overrides.codebase_investigator.modelConfig.model` in
+`settings.json`. A custom agent file can also pin a concrete model, but this
+package installs neither an override nor an agent file. The tier below is the
+tier the work *wants*. Treat the table as a boundary map, not as a switch this
+package wires up:
+
+| Work | Tier the work wants | Boundary |
 | --- | --- | --- |
 | Broad search, orientation, evidence gathering | routine, read-only | Lean on the built-in `codebase_investigator`; it returns evidence, you interpret it. |
 | Mechanical edits, fixtures, codemod-style work | routine | Well-scoped, non-overlapping write sets only. |
@@ -70,9 +78,9 @@ map onto the command ports: `explore` is `codebase_investigator` or
 `/codebase-map`, `architect` is `/rfc` or `/module-design`, `decide` is yours with
 `/adr` recording it, `review` is `/pr-classify`. `judge` never leaves the parent.
 
-If a tier override has no clear reason, let the subagent inherit the current
-model. Do not delegate trivial work, and do not put two agents on overlapping
-files.
+This package leaves model selection to Gemini CLI's built-in routing or to user
+settings. Do not assume built-in agents inherit the session model, do not
+delegate trivial work, and do not put two agents on overlapping files.
 
 ## Guardrails
 
