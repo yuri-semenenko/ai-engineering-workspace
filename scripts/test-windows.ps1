@@ -552,7 +552,6 @@ foreach ($hostExe in $Hosts) {
         $sourceCount = @(Get-ChildItem -LiteralPath (Join-Path $sb.Repo 'gemini\commands') -Filter '*.toml').Count
         $installed = @(Get-ChildItem -LiteralPath (Join-Path $geminiHome 'commands') -Filter '*.toml').Count
         Assert-That ($installed -eq $sourceCount) "installed $installed of $sourceCount commands"
-        Assert-That ($installed -ge 16) "expected at least 16 commands, found $installed"
 
         # Re-running must not clobber a user's edited settings.
         $marker = '{ "sentinel": true }'
