@@ -7,6 +7,7 @@ $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ConfigDir = Split-Path -Parent $ScriptDir            # ...\codex
 $RepoRoot = Split-Path -Parent $ConfigDir
+$PersonaWizard = Join-Path $RepoRoot 'scripts\create-persona.ps1'
 $SourceReferences = Join-Path $ConfigDir 'references'
 $SourceSkills = Join-Path $ConfigDir 'skills'
 $SourceAgents = Join-Path $ConfigDir 'AGENTS.md'
@@ -30,7 +31,7 @@ Copy-Item -Path (Join-Path $SourceReferences '*') -Destination $TargetReferences
 # Prefer the user's filled persona (scripts\create-persona.ps1) over the
 # committed template mirror. Falls back to the mirror when codex\ is standalone.
 $PersonaSource = Join-Path $RepoRoot 'persona\persona.md'
-$PersonaFromWizard = Test-Path -LiteralPath $PersonaSource
+$PersonaFromWizard = Test-Path -LiteralPath $PersonaSource -PathType Leaf
 if ($PersonaFromWizard) {
     Copy-Item -LiteralPath $PersonaSource -Destination (Join-Path $TargetReferences 'persona.md') -Force
 }
@@ -39,7 +40,11 @@ if ($PersonaFromWizard) {
 # ships them too. Codex loads whichever landed and reads them as literal text,
 # so count what is actually in the installed file rather than trusting which
 # branch ran: a silent fallback used to end on a clean "installed" summary.
-$PersonaUnfilled = @(Select-String -LiteralPath (Join-Path $TargetReferences 'persona.md') -Pattern '\{\{').Count
+$PersonaTarget = Join-Path $TargetReferences 'persona.md'
+if (-not (Test-Path -LiteralPath $PersonaTarget -PathType Leaf)) {
+    throw "Persona target is not a regular file: $PersonaTarget"
+}
+$PersonaUnfilled = @(Select-String -LiteralPath $PersonaTarget -Pattern '\{\{').Count
 
 New-Item -ItemType Directory -Force -Path $TargetSkills | Out-Null
 Copy-Item -Path (Join-Path $SourceSkills '*') -Destination $TargetSkills -Recurse -Force
@@ -54,7 +59,13 @@ if ($PersonaUnfilled -gt 0) {
     } else {
         Write-Host "Persona: TEMPLATE ONLY. No $PersonaSource, so the committed mirror landed with $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s)."
     }
-    Write-Host 'Codex reads that file as written. Run scripts\create-persona.ps1, then re-run this installer.'
+    if ($PersonaFromWizard) {
+        Write-Host "Finish filling $PersonaSource, then re-run this installer."
+    } elseif (Test-Path -LiteralPath $PersonaWizard -PathType Leaf) {
+        Write-Host ('Run: pwsh -NoProfile -File "{0}". Then re-run this installer.' -f $PersonaWizard)
+    } else {
+        Write-Host 'This standalone package has no persona wizard. Run the wizard and installer from a full repository checkout.'
+    }
 } elseif ($PersonaFromWizard) {
     Write-Host "Persona: installed from $PersonaSource."
 } else {

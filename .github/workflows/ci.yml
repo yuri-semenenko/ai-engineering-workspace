@@ -27,37 +27,7 @@ jobs:
           exit $status
 
       - name: Installers report an unfilled persona
-        run: |
-          # Runs before the wizard step, so persona/*.md do not exist yet: the
-          # state a fresh clone installs from. Codex, Gemini and Copilot do not
-          # run the wizard, they fall back to the committed mirrors, and those
-          # ship {{PLACEHOLDERS}} the tool then reads as literal text. The
-          # fallback used to be silent and end on a clean "installed" summary.
-          set -eu
-          trap 'rm -f persona/persona.md persona/CLAUDE.md persona/copilot-instructions.md' EXIT
-
-          expect() { case "$2" in *"$1"*) ;; *) echo "missing from the installer output: $1"; printf '%s\n' "$2"; exit 1;; esac; }
-          reject() { case "$2" in *"$1"*) echo "unexpected in the installer output: $1"; printf '%s\n' "$2"; exit 1;; esac; }
-
-          out="$(bash codex/scripts/install.macos-linux.sh "$(mktemp -d)")"
-          expect 'Persona: TEMPLATE ONLY' "$out"
-          reject 'Persona: installed from' "$out"
-
-          out="$(bash gemini/scripts/install.macos-linux.sh "$(mktemp -d)")"
-          expect 'Persona: TEMPLATE ONLY' "$out"
-
-          out="$(bash copilot/scripts/install.macos-linux.sh "$(mktemp -d)")"
-          expect 'Persona: TEMPLATE ONLY' "$out"
-          # The workspace half is opt-in and was skipped here, which only the
-          # Windows port used to say.
-          expect 'For repository-level setup' "$out"
-
-          # A persona that exists but is half-filled is a different cause with
-          # the same cost, and it needs a different fix than "run the wizard".
-          printf 'Role: {{ROLE}}\n' > persona/persona.md
-          out="$(bash codex/scripts/install.macos-linux.sh "$(mktemp -d)")"
-          expect 'Persona: INCOMPLETE' "$out"
-          reject 'TEMPLATE ONLY' "$out"
+        run: bash scripts/test-installer-persona-outcomes.sh
 
       - name: Persona wizard produces no leftover placeholders
         run: |

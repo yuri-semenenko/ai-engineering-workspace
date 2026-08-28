@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$CONFIG_DIR/.." && pwd)"
+PERSONA_WIZARD="$REPO_ROOT/scripts/create-persona.sh"
 TARGET_HOME="${1:-$HOME}"
 WORKSPACE_PATH="${2:-}"
 # Random tail: the timestamp alone collides when the installer runs twice in
@@ -49,8 +50,22 @@ fi
 # ships them too. Copilot reads whichever landed as literal text, so count what
 # is actually in the installed file rather than trusting which branch ran: a
 # silent fallback used to end on a clean "Done." with nothing else said.
-PERSONA_UNFILLED="$(grep -c '{{' "$TARGET_COPILOT/copilot-instructions.md" 2>/dev/null || true)"
-PERSONA_UNFILLED="${PERSONA_UNFILLED:-0}"
+PERSONA_TARGET="$TARGET_COPILOT/copilot-instructions.md"
+if [ ! -f "$PERSONA_TARGET" ]; then
+  echo "Persona target is not a regular file: $PERSONA_TARGET" >&2
+  exit 1
+fi
+if PERSONA_UNFILLED="$(grep -c '{{' "$PERSONA_TARGET")"; then
+  :
+else
+  grep_status=$?
+  if [ "$grep_status" -eq 1 ]; then
+    PERSONA_UNFILLED=0
+  else
+    echo "Could not inspect persona target: $PERSONA_TARGET" >&2
+    exit "$grep_status"
+  fi
+fi
 
 mkdir -p "$TARGET_COPILOT/instructions"
 for source in "$SOURCE_HOME_CONFIG"/instructions/*.instructions.md; do
@@ -79,7 +94,13 @@ if [ "$PERSONA_UNFILLED" -gt 0 ]; then
   else
     echo "Persona: TEMPLATE ONLY. No $FILLED_COPILOT, so the committed template landed with $PERSONA_UNFILLED unfilled {{PLACEHOLDER}} line(s)."
   fi
-  echo "Copilot reads that file as written. Run scripts/create-persona.sh, then re-run this installer."
+  if [ "$PERSONA_FROM_WIZARD" -eq 1 ]; then
+    echo "Finish filling $FILLED_COPILOT, then re-run this installer."
+  elif [ -f "$PERSONA_WIZARD" ]; then
+    echo "Run: bash \"$PERSONA_WIZARD\". Then re-run this installer."
+  else
+    echo "This standalone package has no persona wizard. Run the wizard and installer from a full repository checkout."
+  fi
 elif [ "$PERSONA_FROM_WIZARD" -eq 1 ]; then
   echo "Persona: installed from $FILLED_COPILOT."
 else

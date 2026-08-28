@@ -7,6 +7,8 @@ $ErrorActionPreference = 'Stop'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptDir
+$WorkspaceRoot = Split-Path -Parent $RepoRoot
+$PersonaWizard = Join-Path $WorkspaceRoot 'scripts\create-persona.ps1'
 # Random tail: the timestamp alone collides when the installer runs twice in
 # the same second, and Move-Item onto an existing backup is a hard error.
 $Timestamp = '{0}-{1:D4}' -f (Get-Date -Format 'yyyyMMdd-HHmmss'), (Get-Random -Maximum 10000)
@@ -39,9 +41,9 @@ $TargetCopilot = Join-Path $TargetHome '.copilot'
 
 # Prefer the wizard's filled instructions; fall back to the committed template
 # (which still holds {{PLACEHOLDERS}}) when copilot/ is used standalone.
-$FilledCopilot = Join-Path (Split-Path -Parent $RepoRoot) 'persona\copilot-instructions.md'
+$FilledCopilot = Join-Path $WorkspaceRoot 'persona\copilot-instructions.md'
 $CopilotSource = Join-Path $HomeConfig 'copilot-instructions.md'
-$PersonaFromWizard = Test-Path -LiteralPath $FilledCopilot
+$PersonaFromWizard = Test-Path -LiteralPath $FilledCopilot -PathType Leaf
 if ($PersonaFromWizard) { $CopilotSource = $FilledCopilot }
 
 $TargetInstructionsFile = Join-Path $TargetCopilot 'copilot-instructions.md'
@@ -51,6 +53,9 @@ Copy-WithBackup -Source $CopilotSource -Destination $TargetInstructionsFile
 # ships them too. Copilot reads whichever landed as literal text, so count what
 # is actually in the installed file rather than trusting which branch ran: a
 # silent fallback used to end on a clean "Done." with nothing else said.
+if (-not (Test-Path -LiteralPath $TargetInstructionsFile -PathType Leaf)) {
+  throw "Persona target is not a regular file: $TargetInstructionsFile"
+}
 $PersonaUnfilled = @(Select-String -LiteralPath $TargetInstructionsFile -Pattern '\{\{').Count
 
 $SourceInstructions = Join-Path $HomeConfig 'instructions'
@@ -90,7 +95,13 @@ if ($PersonaUnfilled -gt 0) {
   } else {
     Write-Host "Persona: TEMPLATE ONLY. No $FilledCopilot, so the committed template landed with $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s)."
   }
-  Write-Host 'Copilot reads that file as written. Run scripts\create-persona.ps1, then re-run this installer.'
+  if ($PersonaFromWizard) {
+    Write-Host "Finish filling $FilledCopilot, then re-run this installer."
+  } elseif (Test-Path -LiteralPath $PersonaWizard -PathType Leaf) {
+    Write-Host ('Run: pwsh -NoProfile -File "{0}". Then re-run this installer.' -f $PersonaWizard)
+  } else {
+    Write-Host 'This standalone package has no persona wizard. Run the wizard and installer from a full repository checkout.'
+  }
 } elseif ($PersonaFromWizard) {
   Write-Host "Persona: installed from $FilledCopilot."
 } else {
