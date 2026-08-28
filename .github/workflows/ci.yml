@@ -26,6 +26,39 @@ jobs:
           done < <(git ls-files '*.sh')
           exit $status
 
+      - name: Installers report an unfilled persona
+        run: |
+          # Runs before the wizard step, so persona/*.md do not exist yet: the
+          # state a fresh clone installs from. Codex, Gemini and Copilot do not
+          # run the wizard, they fall back to the committed mirrors, and those
+          # ship {{PLACEHOLDERS}} the tool then reads as literal text. The
+          # fallback used to be silent and end on a clean "installed" summary.
+          set -eu
+          trap 'rm -f persona/persona.md persona/CLAUDE.md persona/copilot-instructions.md' EXIT
+
+          expect() { case "$2" in *"$1"*) ;; *) echo "missing from the installer output: $1"; printf '%s\n' "$2"; exit 1;; esac; }
+          reject() { case "$2" in *"$1"*) echo "unexpected in the installer output: $1"; printf '%s\n' "$2"; exit 1;; esac; }
+
+          out="$(bash codex/scripts/install.macos-linux.sh "$(mktemp -d)")"
+          expect 'Persona: TEMPLATE ONLY' "$out"
+          reject 'Persona: installed from' "$out"
+
+          out="$(bash gemini/scripts/install.macos-linux.sh "$(mktemp -d)")"
+          expect 'Persona: TEMPLATE ONLY' "$out"
+
+          out="$(bash copilot/scripts/install.macos-linux.sh "$(mktemp -d)")"
+          expect 'Persona: TEMPLATE ONLY' "$out"
+          # The workspace half is opt-in and was skipped here, which only the
+          # Windows port used to say.
+          expect 'For repository-level setup' "$out"
+
+          # A persona that exists but is half-filled is a different cause with
+          # the same cost, and it needs a different fix than "run the wizard".
+          printf 'Role: {{ROLE}}\n' > persona/persona.md
+          out="$(bash codex/scripts/install.macos-linux.sh "$(mktemp -d)")"
+          expect 'Persona: INCOMPLETE' "$out"
+          reject 'TEMPLATE ONLY' "$out"
+
       - name: Persona wizard produces no leftover placeholders
         run: |
           bash scripts/create-persona.sh --defaults
@@ -51,7 +84,8 @@ jobs:
       - name: Codex installer smoke test
         run: |
           codex_home="$(mktemp -d)"
-          bash codex/scripts/install.macos-linux.sh "$codex_home"
+          out="$(bash codex/scripts/install.macos-linux.sh "$codex_home")"
+          case "$out" in *'Persona: installed from'*) ;; *) echo "installer did not report the filled persona"; printf '%s\n' "$out"; exit 1;; esac
           test -f "$codex_home/AGENTS.md"
           test -f "$codex_home/references/persona.md"
           test -d "$codex_home/skills"
@@ -62,7 +96,10 @@ jobs:
       - name: Copilot installer smoke test
         run: |
           cop_home="$(mktemp -d)"; ws="$(mktemp -d)"
-          bash copilot/scripts/install.macos-linux.sh "$cop_home" "$ws"
+          out="$(bash copilot/scripts/install.macos-linux.sh "$cop_home" "$ws")"
+          case "$out" in *'Persona: installed from'*) ;; *) echo "installer did not report the filled persona"; printf '%s\n' "$out"; exit 1;; esac
+          # The workspace was installed, so the hint about skipping it must not fire.
+          case "$out" in *'For repository-level setup'*) echo "installer offered workspace setup it had already done"; exit 1;; esac
           test -f "$cop_home/.copilot/copilot-instructions.md"
           test -f "$ws/.github/copilot-instructions.md"
           test -f "$ws/AGENTS.md"
@@ -73,7 +110,8 @@ jobs:
       - name: Gemini CLI installer smoke test
         run: |
           gem_home="$(mktemp -d)"
-          bash gemini/scripts/install.macos-linux.sh "$gem_home"
+          out="$(bash gemini/scripts/install.macos-linux.sh "$gem_home")"
+          case "$out" in *'Persona: installed from'*) ;; *) echo "installer did not report the filled persona"; printf '%s\n' "$out"; exit 1;; esac
           test -f "$gem_home/GEMINI.md"
           test -d "$gem_home/commands"
           test -f "$gem_home/settings.json"

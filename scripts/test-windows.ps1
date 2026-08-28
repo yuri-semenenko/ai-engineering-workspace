@@ -550,6 +550,7 @@ foreach ($hostExe in $Hosts) {
         $codexHome = Join-Path $fakeHome '.codex'
         $r = Invoke-Ps1 -HostExe $HostExe -Script (Join-Path $sb.Repo 'codex\scripts\install.windows.ps1') -ScriptArgs @('-CodexHome', $codexHome) -HomeDir $fakeHome
         Assert-Ps1Succeeded $r 'codex install.windows.ps1'
+        Assert-That ($r.Output -match 'Persona: installed from') "installer did not report the filled persona: $($r.Output)"
 
         Assert-FileExists (Join-Path $codexHome 'AGENTS.md') 'AGENTS.md'
         Assert-FileExists (Join-Path $codexHome 'references\persona.md') 'installed persona'
@@ -573,6 +574,9 @@ foreach ($hostExe in $Hosts) {
         $r = Invoke-Ps1 -HostExe $HostExe -Script (Join-Path $sb.Repo 'copilot\scripts\install.windows.ps1') `
             -ScriptArgs @('-TargetHome', $fakeHome, '-WorkspacePath', $workspace) -HomeDir $fakeHome
         Assert-Ps1Succeeded $r 'copilot install.windows.ps1'
+        Assert-That ($r.Output -match 'Persona: installed from') "installer did not report the filled persona: $($r.Output)"
+        # The workspace was installed, so the hint about skipping it must not fire.
+        Assert-That ($r.Output -notmatch 'For repository-level setup') 'installer offered workspace setup it had already done'
 
         $instructions = Join-Path $fakeHome '.copilot\copilot-instructions.md'
         Assert-FileExists $instructions 'copilot-instructions.md'
@@ -601,6 +605,7 @@ foreach ($hostExe in $Hosts) {
         $installer = Join-Path $sb.Repo 'gemini\scripts\install.windows.ps1'
         $r = Invoke-Ps1 -HostExe $HostExe -Script $installer -ScriptArgs @('-GeminiHome', $geminiHome) -HomeDir $fakeHome
         Assert-Ps1Succeeded $r 'gemini install.windows.ps1'
+        Assert-That ($r.Output -match 'Persona: installed from') "installer did not report the filled persona: $($r.Output)"
 
         Assert-FileExists (Join-Path $geminiHome 'GEMINI.md') 'GEMINI.md'
         Assert-NoPlaceholders (Join-Path $geminiHome 'GEMINI.md')
@@ -672,6 +677,49 @@ Add-Check 'install-claude-first-run' {
     Assert-FileExists (Join-Path $sb.Repo 'persona\CLAUDE.md') 'wizard output'
     Assert-FileExists (Join-Path $fakeHome '.claude\CLAUDE.md') 'installed CLAUDE.md'
     Assert-NoPlaceholders (Join-Path $fakeHome '.claude\CLAUDE.md')
+}
+
+Add-Check 'install-unfilled-persona' {
+    # Codex, Gemini and Copilot never run the wizard: they fall back to the
+    # committed mirrors, which ship {{PLACEHOLDERS}} the tool then reads as
+    # literal text. That fallback used to be silent and end on a clean
+    # "installed" summary, so assert on what each installer says, not only on
+    # what it wrote. New-RepoSandbox excludes gitignored wizard output and
+    # Initialize-Persona is deliberately not called here.
+    $sb = New-RepoSandbox -Label 'unfilled persona'
+    Assert-That (-not (Test-Path -LiteralPath (Join-Path $sb.Repo 'persona\persona.md'))) 'sandbox was not pristine'
+
+    # A home per case: a shared one lets an earlier run's state decide a later
+    # assertion.
+    $codexHome = Join-Path $sb.Home 'codex'
+    $r = Invoke-Ps1 -HostExe $PrimaryHost -Script (Join-Path $sb.Repo 'codex\scripts\install.windows.ps1') `
+        -ScriptArgs @('-CodexHome', (Join-Path $codexHome '.codex')) -HomeDir $codexHome
+    Assert-Ps1Succeeded $r 'codex install without a persona'
+    Assert-That ($r.Output -match 'Persona: TEMPLATE ONLY') "codex installer did not report the unfilled persona: $($r.Output)"
+    Assert-That ($r.Output -notmatch 'Persona: installed from') 'codex installer claimed a persona it did not install'
+
+    $geminiHome = Join-Path $sb.Home 'gemini'
+    $r = Invoke-Ps1 -HostExe $PrimaryHost -Script (Join-Path $sb.Repo 'gemini\scripts\install.windows.ps1') `
+        -ScriptArgs @('-GeminiHome', (Join-Path $geminiHome '.gemini')) -HomeDir $geminiHome
+    Assert-Ps1Succeeded $r 'gemini install without a persona'
+    Assert-That ($r.Output -match 'Persona: TEMPLATE ONLY') "gemini installer did not report the unfilled persona: $($r.Output)"
+
+    $copilotHome = Join-Path $sb.Home 'copilot'
+    $r = Invoke-Ps1 -HostExe $PrimaryHost -Script (Join-Path $sb.Repo 'copilot\scripts\install.windows.ps1') `
+        -ScriptArgs @('-TargetHome', $copilotHome) -HomeDir $copilotHome
+    Assert-Ps1Succeeded $r 'copilot install without a persona'
+    Assert-That ($r.Output -match 'Persona: TEMPLATE ONLY') "copilot installer did not report the unfilled persona: $($r.Output)"
+    Assert-That ($r.Output -match 'For repository-level setup') 'copilot installer did not mention the workspace half it skipped'
+
+    # A persona that exists but is half-filled is a different cause with the
+    # same cost, and it needs a different fix than "run the wizard".
+    Set-Content -LiteralPath (Join-Path $sb.Repo 'persona\persona.md') -Value 'Role: {{ROLE}}'
+    $incompleteHome = Join-Path $sb.Home 'codex incomplete'
+    $r = Invoke-Ps1 -HostExe $PrimaryHost -Script (Join-Path $sb.Repo 'codex\scripts\install.windows.ps1') `
+        -ScriptArgs @('-CodexHome', (Join-Path $incompleteHome '.codex')) -HomeDir $incompleteHome
+    Assert-Ps1Succeeded $r 'codex install with a half-filled persona'
+    Assert-That ($r.Output -match 'Persona: INCOMPLETE') "codex installer did not report the half-filled persona: $($r.Output)"
+    Assert-That ($r.Output -notmatch 'TEMPLATE ONLY') 'a half-filled persona was reported as an untouched template'
 }
 
 # --- checks: the shell parts a Windows user still runs ----------------------
