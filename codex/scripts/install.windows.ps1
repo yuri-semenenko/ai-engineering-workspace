@@ -29,11 +29,17 @@ Copy-Item -Path (Join-Path $SourceReferences '*') -Destination $TargetReferences
 
 # Prefer the user's filled persona (scripts\create-persona.ps1) over the
 # committed template mirror. Falls back to the mirror when codex\ is standalone.
-$personaFilled = Join-Path $RepoRoot 'persona\persona.md'
-if (Test-Path -LiteralPath $personaFilled) {
-    Copy-Item -LiteralPath $personaFilled -Destination (Join-Path $TargetReferences 'persona.md') -Force
-    Write-Host 'Installed filled persona from persona\persona.md.'
+$PersonaSource = Join-Path $RepoRoot 'persona\persona.md'
+$PersonaFromWizard = Test-Path -LiteralPath $PersonaSource
+if ($PersonaFromWizard) {
+    Copy-Item -LiteralPath $PersonaSource -Destination (Join-Path $TargetReferences 'persona.md') -Force
 }
+
+# The committed mirror ships {{PLACEHOLDERS}}, and a half-edited persona.md
+# ships them too. Codex loads whichever landed and reads them as literal text,
+# so count what is actually in the installed file rather than trusting which
+# branch ran: a silent fallback used to end on a clean "installed" summary.
+$PersonaUnfilled = @(Select-String -LiteralPath (Join-Path $TargetReferences 'persona.md') -Pattern '\{\{').Count
 
 New-Item -ItemType Directory -Force -Path $TargetSkills | Out-Null
 Copy-Item -Path (Join-Path $SourceSkills '*') -Destination $TargetSkills -Recurse -Force
@@ -42,6 +48,18 @@ New-Item -ItemType Directory -Force -Path $CodexHome | Out-Null
 Copy-Item -LiteralPath $SourceAgents -Destination $TargetAgents -Force
 
 Write-Host "Codex references, user skills, and AGENTS.md installed."
+if ($PersonaUnfilled -gt 0) {
+    if ($PersonaFromWizard) {
+        Write-Host "Persona: INCOMPLETE. $PersonaSource still holds $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s), copied as-is."
+    } else {
+        Write-Host "Persona: TEMPLATE ONLY. No $PersonaSource, so the committed mirror landed with $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s)."
+    }
+    Write-Host 'Codex reads that file as written. Run scripts\create-persona.ps1, then re-run this installer.'
+} elseif ($PersonaFromWizard) {
+    Write-Host "Persona: installed from $PersonaSource."
+} else {
+    Write-Host "Persona: installed from the committed mirror; no $PersonaSource, and nothing was left to fill."
+}
 Write-Host "References target: $TargetReferences"
 Write-Host "Skills target: $TargetSkills"
 Write-Host "AGENTS.md target: $TargetAgents (always-on git guardrails)"

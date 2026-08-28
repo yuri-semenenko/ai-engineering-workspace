@@ -28,10 +28,19 @@ cp -R "$CONFIG_DIR/references/." "$TARGET_REFERENCES/"
 # If the user generated a filled persona (scripts/create-persona.sh), install
 # that instead of the committed template mirror. Falls back to the mirror when
 # codex/ is copied standalone without the persona/ dir.
-if [ -f "$REPO_ROOT/persona/persona.md" ]; then
-  cp "$REPO_ROOT/persona/persona.md" "$TARGET_REFERENCES/persona.md"
-  echo "Installed filled persona from persona/persona.md."
+PERSONA_SOURCE="$REPO_ROOT/persona/persona.md"
+PERSONA_FROM_WIZARD=0
+if [ -f "$PERSONA_SOURCE" ]; then
+  cp "$PERSONA_SOURCE" "$TARGET_REFERENCES/persona.md"
+  PERSONA_FROM_WIZARD=1
 fi
+
+# The committed mirror ships {{PLACEHOLDERS}}, and a half-edited persona.md
+# ships them too. Codex loads whichever landed and reads them as literal text,
+# so count what is actually in the installed file rather than trusting which
+# branch ran: a silent fallback used to end on a clean "installed" summary.
+PERSONA_UNFILLED="$(grep -c '{{' "$TARGET_REFERENCES/persona.md" 2>/dev/null || true)"
+PERSONA_UNFILLED="${PERSONA_UNFILLED:-0}"
 
 mkdir -p "$TARGET_SKILLS"
 cp -R "$CONFIG_DIR/skills/." "$TARGET_SKILLS/"
@@ -40,6 +49,18 @@ mkdir -p "$CODEX_HOME"
 cp "$CONFIG_DIR/AGENTS.md" "$TARGET_AGENTS"
 
 echo "Codex references, user skills, and AGENTS.md installed."
+if [ "$PERSONA_UNFILLED" -gt 0 ]; then
+  if [ "$PERSONA_FROM_WIZARD" -eq 1 ]; then
+    echo "Persona: INCOMPLETE. $PERSONA_SOURCE still holds $PERSONA_UNFILLED unfilled {{PLACEHOLDER}} line(s), copied as-is."
+  else
+    echo "Persona: TEMPLATE ONLY. No $PERSONA_SOURCE, so the committed mirror landed with $PERSONA_UNFILLED unfilled {{PLACEHOLDER}} line(s)."
+  fi
+  echo "Codex reads that file as written. Run scripts/create-persona.sh, then re-run this installer."
+elif [ "$PERSONA_FROM_WIZARD" -eq 1 ]; then
+  echo "Persona: installed from $PERSONA_SOURCE."
+else
+  echo "Persona: installed from the committed mirror; no $PERSONA_SOURCE, and nothing was left to fill."
+fi
 echo "References target: $TARGET_REFERENCES"
 echo "Skills target: $TARGET_SKILLS"
 echo "AGENTS.md target: $TARGET_AGENTS (always-on git guardrails)"

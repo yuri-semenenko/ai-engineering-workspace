@@ -41,11 +41,17 @@ $TargetCopilot = Join-Path $TargetHome '.copilot'
 # (which still holds {{PLACEHOLDERS}}) when copilot/ is used standalone.
 $FilledCopilot = Join-Path (Split-Path -Parent $RepoRoot) 'persona\copilot-instructions.md'
 $CopilotSource = Join-Path $HomeConfig 'copilot-instructions.md'
-if (Test-Path -LiteralPath $FilledCopilot) { $CopilotSource = $FilledCopilot }
+$PersonaFromWizard = Test-Path -LiteralPath $FilledCopilot
+if ($PersonaFromWizard) { $CopilotSource = $FilledCopilot }
 
-Copy-WithBackup `
-  -Source $CopilotSource `
-  -Destination (Join-Path $TargetCopilot 'copilot-instructions.md')
+$TargetInstructionsFile = Join-Path $TargetCopilot 'copilot-instructions.md'
+Copy-WithBackup -Source $CopilotSource -Destination $TargetInstructionsFile
+
+# The committed template ships {{PLACEHOLDERS}}, and a half-edited wizard output
+# ships them too. Copilot reads whichever landed as literal text, so count what
+# is actually in the installed file rather than trusting which branch ran: a
+# silent fallback used to end on a clean "Done." with nothing else said.
+$PersonaUnfilled = @(Select-String -LiteralPath $TargetInstructionsFile -Pattern '\{\{').Count
 
 $SourceInstructions = Join-Path $HomeConfig 'instructions'
 $TargetInstructions = Join-Path $TargetCopilot 'instructions'
@@ -78,6 +84,18 @@ if ($WorkspacePath) {
 
 Write-Host ''
 Write-Host 'Done. No auth files, hooks, MCP config, or memory files were copied.'
+if ($PersonaUnfilled -gt 0) {
+  if ($PersonaFromWizard) {
+    Write-Host "Persona: INCOMPLETE. $FilledCopilot still holds $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s), copied as-is."
+  } else {
+    Write-Host "Persona: TEMPLATE ONLY. No $FilledCopilot, so the committed template landed with $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s)."
+  }
+  Write-Host 'Copilot reads that file as written. Run scripts\create-persona.ps1, then re-run this installer.'
+} elseif ($PersonaFromWizard) {
+  Write-Host "Persona: installed from $FilledCopilot."
+} else {
+  Write-Host "Persona: installed from the committed template; no $FilledCopilot, and nothing was left to fill."
+}
 if (-not $WorkspacePath) {
   Write-Host 'For repository-level setup, re-run with -WorkspacePath <path to your repo>.'
 }

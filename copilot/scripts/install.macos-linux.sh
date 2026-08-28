@@ -37,11 +37,20 @@ TARGET_COPILOT="$TARGET_HOME/.copilot"
 # Prefer the wizard's filled instructions; fall back to the committed template
 # (which still holds {{PLACEHOLDERS}}) when copilot/ is used standalone.
 FILLED_COPILOT="$REPO_ROOT/persona/copilot-instructions.md"
+PERSONA_FROM_WIZARD=0
 if [ -f "$FILLED_COPILOT" ]; then
   copy_with_backup "$FILLED_COPILOT" "$TARGET_COPILOT/copilot-instructions.md"
+  PERSONA_FROM_WIZARD=1
 else
   copy_with_backup "$SOURCE_HOME_CONFIG/copilot-instructions.md" "$TARGET_COPILOT/copilot-instructions.md"
 fi
+
+# The committed template ships {{PLACEHOLDERS}}, and a half-edited wizard output
+# ships them too. Copilot reads whichever landed as literal text, so count what
+# is actually in the installed file rather than trusting which branch ran: a
+# silent fallback used to end on a clean "Done." with nothing else said.
+PERSONA_UNFILLED="$(grep -c '{{' "$TARGET_COPILOT/copilot-instructions.md" 2>/dev/null || true)"
+PERSONA_UNFILLED="${PERSONA_UNFILLED:-0}"
 
 mkdir -p "$TARGET_COPILOT/instructions"
 for source in "$SOURCE_HOME_CONFIG"/instructions/*.instructions.md; do
@@ -64,3 +73,19 @@ fi
 
 echo ""
 echo "Done. No auth files, hooks, MCP config, memory files, logs, or sessions were copied."
+if [ "$PERSONA_UNFILLED" -gt 0 ]; then
+  if [ "$PERSONA_FROM_WIZARD" -eq 1 ]; then
+    echo "Persona: INCOMPLETE. $FILLED_COPILOT still holds $PERSONA_UNFILLED unfilled {{PLACEHOLDER}} line(s), copied as-is."
+  else
+    echo "Persona: TEMPLATE ONLY. No $FILLED_COPILOT, so the committed template landed with $PERSONA_UNFILLED unfilled {{PLACEHOLDER}} line(s)."
+  fi
+  echo "Copilot reads that file as written. Run scripts/create-persona.sh, then re-run this installer."
+elif [ "$PERSONA_FROM_WIZARD" -eq 1 ]; then
+  echo "Persona: installed from $FILLED_COPILOT."
+else
+  echo "Persona: installed from the committed template; no $FILLED_COPILOT, and nothing was left to fill."
+fi
+
+if [ -z "$WORKSPACE_PATH" ]; then
+  echo "For repository-level setup, re-run with a workspace path as the second argument."
+fi

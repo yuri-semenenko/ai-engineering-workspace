@@ -32,7 +32,10 @@ ports to `$GEMINI_HOME/commands/`, then seeds `settings.json` **only if you do n
 already have one**, so an existing config is never clobbered. If you generated a
 filled persona (`scripts/create-persona.sh`), it installs that over the template
 mirror; otherwise it falls back to the committed mirror so a standalone `gemini/`
-copy still works. Auth, logs, sessions, and cache are never touched.
+copy still works. Either way the summary closes with a `Persona:` line naming the
+source it used, and reports `TEMPLATE ONLY` or `INCOMPLETE` when what landed
+still holds `{{PLACEHOLDERS}}`. Auth, logs, sessions, and cache are never
+touched.
 
 `GEMINI.md` is re-sent on every prompt, which is why the mirror is the
 **condensed** persona rather than the full one.

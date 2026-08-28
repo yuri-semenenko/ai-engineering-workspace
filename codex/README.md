@@ -29,7 +29,7 @@ scripts/install.macos-linux.sh /custom/codex   # explicit target
 powershell -NoProfile -File .\scripts\install.windows.ps1
 ```
 
-The installer copies `references/`, `skills/`, and `AGENTS.md` into `$CODEX_HOME`. If you generated a filled persona (`scripts/create-persona.sh`), it installs that over the template mirror; otherwise it falls back to the committed mirror so a standalone `codex/` copy still works.
+The installer copies `references/`, `skills/`, and `AGENTS.md` into `$CODEX_HOME`. If you generated a filled persona (`scripts/create-persona.sh`), it installs that over the template mirror; otherwise it falls back to the committed mirror so a standalone `codex/` copy still works. Either way the summary closes with a `Persona:` line naming the source it used, and reports `TEMPLATE ONLY` or `INCOMPLETE` when what landed still holds `{{PLACEHOLDERS}}`.
 
 ## What is a mirror and what is owned here
 

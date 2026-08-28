@@ -27,13 +27,19 @@ if (-not (Test-Path -LiteralPath $SourceSettings)) {
 New-Item -ItemType Directory -Force -Path $GeminiHome | Out-Null
 
 # Prefer the user's filled condensed persona over the committed template mirror.
-$personaFilled = Join-Path $RepoRoot 'persona\CLAUDE.md'
-if (Test-Path -LiteralPath $personaFilled) {
-    Copy-Item -LiteralPath $personaFilled -Destination $TargetContext -Force
-    Write-Host 'Installed filled persona from persona\CLAUDE.md.'
+$PersonaSource = Join-Path $RepoRoot 'persona\CLAUDE.md'
+$PersonaFromWizard = Test-Path -LiteralPath $PersonaSource
+if ($PersonaFromWizard) {
+    Copy-Item -LiteralPath $PersonaSource -Destination $TargetContext -Force
 } else {
     Copy-Item -LiteralPath $SourceContext -Destination $TargetContext -Force
 }
+
+# The committed mirror ships {{PLACEHOLDERS}}, and a half-edited CLAUDE.md ships
+# them too. GEMINI.md is re-sent on every prompt, so either one costs tokens on
+# every turn to say nothing. Count what actually landed rather than trusting
+# which branch ran: a silent fallback used to end on a clean "installed" summary.
+$PersonaUnfilled = @(Select-String -LiteralPath $TargetContext -Pattern '\{\{').Count
 
 New-Item -ItemType Directory -Force -Path $TargetCommands | Out-Null
 Copy-Item -Path (Join-Path $SourceCommands '*.toml') -Destination $TargetCommands -Force
@@ -47,6 +53,18 @@ if (Test-Path -LiteralPath $TargetSettings) {
 }
 
 Write-Host "Gemini CLI context, commands, and settings installed."
+if ($PersonaUnfilled -gt 0) {
+    if ($PersonaFromWizard) {
+        Write-Host "Persona: INCOMPLETE. $PersonaSource still holds $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s), copied as-is."
+    } else {
+        Write-Host "Persona: TEMPLATE ONLY. No $PersonaSource, so the committed mirror landed with $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s)."
+    }
+    Write-Host 'Gemini re-sends that file on every prompt. Run scripts\create-persona.ps1, then re-run this installer.'
+} elseif ($PersonaFromWizard) {
+    Write-Host "Persona: installed from $PersonaSource."
+} else {
+    Write-Host "Persona: installed from the committed mirror; no $PersonaSource, and nothing was left to fill."
+}
 Write-Host "Context target: $TargetContext (GEMINI.md, always-on persona)"
 Write-Host "Commands target: $TargetCommands"
 Write-Host "Settings target: $TargetSettings (tool allowlist + guardrail hooks + sandbox)"
