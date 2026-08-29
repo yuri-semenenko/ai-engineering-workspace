@@ -749,7 +749,8 @@ foreach ($hostExe in $Hosts) {
                 -ScriptArgs @($case.ArgName, $targetHome) -HomeDir $caseHome
             Assert-Ps1Succeeded $r "$($case.Name) install with a half-filled persona"
             Assert-PersonaOutcome -Result $r -Label 'INCOMPLETE' -PlaceholderLines 2 -Context "$($case.Name) incomplete install"
-            Assert-That ($r.Output -match ('Finish filling ' + [regex]::Escape((Join-Path $sb.Repo $case.Persona)))) `
+            $personaFile = [regex]::Escape((Split-Path -Leaf $case.Persona))
+            Assert-That ($r.Output -match ("Finish filling .*{0}, then re-run this installer\." -f $personaFile)) `
                 "$($case.Name) did not name the incomplete source: $($r.Output)"
         }
 
