@@ -45,7 +45,7 @@ powershell -NoProfile -File .\scripts\install.windows.ps1 -TargetHome $env:USERP
 
 The installer copies Markdown instruction files into `~/.copilot` and, when a workspace path is given, the `.github/` instructions and prompts into that repo. Existing files are backed up before replacement. No auth, hooks, MCP config, or automation is ever touched.
 
-Run `scripts/create-persona.sh` (repo root) first so the installer uses your filled `copilot-instructions.md` — personalized by seniority and stack. Copying `copilot/` standalone without the wizard falls back to the committed template, which still contains `{{PLACEHOLDERS}}`.
+Run `scripts/create-persona.sh` (repo root) first so the installer uses your filled `copilot-instructions.md` — personalized by seniority and stack. Copying `copilot/` standalone without the wizard falls back to the committed template, which still contains `{{PLACEHOLDERS}}`. The summary closes with a `Persona:` line naming the source it used and reporting that case as `TEMPLATE ONLY`, and it names the repository-level half whenever no workspace path was given.
 
 ## Why it is deliberately limited
 

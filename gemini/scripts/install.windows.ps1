@@ -7,6 +7,7 @@ $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ConfigDir = Split-Path -Parent $ScriptDir            # ...\gemini
 $RepoRoot = Split-Path -Parent $ConfigDir
+$PersonaWizard = Join-Path $RepoRoot 'scripts\create-persona.ps1'
 $SourceContext = Join-Path $ConfigDir 'references\GEMINI.md'
 $SourceCommands = Join-Path $ConfigDir 'commands'
 $SourceSettings = Join-Path $ConfigDir 'settings.example.json'
@@ -27,13 +28,25 @@ if (-not (Test-Path -LiteralPath $SourceSettings)) {
 New-Item -ItemType Directory -Force -Path $GeminiHome | Out-Null
 
 # Prefer the user's filled condensed persona over the committed template mirror.
-$personaFilled = Join-Path $RepoRoot 'persona\CLAUDE.md'
-if (Test-Path -LiteralPath $personaFilled) {
-    Copy-Item -LiteralPath $personaFilled -Destination $TargetContext -Force
-    Write-Host 'Installed filled persona from persona\CLAUDE.md.'
+$PersonaSource = Join-Path $RepoRoot 'persona\CLAUDE.md'
+$PersonaFromWizard = Test-Path -LiteralPath $PersonaSource -PathType Leaf
+if ((Test-Path -LiteralPath $TargetContext) -and -not (Test-Path -LiteralPath $TargetContext -PathType Leaf)) {
+    throw "Persona target is not a regular file: $TargetContext"
+}
+if ($PersonaFromWizard) {
+    Copy-Item -LiteralPath $PersonaSource -Destination $TargetContext -Force
 } else {
     Copy-Item -LiteralPath $SourceContext -Destination $TargetContext -Force
 }
+
+# The committed mirror ships {{PLACEHOLDERS}}, and a half-edited CLAUDE.md ships
+# them too. GEMINI.md is re-sent on every prompt, so either one costs tokens on
+# every turn to say nothing. Count what actually landed rather than trusting
+# which branch ran: a silent fallback used to end on a clean "installed" summary.
+if (-not (Test-Path -LiteralPath $TargetContext -PathType Leaf)) {
+    throw "Persona target is not a regular file: $TargetContext"
+}
+$PersonaUnfilled = @(Select-String -LiteralPath $TargetContext -Pattern '\{\{').Count
 
 New-Item -ItemType Directory -Force -Path $TargetCommands | Out-Null
 Copy-Item -Path (Join-Path $SourceCommands '*.toml') -Destination $TargetCommands -Force
@@ -47,6 +60,24 @@ if (Test-Path -LiteralPath $TargetSettings) {
 }
 
 Write-Host "Gemini CLI context, commands, and settings installed."
+if ($PersonaUnfilled -gt 0) {
+    if ($PersonaFromWizard) {
+        Write-Host "Persona: INCOMPLETE. $PersonaSource still holds $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s), copied as-is."
+    } else {
+        Write-Host "Persona: TEMPLATE ONLY. No $PersonaSource, so the committed mirror landed with $PersonaUnfilled unfilled {{PLACEHOLDER}} line(s)."
+    }
+    if ($PersonaFromWizard) {
+        Write-Host "Finish filling $PersonaSource, then re-run this installer."
+    } elseif (Test-Path -LiteralPath $PersonaWizard -PathType Leaf) {
+        Write-Host ('Run: pwsh -NoProfile -File "{0}". Then re-run this installer.' -f $PersonaWizard)
+    } else {
+        Write-Host 'This standalone package has no persona wizard. Run the wizard and installer from a full repository checkout.'
+    }
+} elseif ($PersonaFromWizard) {
+    Write-Host "Persona: installed from $PersonaSource."
+} else {
+    Write-Host "Persona: installed from the committed mirror; no $PersonaSource, and nothing was left to fill."
+}
 Write-Host "Context target: $TargetContext (GEMINI.md, always-on persona)"
 Write-Host "Commands target: $TargetCommands"
 Write-Host "Settings target: $TargetSettings (tool allowlist + guardrail hooks + sandbox)"
