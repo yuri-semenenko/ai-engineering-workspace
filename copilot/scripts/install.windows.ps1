@@ -73,6 +73,7 @@ if ($WorkspacePath) {
   $TargetGithub = Join-Path $WorkspacePath '.github'
 
   Copy-WithBackup -Source (Join-Path $Template 'AGENTS.md') -Destination (Join-Path $WorkspacePath 'AGENTS.md')
+  Copy-WithBackup -Source (Join-Path $Template 'CLAUDE.md') -Destination (Join-Path $WorkspacePath 'CLAUDE.md')
   Copy-WithBackup `
     -Source (Join-Path $Template '.github\copilot-instructions.md') `
     -Destination (Join-Path $TargetGithub 'copilot-instructions.md')

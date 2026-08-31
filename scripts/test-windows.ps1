@@ -390,6 +390,18 @@ Add-Check 'model-tier-fields' {
     Assert-That ($LASTEXITCODE -eq 0) "test-check-model-tiers.sh exited $LASTEXITCODE : $out"
 }
 
+Add-Check 'repository-contract' {
+    # ADR-0014 guard plus its fixtures, the same entrypoint both CI jobs use.
+    # Run through bash for the same reason as the tier guard above — a
+    # hand-written PowerShell copy is what let that one drift.
+    if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
+        Skip-Check 'no bash on PATH (Git for Windows provides it)'
+    }
+    $test = ConvertTo-BashPath (Join-Path $RepoRoot 'scripts\test-check-repository-contract.sh')
+    $out = (& bash $test 2>&1 | Out-String).Trim()
+    Assert-That ($LASTEXITCODE -eq 0) "test-check-repository-contract.sh exited $LASTEXITCODE : $out"
+}
+
 # --- checks: sync / drift guard ---------------------------------------------
 
 foreach ($hostExe in $Hosts) {
@@ -604,13 +616,114 @@ foreach ($hostExe in $Hosts) {
         Assert-That ($installed -eq $sourceCount) "installed $installed of $sourceCount instruction files"
 
         # Repository-level setup, the same surface the Linux CI job asserts.
+        # The contract and its Claude Code import ship as a pair (ADR-0014):
+        # AGENTS.md alone leaves a seeded repo with nothing for Claude Code.
         Assert-FileExists (Join-Path $workspace 'AGENTS.md') 'workspace AGENTS.md'
+        Assert-FileExists (Join-Path $workspace 'CLAUDE.md') 'workspace CLAUDE.md'
+        $pointer = Get-Content -Raw -LiteralPath (Join-Path $workspace 'CLAUDE.md')
+        Assert-That ($pointer -match '(?m)^@AGENTS\.md\s*$') 'workspace CLAUDE.md must import the contract with a bare @AGENTS.md line'
         Assert-FileExists (Join-Path $workspace '.github\copilot-instructions.md') 'workspace copilot-instructions.md'
         $template = Join-Path $sb.Repo 'copilot\workspace-template\.github'
         foreach ($set in @(, @('instructions', '*.instructions.md')) + @(, @('prompts', '*.prompt.md'))) {
             $expected = @(Get-ChildItem -LiteralPath (Join-Path $template $set[0]) -Filter $set[1]).Count
             $actual = @(Get-ChildItem -LiteralPath (Join-Path $workspace ".github\$($set[0])") -Filter $set[1] -ErrorAction SilentlyContinue).Count
             Assert-That ($actual -eq $expected) "workspace $($set[0]): installed $actual of $expected"
+        }
+    }
+
+    Add-Check "install-copilot-contract [$hostExe]" -Arguments @($hostExe) {
+        param([string]$HostExe)
+        # PowerShell half of scripts/test-copilot-workspace-contract.sh: the
+        # contract pair is the only thing this kit writes into someone else's
+        # repository (ADR-0014), so the collision policy has to behave the same
+        # in both ports. A .sh test cannot exercise Copy-WithBackup.
+        $sb = Get-Sandbox $HostExe
+        Initialize-Persona -HostExe $HostExe -Sandbox $sb
+        $fakeHome = Join-Path $sb.Home 'copilot contract home'
+        $workspace = Join-Path $sb.Home 'copilot contract workspace'
+        New-Item -ItemType Directory -Force -Path $workspace | Out-Null
+        $installer = Join-Path $sb.Repo 'copilot\scripts\install.windows.ps1'
+        $template = Join-Path $sb.Repo 'copilot\workspace-template'
+
+        # Both helpers take every path explicitly. An earlier version closed over
+        # $workspace and then reassigned it for the conflict leg, which worked
+        # only by dynamic scoping and read as if the helpers were stale. These
+        # are defined inside the check body, which `& $check.Body` runs in a
+        # child scope, so they cannot leak between host legs either.
+        function Assert-PairIntact {
+            param([string]$Workspace, [string]$Template, [string]$Label)
+            foreach ($name in 'AGENTS.md', 'CLAUDE.md') {
+                $landed = Join-Path $Workspace $name
+                Assert-FileExists $landed "$Label`: $name"
+                Assert-That ((Get-Sha256 $landed) -eq (Get-Sha256 (Join-Path $Template $name))) `
+                    "$Label`: $name does not match the shipped template"
+            }
+            $pointer = Get-Content -Raw -LiteralPath (Join-Path $Workspace 'CLAUDE.md')
+            Assert-That ($pointer -match '(?m)^@AGENTS\.md\s*$') "$Label`: no bare @AGENTS.md import"
+        }
+
+        function Get-BackupCount {
+            param([string]$Workspace, [string]$Name)
+            @(Get-ChildItem -LiteralPath $Workspace -Filter "$Name.pre-copilot-config.*" -Force -ErrorAction SilentlyContinue).Count
+        }
+
+        # 1. empty target: both files created, nothing backed up.
+        $r = Invoke-Ps1 -HostExe $HostExe -Script $installer `
+            -ScriptArgs @('-TargetHome', $fakeHome, '-WorkspacePath', $workspace) -HomeDir $fakeHome
+        Assert-Ps1Succeeded $r 'copilot install (empty workspace)'
+        Assert-PairIntact -Workspace $workspace -Template $template -Label 'empty target'
+        foreach ($name in 'AGENTS.md', 'CLAUDE.md') {
+            Assert-That ((Get-BackupCount -Workspace $workspace -Name $name) -eq 0) `
+                "empty target: backed up $name that did not exist"
+        }
+
+        # 2. re-run over identical files: content-idempotent, one backup each.
+        $r = Invoke-Ps1 -HostExe $HostExe -Script $installer `
+            -ScriptArgs @('-TargetHome', $fakeHome, '-WorkspacePath', $workspace) -HomeDir $fakeHome
+        Assert-Ps1Succeeded $r 'copilot install (rerun)'
+        Assert-PairIntact -Workspace $workspace -Template $template -Label 'rerun'
+        foreach ($name in 'AGENTS.md', 'CLAUDE.md') {
+            $n = Get-BackupCount -Workspace $workspace -Name $name
+            Assert-That ($n -eq 1) "rerun: expected 1 backup of $name, found $n"
+        }
+
+        # 3-5. collisions, one case per shape and matching the Bash test exactly:
+        #      only AGENTS.md present, only CLAUDE.md present, both present. Each
+        #      must end with the pair intact and the prior content recoverable,
+        #      which is what proves a conflict never half-delivers the pair.
+        #      Each shape gets its own directory inside the per-host sandbox, so
+        #      no shape and no host leg can be satisfied by another's files.
+        $shapes = @(
+            @{ Name = 'agents-only'; Present = @('AGENTS.md') }
+            @{ Name = 'claude-only'; Present = @('CLAUDE.md') }
+            @{ Name = 'both'; Present = @('AGENTS.md', 'CLAUDE.md') }
+        )
+        foreach ($shape in $shapes) {
+            $ws = Join-Path $sb.Home "copilot conflict $($shape.Name)"
+            New-Item -ItemType Directory -Force -Path $ws | Out-Null
+            foreach ($name in $shape.Present) {
+                Set-Content -LiteralPath (Join-Path $ws $name) -Value 'team-authored: do not lose this line'
+            }
+
+            $r = Invoke-Ps1 -HostExe $HostExe -Script $installer `
+                -ScriptArgs @('-TargetHome', $fakeHome, '-WorkspacePath', $ws) -HomeDir $fakeHome
+            Assert-Ps1Succeeded $r "copilot install ($($shape.Name))"
+            Assert-PairIntact -Workspace $ws -Template $template -Label $shape.Name
+
+            foreach ($name in 'AGENTS.md', 'CLAUDE.md') {
+                $backups = @(Get-ChildItem -LiteralPath $ws -Filter "$name.pre-copilot-config.*" -Force -ErrorAction SilentlyContinue)
+                if ($shape.Present -contains $name) {
+                    Assert-That ($backups.Count -eq 1) `
+                        "$($shape.Name): expected 1 backup of $name, found $($backups.Count)"
+                    Assert-That ((Get-Content -Raw -LiteralPath $backups[0].FullName) -match 'do not lose this line') `
+                        "$($shape.Name): the pre-existing $name content is not in its backup"
+                    Assert-That ($r.Output -match [regex]::Escape("Backed up $(Join-Path $ws $name)")) `
+                        "$($shape.Name): replacing $name was not reported"
+                } else {
+                    Assert-That ($backups.Count -eq 0) `
+                        "$($shape.Name): backed up $name that did not exist"
+                }
+            }
         }
     }
 

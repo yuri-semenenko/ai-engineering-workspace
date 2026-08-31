@@ -74,6 +74,7 @@ done
 
 if [ -n "$WORKSPACE_PATH" ]; then
   copy_with_backup "$CONFIG_DIR/workspace-template/AGENTS.md" "$WORKSPACE_PATH/AGENTS.md"
+  copy_with_backup "$CONFIG_DIR/workspace-template/CLAUDE.md" "$WORKSPACE_PATH/CLAUDE.md"
   mkdir -p "$WORKSPACE_PATH/.github/instructions" "$WORKSPACE_PATH/.github/prompts"
   copy_with_backup "$CONFIG_DIR/workspace-template/.github/copilot-instructions.md" "$WORKSPACE_PATH/.github/copilot-instructions.md"
 

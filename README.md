@@ -24,6 +24,8 @@ skills/commands/prompts, and tool-specific adapters.
 - A generated recommended-skills view that tells you which shipped skills to
   reach for first.
 - A `/start` onboarding entrypoint inside each supported tool.
+- A tool-agnostic repository-contract convention (`AGENTS.md`) and a workflow
+  that writes one from a repository's own evidence.
 - Drift guards and CI checks so templates, mirrors, and skill references do not
   silently rot.
 - ADRs that document why the architecture works this way.
@@ -83,9 +85,10 @@ hands you the exact command for your shell. It is a thin pointer to
 `scripts/create-persona.{sh,ps1}`, not a second copy of the wizard (see
 [`adr/0005-start-entrypoint.md`](adr/0005-start-entrypoint.md)).
 
-Nothing personal is committed: your generated `persona.md`, `CLAUDE.md`, and
-`settings.json` are gitignored. The repo ships templates and a generator, not one
-person's profile.
+Nothing personal is committed: your generated `persona/persona.md`,
+`persona/CLAUDE.md`, and `settings.json` are gitignored. (The committed root
+`CLAUDE.md` is a different file — the repository's own Claude Code adapter, not
+your profile.) The repo ships templates and a generator, not one person's file.
 
 ## How it works: canon → mirror
 
@@ -110,7 +113,8 @@ behind it as records in [`adr/`](adr/).
 | Persona | `~/.claude/CLAUDE.md` (condensed) + `~/persona.md` (full) | `references/persona.md` (mirror) | `home/.copilot` instructions | `~/.gemini/GEMINI.md` (condensed, always-on) |
 | Skills / prompts | 20 process skills + `/start` | 14 skill ports + `start` (`+ agents/openai.yaml`) | 16 workspace prompts + `start` + instruction files | 20 command ports + `start` (`.gemini/commands/*.toml`) |
 | Delegation | tier alias in agent config, one shipped reviewer | runtime tier override, no agent files | model picker per request | built-in agent routing + `agents.overrides` |
-| Guardrails | `settings.json` permissions + 6 hooks | always-on `AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
+| Guardrails | `settings.json` permissions + 6 guardrail hooks | always-on `$CODEX_HOME/AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
+| Repo contract | root `CLAUDE.md` importing `@AGENTS.md` | root `AGENTS.md`, root-down, closest wins | root `AGENTS.md` on CLI + VS Code, combined with `.github/` instructions | root `AGENTS.md` via `context.fileName` |
 | Install mode | symlink (copy on Windows) | copy into `$CODEX_HOME` | Markdown copy only | copy into `~/.gemini` |
 | Assumed constraint | full local control | portable seed, on-demand references | locked-down corporate laptop, Markdown-only | local control, sandbox available |
 
@@ -141,8 +145,8 @@ The project deliberately separates methodology from identity:
 - **Tool adapters — per assistant.** The same canon and identity reach each tool
   in its native format, by one of two routes. The **sync layer** generates the
   drift-guarded mirrors: the Codex references and Gemini `GEMINI.md`. The
-  **wizard** renders your filled `CLAUDE.md` and Copilot instructions, which are
-  per-machine and gitignored, so no guard applies to them.
+  **wizard** renders your filled `persona/CLAUDE.md` and Copilot instructions,
+  which are per-machine and gitignored, so no guard applies to them.
 
 Seniority shapes how the assistant treats you (mid to principal); discipline
 shapes the background framing; workflow shapes which skills the generated
@@ -155,6 +159,38 @@ and [`adr/0004-persona-workflow-axis.md`](adr/0004-persona-workflow-axis.md)).
 onto the canon, producing your `persona/persona.md` (full), `persona/CLAUDE.md`
 (condensed), and `persona/recommended-skills.md`. See
 [`persona/README.md`](persona/README.md).
+
+## Repository contract
+
+Persona and methodology are global: they follow you into every repository. What
+an agent needs to know about *one* repository — its commands, its generated
+files, its invariants, what it must not touch — is a separate layer, and it lives
+in that repository's root `AGENTS.md`. The convention is tool-agnostic: Codex and
+Gemini CLI read it directly, Copilot CLI and VS Code Copilot read it as agent
+instructions, and Claude Code reads `CLAUDE.md`, so each contract ships a
+`CLAUDE.md` whose whole body is an `@AGENTS.md` import. Copilot is several
+products and they do not all discover `AGENTS.md`; the per-surface matrix and
+what "degraded" means are in [`copilot/README.md`](copilot/README.md).
+
+`AGENTS.md` is a **router, not a knowledge base**. It answers what a competent
+agent would not already know, what mistake is likely without the instruction,
+where to read next, and how a change is verified — and it never carries persona,
+general methodology, or a whole skill.
+
+This repository has its own: [`AGENTS.md`](AGENTS.md). Two other files here share
+the name and are not it:
+
+| File | Scope | Reaches the tool by |
+| --- | --- | --- |
+| [`AGENTS.md`](AGENTS.md) | this repository | committed here, imported by root `CLAUDE.md` |
+| `codex/AGENTS.md` | personal and global | installed to `$CODEX_HOME/AGENTS.md` |
+| `copilot/workspace-template/AGENTS.md` | a different repository | copied into that repo by the Copilot installer |
+
+To create or update the contract in another repository, use the Codex
+`project-onboarding` skill: it inspects the repo read-only, derives commands from
+`package.json` and CI rather than guessing them, patches an existing file instead
+of overwriting it, and asks before writing. The reasoning is in
+[`adr/0014-agents-md-is-the-repository-contract.md`](adr/0014-agents-md-is-the-repository-contract.md).
 
 ## Principles
 
@@ -213,21 +249,27 @@ The Claude Code package ships an opinionated `settings.example.json`:
 - **Permission denylist** — `rm -rf`, force-push, hard reset, history rewrites,
   `npm publish`, `gh pr merge`, `node -e`, and similar irreversible or outbound
   actions.
-- **Six hooks** — a model-tier reminder on heavy-reasoning commands,
+- **Six guardrail hooks** — a model-tier reminder on heavy-reasoning commands,
   Prettier-on-write, a post-compaction guardrail re-assert, a default-branch
   commit guard, a secret-pattern scanner, and a protected-file (env/key/lockfile)
-  guard.
+  guard. A seventh hook is a macOS notifier, silent on other platforms.
 
 Details and rationale in [`docs/hardening.md`](docs/hardening.md).
 
 ## Adapting it
 
 1. Run `scripts/create-persona.sh` (or edit `persona/*.template.md` directly).
-2. Copy `claude-code/.claude/agents/project-agent.template.md`, rename it, and
-   fill the placeholders to encode one project's stack and conventions.
-3. Replace `claude-code/.claude/memory-seed.example/` with your own memories, or
+2. Give each repository you work in an `AGENTS.md`: copy
+   `copilot/workspace-template/AGENTS.md` and its `CLAUDE.md` into the repo root
+   and fill the placeholders, or run the Codex `project-onboarding` skill to
+   derive them from that repository's own evidence.
+3. Copy `claude-code/.claude/agents/project-agent.template.md`, rename it, and
+   fill the role placeholders when you want a dispatchable Claude subagent for
+   one project. It reads that project's stack and commands from the repository's
+   `AGENTS.md` rather than restating them.
+4. Replace `claude-code/.claude/memory-seed.example/` with your own memories, or
    delete it.
-4. After editing any canon file, run the sync script and commit the regenerated
+5. After editing any canon file, run the sync script and commit the regenerated
    mirrors.
 
 ## Roadmap
