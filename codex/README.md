@@ -5,7 +5,7 @@ A portable seed for OpenAI Codex: always-on guardrails, on-demand references, an
 ## Layout
 
 ```
-AGENTS.md              always-on guardrails (loaded every session)
+AGENTS.md              global always-on guardrails -> $CODEX_HOME/AGENTS.md (every session)
 references/
   persona.md           MIRROR of persona/persona.template.md (do not hand-edit)
   memory-seed.example/ MIRROR of the Claude memory-seed example
@@ -77,5 +77,5 @@ Trigger a narrower workflow explicitly:
 - `$pull-request-workflow` — review a PR or produce GitHub-ready feedback
 - `$humanizer` — make text sound less AI-generated
 - `$prompt-engineer` — design or harden an agent prompt
-- `$project-onboarding` — create or update project-level agent instructions
+- `$project-onboarding` — create or update a repository's root `AGENTS.md` contract
 - `$context-brief` — compact handoff before complex implementation or review

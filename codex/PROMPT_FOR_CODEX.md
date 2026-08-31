@@ -15,7 +15,7 @@ Important references:
 - references/persona.md for collaboration defaults.
 - references/memory-seed/MEMORY.md for durable migrated context.
 - references/memory-seed/tooling_defaults.md for preferred tooling defaults.
-- references/memory-seed/project_claude_md_checklist.md when creating repository-level AGENTS.md files.
+- the `$project-onboarding` skill when creating or updating a repository-level AGENTS.md.
 - references/memory-seed/feedback_security_review_workflow.md for structured security-review fix planning.
 - references/humanizer/ai-writing-patterns.md when editing prose to sound less AI-generated.
 

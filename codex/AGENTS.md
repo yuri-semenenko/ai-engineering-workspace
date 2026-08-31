@@ -34,3 +34,13 @@ Read on demand, only what the task needs (do not load everything up front):
 
 Use the `skills/` for narrower workflows — the trigger list lives in this
 folder's README under "Interaction Modes".
+
+## Repository instructions
+
+This file is the global layer: personal, loaded every session, and never
+repository-specific. A repository's own root `AGENTS.md` is a separate,
+project-scoped contract. Codex loads this file first and the repository's files
+after it, from the project root down, so the closer file wins where the two
+overlap. Keep repository facts — commands, layout, invariants, protected paths —
+out of this file and in that one. Use the `$project-onboarding` skill to create
+or update it.
