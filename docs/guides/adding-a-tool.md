@@ -85,6 +85,15 @@ The installer copies the mirror and ports into the tool's home, seeds settings
 only on first run (never clobber a user's config), and prefers the user's filled
 persona (`persona/CLAUDE.md` or `persona/persona.md`) over the committed template.
 
+Whether that copy backs up what it replaces follows the tool's ownership model
+rather than one blanket rule. `$CODEX_HOME` and `~/.gemini` are documented as
+belonging to the tool's configuration payload, so the Codex and Gemini installers
+overwrite the mirror and the ports in place: there is no user-authored content
+there to lose. `~/.claude` and `~/.copilot` also hold files the user wrote, so
+those installers move an existing file aside to a timestamped `.pre-*-config.*`
+name before writing. Settings are the exception everywhere, seeded only when
+absent.
+
 ### 4. Wire the mirror into the drift guard
 
 A committed mirror that isn't drift-guarded silently rots — see
@@ -125,7 +134,7 @@ bends, the methodology doesn't.
 - [ ] Skills ported, methodology preserved verbatim
 - [ ] Permissions translated; denylist gaps handled (hook if needed)
 - [ ] Hooks translated; timing/semantic gaps recorded
-- [ ] Installer (macOS/Linux + Windows) seeds without clobbering
+- [ ] Installer (macOS/Linux + Windows) seeds without clobbering; backup behavior matches the tool's ownership model
 - [ ] Mirror wired into the drift guard (`.sh` + `.ps1`)
 - [ ] CI smoke test added
 - [ ] README tool matrix updated
