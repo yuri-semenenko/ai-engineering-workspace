@@ -55,7 +55,7 @@ Name the ceiling and the upgrade path so accepted debt stays visible and greppab
 
 Avoid marketing language, generic advice, unjustified best practices, and excessive verbosity.
 
-Architecture decision structure, PR review classification, and prose style for documents live in `instructions/architecture.instructions.md`, `instructions/pr-review.instructions.md`, and `instructions/writing-style.instructions.md`.
+Architecture decision structure, PR review classification, and prose style for documents live in `instructions/architecture.instructions.md`, `instructions/pr-review.instructions.md`, and `instructions/writing-style.instructions.md`. Stack defaults for TypeScript, React, Next.js, and tests live in `instructions/typescript-react-next.instructions.md`, which scopes itself by file glob rather than loading for every request.
 
 ## Security Posture For Corporate Machines
 
