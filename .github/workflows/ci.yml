@@ -18,6 +18,9 @@ jobs:
       - name: Drift guard (canon -> mirror in sync, codex skills valid)
         run: bash scripts/sync-codex-references.sh --check
 
+      - name: Repository contract guard + its fixtures
+        run: bash scripts/test-check-repository-contract.sh
+
       - name: Shell syntax check
         run: |
           status=0
@@ -28,6 +31,9 @@ jobs:
 
       - name: Installers report an unfilled persona
         run: bash scripts/test-installer-persona-outcomes.sh
+
+      - name: Copilot workspace delivers the contract pair safely
+        run: bash scripts/test-copilot-workspace-contract.sh
 
       - name: Persona wizard produces no leftover placeholders
         run: |
@@ -72,7 +78,11 @@ jobs:
           case "$out" in *'For repository-level setup'*) echo "installer offered workspace setup it had already done"; exit 1;; esac
           test -f "$cop_home/.copilot/copilot-instructions.md"
           test -f "$ws/.github/copilot-instructions.md"
+          # The contract and its Claude Code import ship as a pair (ADR-0014):
+          # AGENTS.md alone leaves a seeded repo with nothing for Claude.
           test -f "$ws/AGENTS.md"
+          test -f "$ws/CLAUDE.md"
+          grep -qx '@AGENTS.md' "$ws/CLAUDE.md"
           if grep -R '{{' "$cop_home/.copilot/copilot-instructions.md"; then
             echo "Installed Copilot instructions still have placeholders"; exit 1
           fi
@@ -108,4 +118,4 @@ jobs:
         shell: pwsh
         # The runner image provides bash and jq. The degraded-path check hides
         # jq in an isolated Bash PATH, so all three checks must actually run.
-        run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,hook-scripts,hook-scripts-without-jq
+        run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,repository-contract,install-copilot-contract,hook-scripts,hook-scripts-without-jq
