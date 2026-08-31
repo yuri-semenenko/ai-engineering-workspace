@@ -30,10 +30,10 @@ They are not mirrors of each other and no sync runs between them. Only the pairs
 | Path or destination | Role |
 | --- | --- |
 | `CLAUDE.md` (root) | Claude Code adapter for this repository: the active `@AGENTS.md` import plus any Claude-only delta |
-| `persona/CLAUDE.template.md` | canon for the condensed persona; mirrored to `gemini/references/GEMINI.md` |
+| `copilot/workspace-template/CLAUDE.md` | the `@AGENTS.md` adapter shipped with the Copilot workspace template; copied into another repository, not in force here |
 | `persona/CLAUDE.md` -> `~/.claude/CLAUDE.md` | the developer's generated persona: user identity and collaboration layer, gitignored |
 
-Tool discovery dictates the filename in all three cases, so none can be renamed; qualify which one you mean by its path. An adapter is not a second canonical source as long as it holds only the import, its own role, and genuine Claude-only deltas. That boundary is a convention, not something the drift guards can prove — [`../adr/0014-agents-md-is-the-repository-contract.md`](../adr/0014-agents-md-is-the-repository-contract.md) records it.
+Tool discovery dictates the filename in all three cases, so none can be renamed; qualify which one you mean by its path. `persona/CLAUDE.template.md` is not one of them: it is canon for the condensed persona, mirrored to `gemini/references/GEMINI.md`, not a `CLAUDE.md` that any tool discovers. An adapter is not a second canonical source as long as it holds only the import, its own role, and genuine Claude-only deltas. That boundary is a convention, not something the drift guards can prove — [`../adr/0014-agents-md-is-the-repository-contract.md`](../adr/0014-agents-md-is-the-repository-contract.md) records it.
 
 ## The problem
 
