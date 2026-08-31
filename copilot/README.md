@@ -48,6 +48,8 @@ Verified against [response customization](https://docs.github.com/en/copilot/con
 
 Degraded means the contract is invisible to that surface and `.github/copilot-instructions.md` is all it receives. That file therefore tells it to open `AGENTS.md` explicitly and not to guess at a stack — a pointer, not a second copy of the contract. Duplicating the contract there would create two editable copies of the same repository facts for every target repository, which costs more than the degradation.
 
+Degradation does not cost the same thing everywhere. The safety boundaries — secrets, destructive commands, approval before anything touches machine or global configuration — now live in `AGENTS.md` alone, so a degraded surface receives none of them inline; an earlier revision of this template restated them in `.github/copilot-instructions.md` as a floor beneath the pointer. The pointer replaces that floor, and it holds only if the surface actually opens the file. That is deliberate rather than overlooked: two editable copies of the same boundaries in every target repository drift, and a drifted safety rule reads as authoritative while being wrong, which is worse than one that is a file away.
+
 ## Install
 
 ```bash
