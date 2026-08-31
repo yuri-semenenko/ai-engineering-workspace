@@ -11,7 +11,7 @@ references/
   memory-seed.example/ MIRROR of the Claude memory-seed example
   checklists/          codex-owned: security.md, performance.md
   humanizer/           codex-owned: ai-writing-patterns.md
-skills/                14 hand-authored skill ports + a start onboarding entrypoint, each with agents/openai.yaml
+skills/                16 hand-authored skill ports + a start onboarding entrypoint, each with agents/openai.yaml
 scripts/
   install.macos-linux.sh
   install.windows.ps1
@@ -73,8 +73,10 @@ Trigger a narrower workflow explicitly:
 - `$architect` — architecture decision, trade-off analysis, system design
 - `$rfc` — RFC in the canonical 10-section format
 - `$adr` — record an accepted decision
-- `$debug` / `$failure-investigation` — systematic root-cause investigation
-- `$pull-request-workflow` — review a PR or produce GitHub-ready feedback
+- `$debug` — systematic root-cause investigation
+- `$pr-classify` — review a PR and classify every finding by severity
+- `$pr-recheck` — second pass after fixes, against the open threads
+- `$pr-comment` — draft the PR description from the branch
 - `$humanizer` — make text sound less AI-generated
 - `$prompt-engineer` — design or harden an agent prompt
 - `$project-onboarding` — create or update a repository's root `AGENTS.md` contract
