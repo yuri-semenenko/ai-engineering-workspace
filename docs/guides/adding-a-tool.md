@@ -86,13 +86,14 @@ only on first run (never clobber a user's config), and prefers the user's filled
 persona (`persona/CLAUDE.md` or `persona/persona.md`) over the committed template.
 
 Whether that copy backs up what it replaces follows the tool's ownership model
-rather than one blanket rule. `$CODEX_HOME` and `~/.gemini` are documented as
-belonging to the tool's configuration payload, so the Codex and Gemini installers
-overwrite the mirror and the ports in place: there is no user-authored content
-there to lose. `~/.claude` and `~/.copilot` also hold files the user wrote, so
-those installers move an existing file aside to a timestamped `.pre-*-config.*`
-name before writing. Settings are the exception everywhere, seeded only when
-absent.
+rather than one blanket rule. The Codex and Gemini installers treat the mirror,
+ports, and always-on context files they manage as replaceable output, so they
+overwrite those targets in place. That is an explicit trade-off, not evidence
+that `$CODEX_HOME` or `~/.gemini` hold no user-authored content: an installer for
+a new tool must define its managed targets and collision policy. `~/.claude` and
+`~/.copilot` also hold files the user wrote, so those installers move an existing
+file aside to a timestamped `.pre-*-config.*` name before writing. Settings are
+the exception everywhere, seeded only when absent.
 
 ### 4. Wire the mirror into the drift guard
 
