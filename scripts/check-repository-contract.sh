@@ -100,7 +100,25 @@ active_content() {
     # A fence delimiter inside a comment is text, not a fence. A comment opener
     # inside a fence is text too: `fence { next }` skips the line before
     # strip_comments can see it, so in_comment never changes there.
-    !in_comment && /^[[:space:]]*(```|~~~)/ { fence = !fence; next }
+    #
+    # The delimiter character and run length of the opener are remembered
+    # because a single boolean let a `~~~` line close a ``` block and a
+    # 3-backtick line close a 4-backtick one, leaking the fenced content back
+    # into the active text: a link shown inside a fence was checked and failed
+    # CI. CommonMark closes only on the same character, a run at least as long
+    # as the opener, and nothing but whitespace after it — an info string is
+    # legal on the opener alone. `[[:space:]]` is what keeps that trailing test
+    # true of the CR in a Windows worktree.
+    !in_comment && /^[[:space:]]*(```|~~~)/ {
+      fence_line = $0
+      sub(/^[[:space:]]*/, "", fence_line)
+      fence_c = substr(fence_line, 1, 1)
+      fence_run = 0
+      while (substr(fence_line, fence_run + 1, 1) == fence_c) fence_run++
+      if (!fence) { fence = 1; fence_char = fence_c; fence_len = fence_run; next }
+      if (fence_c == fence_char && fence_run >= fence_len && substr(fence_line, fence_run + 1) ~ /^[[:space:]]*$/) fence = 0
+      next
+    }
     fence { next }
     {
       line = strip_comments($0)
