@@ -11,7 +11,7 @@ references/
   memory-seed.example/ MIRROR of the Claude memory-seed example
   checklists/          codex-owned: security.md, performance.md
   humanizer/           codex-owned: ai-writing-patterns.md
-skills/                14 hand-authored skill ports + a start onboarding entrypoint, each with agents/openai.yaml
+skills/                16 hand-authored skill ports + a start onboarding entrypoint, each with agents/openai.yaml
 scripts/
   install.macos-linux.sh
   install.windows.ps1
@@ -30,6 +30,15 @@ powershell -NoProfile -File .\scripts\install.windows.ps1
 ```
 
 The installer copies `references/`, `skills/`, and `AGENTS.md` into `$CODEX_HOME`. If you generated a filled persona (`scripts/create-persona.sh`), it installs that over the template mirror; otherwise it falls back to the committed mirror so a standalone `codex/` copy still works. Either way the summary closes with a `Persona:` line naming the source it used, and reports `TEMPLATE ONLY` or `INCOMPLETE` when what landed still holds `{{PLACEHOLDERS}}`.
+
+### Upgrading renamed skills
+
+The installer copies skills but deliberately does not prune `$CODEX_HOME/skills/`:
+it must not delete local work. If you installed a version from before the skill-name
+alignment, inspect any local customizations and then archive or remove only these
+superseded directories: `failure-investigation`, `test-strategy`, and
+`pull-request-workflow`. Their replacements are `debug`, `testing-checklist`, and
+`pr-classify`, `pr-comment`, and `pr-recheck`, respectively.
 
 ## What is a mirror and what is owned here
 
@@ -73,8 +82,10 @@ Trigger a narrower workflow explicitly:
 - `$architect` — architecture decision, trade-off analysis, system design
 - `$rfc` — RFC in the canonical 10-section format
 - `$adr` — record an accepted decision
-- `$debug` / `$failure-investigation` — systematic root-cause investigation
-- `$pull-request-workflow` — review a PR or produce GitHub-ready feedback
+- `$debug` — systematic root-cause investigation
+- `$pr-classify` — review a PR and classify every finding by severity
+- `$pr-recheck` — second pass after fixes, against the open threads
+- `$pr-comment` — draft the PR description from the branch
 - `$humanizer` — make text sound less AI-generated
 - `$prompt-engineer` — design or harden an agent prompt
 - `$project-onboarding` — create or update a repository's root `AGENTS.md` contract

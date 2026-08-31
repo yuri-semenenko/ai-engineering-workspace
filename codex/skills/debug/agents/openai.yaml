@@ -1,4 +1,4 @@
 interface:
-  display_name: "Failure Investigation"
+  display_name: "Debug"
   short_description: "Find root causes"
   default_prompt: "Investigate why this is failing."

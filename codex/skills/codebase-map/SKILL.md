@@ -24,4 +24,4 @@ Build a fast, honest orientation to code you don't know yet, so you can work in 
 - Comprehension, not critique: this is not an over-engineering audit.
 - Respect Chesterton's Fence: unclear or load-bearing code is "risky", not "delete me".
 - Keep it short and proportional (~80-150 lines). A map longer than the territory is useless.
-- Distinct from project-onboarding (which writes a durable AGENTS.md for the agent; this orients a reader first and can feed it) and failure-investigation (which drives a known failure).
+- Distinct from project-onboarding (which writes a durable AGENTS.md for the agent; this orients a reader first and can feed it) and debug (which drives a known failure).

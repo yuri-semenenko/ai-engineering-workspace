@@ -1,9 +1,9 @@
 ---
-name: test-strategy
+name: testing-checklist
 description: Use when writing or reviewing tests, deciding coverage for a change, driving new code test-first, or fixing a bug that needs a regression test. Covers what to test, the TDD loop, and failing-test-first.
 ---
 
-# Test Strategy
+# Testing Checklist
 
 Tests are the executable spec. Optimize them for reading and for meaningful assertions, not for coverage numbers.
 

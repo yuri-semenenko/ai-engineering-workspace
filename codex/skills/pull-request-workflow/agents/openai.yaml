@@ -1,4 +1,0 @@
-interface:
-  display_name: "Pull Request Workflow"
-  short_description: "Review PRs and draft PR bodies"
-  default_prompt: "Review this PR or draft its description."

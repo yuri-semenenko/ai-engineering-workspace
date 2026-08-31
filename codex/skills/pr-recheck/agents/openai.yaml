@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Recheck"
+  short_description: "Second pass after fixes"
+  default_prompt: "Re-review this PR against the open threads."
