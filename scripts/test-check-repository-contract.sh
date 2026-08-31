@@ -160,6 +160,25 @@ run_case fence-marker-inside-comment 0 'Repository contract intact' \
 run_case comment-marker-inside-fence 0 'Repository contract intact' \
   bash -c 'printf "\n\`\`\`\n<!--\n\`\`\`\n[arch](docs/architecture.md)\n" >> "$1/AGENTS.md"' --
 
+# A shorter run cannot close a longer opener: before the fix any ``` or ~~~
+# line toggled fence state regardless of run length, so this same shape closed
+# cleanly and the file parsed with no error at all.
+run_case unclosed-fence-shorter-closer 1 'ends inside an unclosed fenced code block' \
+  bash -c 'printf "\n\`\`\`\`\n[hidden](nope.md)\n\`\`\`\n" >> "$1/AGENTS.md"' --
+
+# --- 3b2. a corrupted pointer file also fails to parse ---------------------
+# No existing case corrupts a pointer file itself. Without this check, a
+# refactor that swallowed the parse failure would read a malformed pointer as
+# "no active @AGENTS.md import" instead of catching the real defect, and ship
+# green. The template pointer is used rather than the root one: the root
+# CLAUDE.md is also a CONTRACT_DOCS entry, so a corrupted root pointer is
+# caught twice over and would not pin this branch on its own; the template
+# pointer is reachable only through the pointer check.
+run_case pointer-unclosed-html-comment 1 'copilot/workspace-template/CLAUDE.md could not be parsed' \
+  bash -c 'printf "\n<!--\nnote\n" >> "$1/copilot/workspace-template/CLAUDE.md"' --
+run_case pointer-unclosed-fence 1 'copilot/workspace-template/CLAUDE.md could not be parsed' \
+  bash -c 'printf "\n\`\`\`\nnote\n" >> "$1/copilot/workspace-template/CLAUDE.md"' --
+
 # --- 3c. CRLF is the normal worktree state for tracked Markdown here -------
 run_case crlf-input-valid 0 'Repository contract intact' \
   bash -c 'printf "# CLAUDE.md\r\n\r\nAdapter.\r\n\r\n@AGENTS.md\r\n" > "$1/CLAUDE.md"; printf "# AGENTS.md\r\n\r\n[arch](docs/architecture.md)\r\n" > "$1/AGENTS.md"' --
@@ -179,6 +198,15 @@ run_case broken-link-fenced 0 'Repository contract intact' \
   bash -c 'printf "\n\`\`\`markdown\n- [Title](does-not-exist.md)\n\`\`\`\n" >> "$1/AGENTS.md"' --
 run_case broken-link-tilde-fenced 0 'Repository contract intact' \
   bash -c 'printf "\n~~~\n[Title](does-not-exist.md)\n~~~\n" >> "$1/AGENTS.md"' --
+# A fence closes only on a matching delimiter character and a run at least as
+# long as the opener: before the fix a single boolean let any ``` or ~~~ line
+# toggle fence state, so a shorter nested fence closed the outer one early,
+# leaking the link inside it into active content where it was checked and
+# failed.
+run_case broken-link-fenced-nested-shorter-backtick-run 0 'Repository contract intact' \
+  bash -c 'printf "\n\`\`\`\`\n\`\`\`\n[Title](does-not-exist.md)\n\`\`\`\n\`\`\`\`\n" >> "$1/AGENTS.md"' --
+run_case broken-link-fenced-nested-mismatched-char 0 'Repository contract intact' \
+  bash -c 'printf "\n~~~\n\`\`\`\n[Title](does-not-exist.md)\n\`\`\`\n~~~\n" >> "$1/AGENTS.md"' --
 run_case broken-link-html-comment 0 'Repository contract intact' \
   bash -c 'printf "\n<!-- draft: [Title](does-not-exist.md) -->\n" >> "$1/AGENTS.md"' --
 # The multi-line case is the one a per-line filter gets wrong.
@@ -236,15 +264,40 @@ run_case angle-bracket-destination 0 'Repository contract intact' \
   bash -c 'printf "\n[arch](<docs/architecture.md>)\n" >> "$1/AGENTS.md"' --
 run_case angle-bracket-destination-broken 1 "broken relative link 'docs/nope.md'" \
   bash -c 'printf "\n[nope](<docs/nope.md>)\n" >> "$1/AGENTS.md"' --
+# A parenthesis between angle brackets is legal CommonMark and must resolve:
+# before the fix the first `)` on the line was taken as the closing paren even
+# though it belonged to the filename inside `<...>`, so this reported
+# "unterminated <> destination" and exited 1.
+run_case angle-bracket-paren-destination 0 'Repository contract intact' \
+  bash -c 'printf "draft\n" > "$1/docs/architecture (draft).md"; printf "\n[weird](<docs/architecture (draft).md>)\n" >> "$1/AGENTS.md"' --
+# Same shape pointing at a file that does not exist, proving the destination
+# is really extracted rather than skipped.
+run_case angle-bracket-paren-destination-broken 1 "broken relative link 'docs/architecture (draft).md'" \
+  bash -c 'printf "\n[weird](<docs/architecture (draft).md>)\n" >> "$1/AGENTS.md"' --
 
 # --- outside the subset: reported, never silently skipped ------------------
 run_case unsupported-paren-in-destination 1 'unsupported link syntax' \
   bash -c 'printf "\n[x](docs/a(b).md)\n" >> "$1/AGENTS.md"' --
+# The fix narrowed the paren restriction to the bare form only, so this pins
+# the specific "parenthesis in destination" reason rather than the check
+# having been removed altogether.
+run_case unsupported-bare-paren-destination-message 1 'parenthesis in destination' \
+  bash -c 'printf "\n[x](a(b).md)\n" >> "$1/AGENTS.md"' --
 # A link wrapped across two lines is legal CommonMark that this subset does not
 # resolve. It must be reported, never silently skipped.
 # The message has to tell the author what to do, not just that it failed.
 run_case unsupported-wrapped-link 1 'keep local documentation links on one line' \
   bash -c 'printf "\n[x](docs/\narchitecture.md)\n" >> "$1/AGENTS.md"' --
+
+# --- 10. documents reachable only through the CONTRACT_DOCS loop -----------
+# README.md, CONTRIBUTING.md, docs/architecture.md, and docs/hardening.md are
+# in neither the required-files list nor CONTRACT_PAIRS: the loop over
+# CONTRACT_DOCS is the only thing that ever looks at them. If an entry were
+# silently dropped from that list, both cases below would pass unnoticed.
+run_case contract-doc-missing 1 'missing contract document: CONTRIBUTING.md' \
+  bash -c 'rm "$1/CONTRIBUTING.md"' --
+run_case contract-doc-broken-link 1 "broken relative link 'nope-in-hardening.md' in docs/hardening.md" \
+  bash -c 'printf "\n[x](nope-in-hardening.md)\n" >> "$1/docs/hardening.md"' --
 
 if [ "$failures" -ne 0 ]; then
   echo "check-repository-contract: $failures case(s) failed" >&2
