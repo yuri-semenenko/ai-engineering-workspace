@@ -9,7 +9,7 @@ The canon of the kit. Skills, agents, hooks, and the persona all originate here;
   skills/               20 process skills + a /start onboarding entrypoint (see the root README catalog)
   agents/
     independent-review.md       shipped agent: independent second read, no write tools
-    project-agent.template.md   how-to template for a project-specific agent
+    project-agent.template.md   how-to template for a project-specific agent role
   hooks/
     model-reminder.sh    UserPromptSubmit hook
   memory-seed.example/   fictional example memories (format demo; also the sync canon)
@@ -109,6 +109,6 @@ not a ruling.
 
 ## Customizing
 
-- **Agents:** copy `agents/project-agent.template.md`, rename it, fill the placeholders. One agent per project encodes that project's stack, conventions, and quality gate. `agents/independent-review.md` ships ready to use and needs no per-project values; delete it if you do not want the review step delegated.
+- **Agents:** copy `agents/project-agent.template.md`, rename it, fill the placeholders. One agent per project defines the role you dispatch for that project's implementation work; the project's stack, conventions, and quality gate come from that repository's root `AGENTS.md`, which the agent reads instead of restating (see [`../adr/0014-agents-md-is-the-repository-contract.md`](../adr/0014-agents-md-is-the-repository-contract.md)). `agents/independent-review.md` ships ready to use and needs no per-project values; delete it if you do not want the review step delegated.
 - **Memory:** replace `memory-seed.example/` with your own memories or delete it. Note it is also the sync canon for the Codex mirror — run `scripts/sync-codex-references.sh` after editing.
 - **Permissions/hooks:** edit `settings.example.json` for the shipped defaults, or your local `settings.json` for machine-specific tweaks. See [`../docs/hardening.md`](../docs/hardening.md).
