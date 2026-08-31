@@ -44,12 +44,18 @@ A stale mirror is a hard error (the pre-commit hook blocks the commit). See [`do
 
 The sync script validates this structure; there is no auto-fix.
 
+## The repository contract
+
+Root [`AGENTS.md`](./AGENTS.md) is this repository's contract for coding agents: ownership boundaries, the exact validation commands, the invariants, and which ADR to read before changing one of them. Root `CLAUDE.md` is the Claude Code adapter, because Claude Code reads `CLAUDE.md` and not `AGENTS.md`: it holds the `@AGENTS.md` import and may hold a genuinely Claude-only delta, but never a copy of a rule from the contract. Every repository-wide rule goes in `AGENTS.md`. `scripts/test-check-repository-contract.sh` runs the guard against the checkout and then its fixtures, and fails if a pairing, an `@AGENTS.md` import, or a referenced path breaks.
+
+Two other files here are also called `AGENTS.md` and are **not** this contract: `codex/AGENTS.md` is the personal, global payload installed to `$CODEX_HOME`, and `copilot/workspace-template/AGENTS.md` is a template copied into someone else's repository. They are not mirrored into each other. See [`adr/0014-agents-md-is-the-repository-contract.md`](./adr/0014-agents-md-is-the-repository-contract.md).
+
 ## Commits and PRs
 
 - Small, logically-grouped commits. Never batch unrelated changes.
 - Do not add `Co-Authored-By` trailers or AI-attribution footers to commits or PR text.
 - Write PR descriptions and review comments in English.
-- Run `scripts/sync-codex-references.sh --check` and confirm the installers still run (`claude-code/scripts/install.macos-linux.sh`, `codex/scripts/install.macos-linux.sh`, `copilot/scripts/install.macos-linux.sh`) against a scratch `$HOME`/`$CODEX_HOME` before opening a PR that touches them.
+- Run `scripts/sync-codex-references.sh --check` and `scripts/test-check-repository-contract.sh`, and confirm the installers still run (`claude-code/scripts/install.macos-linux.sh`, `codex/scripts/install.macos-linux.sh`, `copilot/scripts/install.macos-linux.sh`) against a scratch `$HOME`/`$CODEX_HOME` before opening a PR that touches them.
 - Touching a `.ps1` port, or anything the installers copy, means running the Windows suite too: `pwsh scripts\test-windows.ps1`. It drives the wizard and all four installers under both PowerShell 7 and Windows PowerShell, against a sandbox copy of the tree with `HOME` redirected, so it never touches your own `~/.claude`. CI runs it on `windows-latest`.
 
 ## What not to add

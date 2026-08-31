@@ -39,5 +39,5 @@ The hooks are shell + `jq`; they degrade to no-ops if a dependency is missing ra
 
 ## Codex and Copilot guardrails
 
-- **Codex** puts the hard rules in `AGENTS.md`, which loads every session (references and skills are read on demand). Git guardrails and the "verify before claiming done" rule live there.
+- **Codex** puts the hard rules in the global `$CODEX_HOME/AGENTS.md` installed from `codex/AGENTS.md`, which loads every session (references and skills are read on demand). Git guardrails and the "verify before claiming done" rule live there. A repository's own root `AGENTS.md` is a different file with a different scope — see [`../adr/0014-agents-md-is-the-repository-contract.md`](../adr/0014-agents-md-is-the-repository-contract.md).
 - **Copilot** assumes a locked-down corporate laptop: Markdown-only, copy-only, no hooks or automation. Its instruction files tell the assistant not to bypass execution policy, install tools, configure MCP servers, or exfiltrate data.

@@ -1,5 +1,40 @@
 # Architecture: canon → mirror
 
+## The layers
+
+Six layers of instruction reach an assistant from this repository. The rest of this document is about the one layer that gets copied into several tools and therefore needs a drift guard: the persona. This table exists so a change lands in the layer that owns it.
+
+| Layer | Scope | Canonical location |
+| --- | --- | --- |
+| Persona | one person, every repository | `persona/persona.template.md`, `persona/CLAUDE.template.md` |
+| Methodology | everyone, every repository | `docs/principles/` |
+| Repository contract | everyone, one repository | that repository's root `AGENTS.md` |
+| Skills | one class of task | `claude-code/.claude/skills/`, `codex/skills/`, `gemini/commands/`, `copilot/workspace-template/.github/prompts/` |
+| Adapters | one tool | `claude-code/`, `codex/`, `copilot/`, `gemini/` |
+| Guardrails | mechanically enforced | `settings.example.json`, `scripts/`, `.github/workflows/ci.yml` |
+
+Persona and methodology are global and shared: one person's persona, one methodology, carried into every repository. A repository contract is neither, so it is committed in the repository it describes and never mirrored from here. Copying persona or methodology into one would fork them per project. See [`../adr/0014-agents-md-is-the-repository-contract.md`](../adr/0014-agents-md-is-the-repository-contract.md).
+
+### Three files named `AGENTS.md`
+
+| File | Scope | Reaches the tool by |
+| --- | --- | --- |
+| `AGENTS.md` (root) | this repository | committed here; root `CLAUDE.md` imports it for Claude Code |
+| `codex/AGENTS.md` | personal and global | installed to `$CODEX_HOME/AGENTS.md` |
+| `copilot/workspace-template/AGENTS.md` | a different repository | copied into that repo by the Copilot installer |
+
+They are not mirrors of each other and no sync runs between them. Only the pairs listed below are generated. Codex and Copilot read `AGENTS.md` directly; Gemini CLI does because `gemini/settings.example.json` lists it in `context.fileName`. Claude Code reads `CLAUDE.md` rather than `AGENTS.md`, so every contract ships with a `CLAUDE.md` that imports it — the platform's own bridge, which cannot drift.
+
+### Three files named `CLAUDE.md`
+
+| Path or destination | Role |
+| --- | --- |
+| `CLAUDE.md` (root) | Claude Code adapter for this repository: the active `@AGENTS.md` import plus any Claude-only delta |
+| `persona/CLAUDE.template.md` | canon for the condensed persona; mirrored to `gemini/references/GEMINI.md` |
+| `persona/CLAUDE.md` -> `~/.claude/CLAUDE.md` | the developer's generated persona: user identity and collaboration layer, gitignored |
+
+Tool discovery dictates the filename in all three cases, so none can be renamed; qualify which one you mean by its path. An adapter is not a second canonical source as long as it holds only the import, its own role, and genuine Claude-only deltas. That boundary is a convention, not something the drift guards can prove — [`../adr/0014-agents-md-is-the-repository-contract.md`](../adr/0014-agents-md-is-the-repository-contract.md) records it.
+
 ## The problem
 
 The same persona and durable-memory context should drive multiple assistants. Editing that content in three places by hand guarantees drift. But each tool package must also stay **standalone-portable**: you should be able to copy `codex/` alone to a machine and have its installer work against the files already present, with no build step.
