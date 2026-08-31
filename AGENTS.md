@@ -39,12 +39,13 @@ which one you mean by its path.
 | `codex/AGENTS.md` | personal and global; installed to `$CODEX_HOME/AGENTS.md` |
 | `copilot/workspace-template/AGENTS.md` | a template for *another* repository; not in force here |
 | `CLAUDE.md` (root) | this repository's Claude Code adapter: the active `@AGENTS.md` import plus any Claude-only delta |
-| `persona/CLAUDE.template.md` | canon for the condensed persona; mirrored to `gemini/references/GEMINI.md` |
+| `copilot/workspace-template/CLAUDE.md` | the `@AGENTS.md` adapter shipped with that template; not in force here |
 | `persona/CLAUDE.md` | the developer's generated persona, gitignored, installed to `~/.claude/CLAUDE.md` |
 
-Do not merge any of these and do not add a sync between them; only the persona and
-memory-seed mirrors are generated pairs. Rationale and the rejected alternatives:
-[`docs/architecture.md`](docs/architecture.md) and
+`persona/CLAUDE.template.md` is canon for the condensed persona, not one of these
+six. Do not merge any of these and do not add a sync between them; only the
+persona and memory-seed mirrors are generated pairs. Rationale and the rejected
+alternatives: [`docs/architecture.md`](docs/architecture.md) and
 [`adr/0014-agents-md-is-the-repository-contract.md`](adr/0014-agents-md-is-the-repository-contract.md).
 
 ## Authoritative sources
