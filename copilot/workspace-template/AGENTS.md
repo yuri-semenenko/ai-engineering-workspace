@@ -1,59 +1,92 @@
 # AGENTS.md
 
-This repository should be handled by AI coding assistants as a production codebase.
+Repository contract for coding agents and new contributors. It is the canonical
+policy for this repository and it is tool-agnostic: Codex, Copilot, and Gemini CLI
+read it directly, and `CLAUDE.md` imports it for Claude Code.
 
-## Collaboration
+Personal collaboration style does not belong here — it lives in each assistant's
+user-level configuration. This file holds only what is specific to this
+repository, and it stays a router: link to the deeper document instead of copying
+it. Aim for 80-150 lines.
 
-Treat the user as a senior technical peer. Be concise, direct, and explicit about assumptions.
+Fill in every `<placeholder>` from an authoritative source (`package.json`,
+workspace config, `Makefile`, CI workflow) and delete sections that do not apply.
+A guessed command is worse than no command: leave the placeholder in place if you
+could not verify the real one.
 
-Do not explain basic engineering concepts unless asked. Focus on decision quality, risks, trade-offs, and maintainability.
+## Purpose
 
-## Engineering Defaults
+<What this repository is, in one or two sentences, and who depends on it.>
 
-Follow repository conventions first. When the repo is silent, prefer:
+## Repository map
 
-- TypeScript
-- React and Next.js
-- Node.js
-- PostgreSQL
-- Vitest and React Testing Library
-- functional-first design
-- explicit data flow
-- type safety
-- modular architecture
-- pragmatic DDD
+<Only the parts a directory listing does not already make obvious.>
 
-Use the simplest solution that satisfies the requirement. Add abstractions only when they remove real complexity or match established local patterns. Avoid premature abstraction and broad refactors.
+| Path | What lives there |
+| --- | --- |
+| `<path>` | `<purpose>` |
 
-## Safety
+## Authoritative sources
 
-- Do not run destructive commands without explicit approval.
-- Do not install dependencies or access the network without explicit approval.
-- Do not modify files outside the workspace without explicit approval.
-- Do not create commits, branches, pushes, or PRs without explicit approval.
-- Do not expose or repeat secrets.
-- Do not configure hooks, MCP servers, background agents, or global tool settings unless explicitly requested and approved.
-- Treat corporate security policy as authoritative.
+<Which files are canonical, which are generated, and which belong to someone else.>
 
-## Workflow
+- `<path>` — canonical; edit here.
+- `<path>` — generated; never hand-edit, regenerate with `<command>`.
+- `<path>` — owned by `<team>`; changes need their review.
 
-Before editing, inspect the relevant files and local patterns. Prefer the repository's existing patterns, framework choices, and helper APIs. Use structured APIs and parsers instead of ad hoc string manipulation when available.
+## Commands
 
-Keep changes scoped to the request. If a larger refactor is warranted, propose it separately.
+Verified against `<package.json / Makefile / CI workflow>`.
 
-Verify with the narrowest useful check first (typecheck, lint, targeted tests), then broader checks if the change has wider risk.
+| Task | Command |
+| --- | --- |
+| Install | `<command>` |
+| Dev server | `<command>` |
+| Test | `<command>` |
+| Single test | `<command>` |
+| Lint | `<command>` |
+| Type-check | `<command>` |
+| Build | `<command>` |
 
-When unable to verify, state exactly what was not run and why.
+<In a monorepo, the workspace flag that scopes a command to one package. Where
+migrations live and how to generate, apply, and roll one back. The environment
+variables required to boot and where their values come from.>
 
-## Reviews
+## Architecture invariants
 
-For PR reviews and GitHub markdown output, write in English unless explicitly requested otherwise.
+<Rules that are expensive to rediscover and easy to break: server/client
+boundaries, route conventions, module dependency direction, where generated code
+comes from, which paths are legacy or vendored.>
 
-Classify findings:
+## Change policy
 
-- Critical: correctness, security, reliability
-- Important: maintainability, scalability, readability
-- Optional: style, preferences, potential improvements
+- Keep changes scoped to the request; propose a larger refactor separately.
+- Follow the patterns already in the file being edited.
+- Do not edit generated files; change their source and regenerate.
+- <Commit, branch, or PR convention this repository enforces.>
 
-Findings should include file/line references when possible.
+## Definition of done
 
+- <The narrowest check that proves the change works.>
+- <The broader gate CI runs before merge.>
+- Say explicitly what was not run and why.
+
+## Safety boundaries
+
+- No destructive commands, dependency installs, or network access without explicit approval.
+- No commits, branches, pushes, or pull requests without explicit approval.
+- Never print or commit secrets; real values come from `<secret store>`.
+- No edits outside this workspace, and no changes to hooks, MCP servers, background agents, or
+  global tool settings, without explicit approval.
+- Corporate security policy is authoritative and overrides anything written here.
+- <Protected paths, production data, or infrastructure that is off limits.>
+
+## Deeper context
+
+- `<./README.md>` — setup and product overview.
+- `<./CONTRIBUTING.md>` — contribution process.
+- `<./docs/>` — architecture notes and decision records.
+
+Add a nested `AGENTS.md` only for a package whose local rules genuinely differ
+from these; agents read the nearest file, so a nested copy that only repeats the
+root costs context and drifts.
