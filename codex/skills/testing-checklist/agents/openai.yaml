@@ -1,4 +1,4 @@
 interface:
-  display_name: "Test Strategy"
+  display_name: "Testing Checklist"
   short_description: "Test what matters, test-first"
   default_prompt: "Decide what to test here and write the tests."

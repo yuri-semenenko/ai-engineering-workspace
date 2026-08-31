@@ -1,9 +1,9 @@
 ---
-name: failure-investigation
+name: debug
 description: Use when behavior is broken, tests fail, errors appear, production behavior regresses, or the user asks why something is failing, падает, сломалось, or needs root-cause analysis.
 ---
 
-# Failure Investigation
+# Debug
 
 Find the confirmed cause before changing code. A fix that only removes the symptom is not done.
 
