@@ -33,7 +33,7 @@ Read on demand, only what the task needs (do not load everything up front):
 - `references/humanizer/ai-writing-patterns.md` — when editing prose to sound less AI-generated.
 
 Use the `skills/` for narrower workflows — the trigger list lives in this
-folder's README under "Interaction Modes".
+folder's README under "Interaction modes".
 
 ## Repository instructions
 
