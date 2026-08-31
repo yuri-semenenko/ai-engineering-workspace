@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Comment"
+  short_description: "Draft a PR description"
+  default_prompt: "Draft the PR description for this branch."

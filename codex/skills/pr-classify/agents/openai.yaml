@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Classify"
+  short_description: "Triage a PR by severity"
+  default_prompt: "Review this PR and classify every finding."
