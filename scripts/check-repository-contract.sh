@@ -132,27 +132,48 @@ link_destinations() {
       s = $0
       while (match(s, /\]\(/)) {
         s = substr(s, RSTART + RLENGTH)
-        close_paren = index(s, ")")
-        if (close_paren == 0) {
-          print "UNSUP\tlink wrapped across lines near \"" substr(s, 1, 40) "\"; keep local documentation links on one line"
-          break
+
+        # The delimiter has to be read BEFORE the closing `)` is looked for.
+        # Taking the first `)` on the line truncated
+        # `[weird](<docs/architecture (draft).md>)` at the paren inside the
+        # filename, so the one documented way to write such a path was the one
+        # shape that could not work.
+        if (substr(s, 1, 1) == "<") {
+          gt = index(s, ">")
+          close_paren = 0
+          if (gt > 0) {
+            close_paren = index(substr(s, gt), ")")
+            if (close_paren > 0) close_paren = gt + close_paren - 1
+          }
+          if (close_paren == 0) {
+            print "UNSUP\tunterminated <> destination near \"" substr(s, 1, 40) "\"; close the `<...>` and the closing `)` on the same line"
+            break
+          }
+        } else {
+          close_paren = index(s, ")")
+          if (close_paren == 0) {
+            print "UNSUP\tlink wrapped across lines near \"" substr(s, 1, 40) "\"; keep local documentation links on one line"
+            break
+          }
         }
         inner = substr(s, 1, close_paren - 1)
         s = substr(s, close_paren + 1)
 
-        # `[text](<dest with spaces> "Title")`
+        # `[text](<dest with spaces> "Title")`. The `>` is known to be here:
+        # the closing `)` was found at or after it above.
         if (substr(inner, 1, 1) == "<") {
           gt = index(inner, ">")
-          if (gt == 0) { print "UNSUP\tunterminated <> destination: " inner; continue }
           dest = substr(inner, 2, gt - 2)
         } else {
           # CommonMark shape is `dest` optionally followed by a title, so the
           # first whitespace-delimited token is the destination.
           split(inner, parts, /[[:space:]]+/)
           dest = parts[1]
+          # Only the bare form restricts parens, so this check belongs here and
+          # not after the branch: a paren between angle brackets resolves.
+          if (dest ~ /\(/) { print "UNSUP\tparenthesis in destination: " inner; continue }
         }
 
-        if (dest ~ /\(/) { print "UNSUP\tparenthesis in destination: " inner; continue }
         if (length(dest) == 0) continue
         print "DEST\t" dest
       }
