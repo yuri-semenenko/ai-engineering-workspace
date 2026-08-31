@@ -37,7 +37,8 @@ set -euo pipefail
 #     path and reported broken. A query on a repository-local path is a mistake,
 #     and failing is the point.
 # IGNORED CONSTRUCTS (parsed, not guessed at):
-#   - fenced code blocks, ``` and ~~~
+#   - fenced code blocks, ``` and ~~~. FENCED ones only: a 4-space-indented
+#     code block is not recognised at all, see OUT OF SCOPE.
 #   - single-backtick inline code spans
 #   - HTML comments, including multi-line ones
 #   - CRLF input, which is the normal worktree state for tracked Markdown here
@@ -45,13 +46,31 @@ set -euo pipefail
 # comment at EOF would silently swallow the rest of the document, so the parser
 # stops with an actionable message instead.
 # OUT OF SCOPE, and reported rather than silently skipped:
-#   - a destination containing an unescaped `(` or `)`
+#   - a BARE destination containing an unescaped `(` or `)`. Between angle
+#     brackets a parenthesis is legal CommonMark and does resolve, because
+#     allowing parens and spaces in a path is what angle brackets are for.
 #   - an inline link wrapped across two lines, so `](` and `)` are on different
-#     lines. Legal CommonMark, absent from this repository, and reported loudly
-#     rather than skipped: a silent skip is how a broken link survives a guard.
+#     lines. That is the only wrap point there is: whitespace between `]` and
+#     `(` means CommonMark reads no inline link at all, so a break there is not
+#     a link to detect and reporting it would be a false positive. Legal
+#     CommonMark, absent from this repository, and reported loudly rather than
+#     skipped: a silent skip is how a broken link survives a guard.
+#   - 4-space-indented code blocks. The parser recognises fences only, so an
+#     indented Markdown example is parsed as live content and a link inside it
+#     is checked and reported broken — a FALSE FAILURE, not a silent skip.
+#     Examples in the contract documents must use fences. Deciding this
+#     correctly needs paragraph-interruption and list-context rules, which is
+#     far more parser than a wiring guard should carry.
 #   - reference-style links `[text][label]`, which this repository does not use
 #     and which this guard does not see at all
 #   - backslash-escaped `\]` or `\(`, which this repository does not use
+#
+# TRADEOFF(ceiling: the subset above is a hand-written CommonMark parser in
+#   awk, so anything outside it is either reported as unsupported or, for
+#   indented code, mis-read as live content; upgrade: pipe the contract
+#   documents through a real Markdown parser once the subset stops covering how
+#   they are actually written): a guard that runs from the kit with no toolchain
+#   beats full CommonMark coverage of shapes these eight documents do not use.
 #
 # Regression coverage: scripts/test-check-repository-contract.sh
 #
