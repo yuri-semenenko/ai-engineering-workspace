@@ -31,6 +31,15 @@ powershell -NoProfile -File .\scripts\install.windows.ps1
 
 The installer copies `references/`, `skills/`, and `AGENTS.md` into `$CODEX_HOME`. If you generated a filled persona (`scripts/create-persona.sh`), it installs that over the template mirror; otherwise it falls back to the committed mirror so a standalone `codex/` copy still works. Either way the summary closes with a `Persona:` line naming the source it used, and reports `TEMPLATE ONLY` or `INCOMPLETE` when what landed still holds `{{PLACEHOLDERS}}`.
 
+### Upgrading renamed skills
+
+The installer copies skills but deliberately does not prune `$CODEX_HOME/skills/`:
+it must not delete local work. If you installed a version from before the skill-name
+alignment, inspect any local customizations and then archive or remove only these
+superseded directories: `failure-investigation`, `test-strategy`, and
+`pull-request-workflow`. Their replacements are `debug`, `testing-checklist`, and
+`pr-classify`, `pr-comment`, and `pr-recheck`, respectively.
+
 ## What is a mirror and what is owned here
 
 - `references/persona.md` and `references/memory-seed.example/` are **generated mirrors** of the Claude canon. Never hand-edit them — edit the canon and run `scripts/sync-codex-references.sh` from the repo root.

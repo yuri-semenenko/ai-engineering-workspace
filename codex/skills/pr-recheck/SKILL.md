@@ -20,11 +20,11 @@ Run `gh auth status`. Require a PR number or URL, or a checked-out branch with a
 
 ## Decision Gate
 
-**Clear.** Only when every prior thread is `addressed` and there are zero new findings of any tier: resolve the addressed threads, print the matrix, and state that the PR is ready to approve. Do not approve. Approving is an outward action and needs an explicit yes first.
+**Clear.** Only when every prior thread is `addressed` and there are zero new findings of any tier: resolve the addressed threads, print the matrix, and state that the PR is ready to approve. Resolution is reversible and needs no confirmation on this clear path. Do not approve. Approving is an outward action and needs an explicit yes first.
 
-**Blocked.** If any thread is `partial`, `not addressed`, or `wont-fix`, or any new finding exists: do not approve, and do not resolve the threads that are not addressed. Output the matrix and the draft comments, then stop and wait.
+**Blocked.** If any thread is `partial`, `not addressed`, or `wont-fix`, or any new finding exists: do not approve, and do not resolve the threads that are not addressed. Resolving a genuinely addressed thread here needs a separate explicit confirmation from posting comments. Output the matrix and the draft comments, then stop and wait.
 
-Resolving threads, posting comments, and approving are three separate confirmations. Never bundle them into one yes.
+Never bundle thread resolution, posting comments, and approval into one yes.
 
 ## Posting
 
