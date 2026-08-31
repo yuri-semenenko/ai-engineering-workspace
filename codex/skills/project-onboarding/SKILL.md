@@ -21,7 +21,8 @@ directory listing, leave it out.
 - Never invent a command. Every command comes from `package.json`, workspace
   config, `Makefile`, CI workflow, or existing developer docs. If discovery
   cannot settle a value, leave a `<placeholder>` and say so in the report.
-- Target 80-150 lines. Longer than that and it stops being read.
+- Target 80-150 lines. Longer than that and it stops being read — a repository
+  whose own subject is agent configuration is a known exception to that budget.
 
 ## Process
 

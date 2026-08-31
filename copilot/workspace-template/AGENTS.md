@@ -7,7 +7,8 @@ read it directly, and `CLAUDE.md` imports it for Claude Code.
 Personal collaboration style does not belong here — it lives in each assistant's
 user-level configuration. This file holds only what is specific to this
 repository, and it stays a router: link to the deeper document instead of copying
-it. Aim for 80-150 lines.
+it. Aim for 80-150 lines — a repository whose own subject is agent configuration
+is a known exception to that budget.
 
 Fill in every `<placeholder>` from an authoritative source (`package.json`,
 workspace config, `Makefile`, CI workflow) and delete sections that do not apply.
