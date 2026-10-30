@@ -115,9 +115,10 @@ of the Linux CI job, not an extra suite.
 ## Change policy
 
 - Keep changes scoped to the request; propose a larger refactor separately.
-- Sterility is a hard rule: no real names beyond `LICENSE`, no employer or client
-  names, no private paths, tokens, transcripts, or machine-local state. Anything
-  person- or project-specific ships as a `*.template.md` with `{{PLACEHOLDERS}}`.
+- Sterility is a hard rule: no real names other than the `LICENSE` author (who
+  also signs ADRs as decider), no employer or client names, no private paths,
+  tokens, transcripts, or machine-local state. Anything person- or
+  project-specific ships as a `*.template.md` with `{{PLACEHOLDERS}}`.
 - Small, logically-grouped commits. No `Co-Authored-By` trailers and no
   AI-attribution footers in commits, PR bodies, or review comments.
 - Process over codegen: a skill encodes how a senior engineer works, not "write
