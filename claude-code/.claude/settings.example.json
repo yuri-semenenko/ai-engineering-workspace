@@ -140,13 +140,13 @@
         ]
       }
     ],
-    "PostCompact": [
+    "SessionStart": [
       {
-        "matcher": "",
+        "matcher": "clear|compact",
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostCompact\",\"additionalContext\":\"Persona guardrails re-asserted after compaction (full rules in ~/.claude/CLAUDE.md). Act as a senior peer: be concise, skip basics, recommend rather than survey. Prefer the simplest solution and challenge unclear requirements before coding. Git discipline: small logical commits, ask before any commit/push/branch, never add Co-Authored-By trailers. Write PR and code-review output in English. State assumptions explicitly.\"}}'"
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"Persona guardrails re-asserted after /clear or compaction (condensed rules in ~/.claude/CLAUDE.md, full persona in ~/persona.md). Act as a senior peer: be concise, skip basics, recommend rather than survey. Prefer the simplest solution and challenge unclear requirements before coding. Git discipline: small logical commits, ask before any commit/push/branch, never add Co-Authored-By trailers. Write PR and code-review output in English. State assumptions explicitly.\"}}'"
           }
         ]
       }

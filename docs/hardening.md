@@ -30,7 +30,7 @@ Adjust these to your stack. The lists are deliberately conservative; add stack-s
 | --- | --- | --- |
 | `UserPromptSubmit` | model-reminder | On `/rfc` or `/adr`, reminds you to confirm the session is on your top reasoning tier. |
 | `PostToolUse` (Write/Edit) | Prettier | Formats supported files on write, only when a Prettier config resolves. |
-| `PostCompact` | guardrail re-assert | Re-injects the core persona rules after context compaction so they survive summarization. |
+| `SessionStart` (clear/compact) | guardrail re-assert | Re-injects the core persona rules after `/clear` or context compaction so they survive summarization. `PostCompact` cannot add context, so the hook runs on the session that starts after either one. |
 | `PreToolUse` (Bash) | branch guard | If a `git commit` runs on the default branch, prompts to create a feature branch first. |
 | `PreToolUse` (Write/Edit) | secret scan | Blocks-to-ask when a write contains a private-key header or an AWS/GitHub/Slack token pattern. |
 | `PreToolUse` (Write/Edit) | path guard | Prompts before editing `.env`, `*.pem`/`*.key`, or lockfiles (allows `.env.example` and friends). |
