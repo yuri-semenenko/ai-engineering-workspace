@@ -43,6 +43,23 @@ if (-not $OnWindows) {
     exit 2
 }
 
+# Every check that shells out calls plain `bash`, and on Windows the first
+# bash on PATH can be the WSL launcher in System32, which runs a Linux distro
+# against Windows paths and fails for reasons unrelated to the kit. Put Git for
+# Windows' own bash first for this process so every call site, present and
+# future, resolves to it. Without Git for Windows, PATH is left alone.
+$gitCommand = Get-Command git -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($gitCommand) {
+    $gitParent = Split-Path -Parent (Split-Path -Parent $gitCommand.Source)
+    foreach ($gitRoot in @($gitParent, (Split-Path -Parent $gitParent))) {
+        $gitBashDir = Join-Path $gitRoot 'bin'
+        if (Test-Path -LiteralPath (Join-Path $gitBashDir 'bash.exe')) {
+            $env:PATH = $gitBashDir + [System.IO.Path]::PathSeparator + $env:PATH
+            break
+        }
+    }
+}
+
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $SandboxRoot = Join-Path $env:TEMP ('aiw win tests ' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 
