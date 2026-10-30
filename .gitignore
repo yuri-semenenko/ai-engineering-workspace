@@ -40,3 +40,7 @@ claude-code/.claude/settings.json
 **/telemetry/
 **/shell-snapshots/
 **/memory/
+
+# Claude Code syncs account skills into ~/.claude/skills/synced. In a symlink
+# install ~/.claude is this checkout, so they would land here.
+claude-code/.claude/skills/synced/
