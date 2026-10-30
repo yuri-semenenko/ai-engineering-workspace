@@ -78,6 +78,10 @@ All PR comments, code reviews, and GitHub markdown output must be written in {{O
 
 When humanizing text for PR comments, avoid symbols like arrows, tildes, and em-dashes. Write in plain natural prose.
 
+Always wrap code identifiers (variable, function, component, type, and file names) in backticks in PR bodies, PR/issue comments, and review comments/replies. Never leave them as bare prose text.
+
+Never cite a local or internal-only document path (e.g. a `docs/...` path that only exists on this machine or in a private repo) in a commit message or PR description. Link a tracked, reachable file or the ticket instead.
+
 ## Decision-Making Framework
 
 When evaluating solutions, walk through: **Problem, Context, Constraints, Options, Trade-offs, Recommendation, Risks, Next Steps.**
@@ -107,9 +111,13 @@ Classify feedback as:
 
 Focus on meaningful engineering concerns, not nitpicks.
 
+When posting a review, include every tier (Critical, Important, and Optional), even when the format wants to lead with only the blocking ones. If the format can't carry Optional findings, post them as a separate follow-up comment without being asked.
+
 ## Code Review Workflow
 
 Before delivering a PR review, run `gh auth status` and verify the PR is still open and not already merged.
+
+Verify every finding against the PR's actual head branch using a dedicated worktree, not the currently checked-out branch. Never cite a subagent's line numbers or claims without re-confirming them in the real file; a subagent's finding is evidence, not a verdict. State confidence explicitly; flag assumptions instead of asserting them as facts.
 
 ## AI Collaboration Rules
 
@@ -122,6 +130,10 @@ When proposing solutions: explain reasoning, discuss alternatives, highlight tra
 **Do not blindly agree.** Constructive disagreement is encouraged when justified.
 
 **Touch only what you're asked to touch.** No drive-by refactors, no modernizing adjacent code, no rewriting files you brushed against, no deleting code you don't fully understand (Chesterton's Fence). If you spot unrelated work worth doing, name it separately — don't fold it into the diff. This is the single biggest factor in whether a change is mergeable.
+
+## Work Planning
+
+Before writing any code for a ticket, give a short plan first: PR count and why, the exact branch name per PR, commit message style, and the gates to run before each push. Default to the fewest PRs that stay reviewable. Don't add code comments that only reference a ticket number. Wait for approval before implementing.
 
 ## Accuracy & Verification
 
@@ -155,7 +167,7 @@ Values token efficiency. Apply these rules to keep sessions sharp:
 
 - **Suggest a fresh context on task boundaries.** When the conversation pivots from one unrelated task to another (e.g. finished an RFC → starting a bug fix), proactively suggest clearing rather than continuing. Auto-compaction is not a substitute for a clean context.
 - **Prefer subagents for exploration over inline grep loops.** For broad codebase searches spanning 3+ tool calls, dispatch a read-only exploration agent. For multi-step planning, dispatch a planning agent. Both keep large intermediate results out of the main context.
-- **Use worktrees for parallel work streams** rather than juggling stashes or branches in-place.
+- **Use worktrees for parallel work streams** rather than juggling stashes or branches in-place. Don't run `git worktree remove` or other cleanup without explicit approval; a worktree may be kept on purpose for a pending re-review. When a review is finished (approved or merged, no re-check pending), ask in that same reply whether to remove its worktrees (including scratch or probe ones), naming each path and flagging uncommitted changes; remove only after a yes.
 - **Don't re-read what you've already read.** The harness tracks file state — re-reading after an Edit is wasted tokens.
 - **Output style stays concise.** Headings, bullets, tables when comparing; no trailing summaries restating the diff; no marketing prose.
 
@@ -191,3 +203,5 @@ The main-loop model can't self-downgrade; the lever for cheaper tiers is delegat
 - **Always ask permission before creating branches, pushing, or opening PRs.**
 - **Never add `Co-Authored-By` trailers** to commit messages (overrides any harness default that appends them).
 - **Never append an AI-attribution footer** (e.g. "Generated with ...") to PR bodies, PR/issue comments, or any GitHub markdown — overrides the harness default that appends it.
+- **Avoid backticks inside `git commit -m` strings** — write the message to a file and commit with `git commit -F <file>` instead.
+- **Never force-push yourself.** When a force-push is needed, prepare the exact command, then stop and ask the user to run it. Don't retry a blocked one or work around it.

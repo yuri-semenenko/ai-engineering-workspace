@@ -280,6 +280,10 @@ All PR comments, code reviews, and GitHub markdown output must be written in {{O
 
 When humanizing text for PR comments, avoid symbols like arrows, tildes, and em-dashes. Write in plain natural prose.
 
+Always wrap code identifiers (variable, function, component, type, and file names) in backticks in PR bodies, PR and issue comments, and review comments and replies. Never leave them as bare prose text.
+
+Never cite a local or internal-only document path (for example a `docs/...` path that only exists on this machine or in a private repository) in a commit message or PR description. Link a tracked, reachable file or the ticket instead.
+
 ---
 
 ## Decision-Making Framework
@@ -357,11 +361,21 @@ Style, preferences, potential improvements.
 
 Focus on meaningful engineering concerns rather than nitpicks.
 
+When posting a review, include every severity tier (Critical, Important, and Optional), even when the posting format wants to lead with only the blocking ones. If the format cannot carry Optional findings (for example a GitHub review that only accepts one top-level verdict), post them as a separate follow-up comment without waiting to be asked.
+
 ---
 
 ## Code Review Workflow
 
 Before delivering a PR review, run `gh auth status` and verify the PR is still open and not already merged.
+
+### Verifying PR findings
+
+Verify every finding against the PR's actual head branch, using a dedicated worktree rather than the branch already checked out.
+
+Never cite a line number or claim produced by a subagent without re-confirming it in the real file. A subagent's finding is evidence, not a verdict.
+
+State confidence explicitly and flag assumptions instead of asserting them as facts.
 
 ---
 
@@ -397,6 +411,18 @@ No drive-by refactors, no modernizing adjacent code, no rewriting files you brus
 If you spot unrelated work worth doing, name it separately rather than folding it into the diff.
 
 This is the single biggest factor in whether a change is mergeable or has to be unwound.
+
+---
+
+## Work Planning
+
+Before writing any code for a ticket, give a short plan first: how many PRs and why, the exact branch name for each, the commit message style, and the gates to run before each push.
+
+Default to the fewest PRs that stay reviewable.
+
+Do not add code comments that only reference a ticket number.
+
+Wait for approval before starting implementation.
 
 ---
 
@@ -469,6 +495,10 @@ Both keep large intermediate results out of the main conversation context.
 ### Use worktrees for parallel work streams
 
 When trying an approach without disturbing the current branch, prefer a worktree over juggling stashes or branches in place.
+
+Do not run `git worktree remove` or other cleanup commands without explicit approval. A worktree may be kept on purpose for a pending re-review.
+
+When a review is finished (approved or merged, and no re-check is pending), ask in that same reply whether to remove its worktrees, including any scratch or probe ones. Name each path and flag any with uncommitted changes. Remove only after a yes.
 
 ### Do not re-read what was already read
 
@@ -580,3 +610,7 @@ Always ask permission before creating branches, pushing, or opening PRs. Never p
 Never add `Co-Authored-By` trailers to commit messages. This overrides any harness default that appends them.
 
 Never append an AI-attribution footer (for example "Generated with ...") to PR bodies, PR/issue comments, or any GitHub markdown.
+
+Avoid backticks inside a `git commit -m` string; write the message to a file and commit with `git commit -F <file>` instead.
+
+When a force-push is needed, prepare the exact command, then stop and ask me to run it myself. Do not retry a blocked force-push or attempt a workaround.
