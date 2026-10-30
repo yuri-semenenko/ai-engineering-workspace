@@ -572,6 +572,8 @@ The main-loop model can't self-downgrade; the lever for cheaper tiers is delegat
 - Auto-delegate well-scoped mechanical work: bulk edits, test scaffolding, doc updates, codemod-style refactors, and broad searches. Dispatch a subagent on the routine tier.
 - Ask first when the split is ambiguous: the task mixes judgment with mechanics, touches architecture or security, or is hard to scope cleanly.
 - Keep on the main loop: architecture, the review verdict, security judgment, RFC/ADR, hard debugging, anything needing cross-file judgment. An independent read of a finished change can be delegated; the classification and the ruling cannot.
+- Scripted fan-outs follow the same tiers. In an orchestration script, a subagent call that omits its model silently takes whatever default applies instead of naming a tier. Label every call by what it actually does (gather, proofread, or decide) and set its tier from the label: evidence gathering, file reading, proofreading, and coverage sweeps on the routine tier; the ruling on the main loop, or an explicit default-tier stage when a judgment step has to run inside the script. Classify each agent by its own job, never the fan-out by its task name: a review workflow is mostly gathering, and only the verdict is review.
+- While background agents run, wait for their completion rather than polling or sleeping. In a resumed session, read the task notes or memory before making any edits.
 
 Stable delegation workflows:
 

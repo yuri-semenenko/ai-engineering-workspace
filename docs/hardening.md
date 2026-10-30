@@ -1,6 +1,6 @@
 # Hardening
 
-The Claude Code package ships `claude-code/.claude/settings.example.json`. The installer seeds it to `settings.json` (gitignored) on first run. It combines a permission model with six write- and command-time hooks. This is the practical answer to "how do I let an agent work autonomously without it doing something irreversible or leaking a secret".
+The Claude Code package ships `claude-code/.claude/settings.example.json`. The installer seeds it to `settings.json` (gitignored) on first run. It combines a permission model with seven write- and command-time hooks. This is the practical answer to "how do I let an agent work autonomously without it doing something irreversible or leaking a secret".
 
 ## Permission model
 
@@ -34,8 +34,9 @@ Adjust these to your stack. The lists are deliberately conservative; add stack-s
 | `PreToolUse` (Bash) | branch guard | If a `git commit` runs on the default branch, prompts to create a feature branch first. |
 | `PreToolUse` (Write/Edit) | secret scan | Blocks-to-ask when a write contains a private-key header or an AWS/GitHub/Slack token pattern. |
 | `PreToolUse` (Write/Edit) | path guard | Prompts before editing `.env`, `*.pem`/`*.key`, or lockfiles (allows `.env.example` and friends). |
+| `PreToolUse` (Workflow) | workflow model tiers | Prompts when a `Workflow` script has more `agent()` calls than `model:` fields, so no scripted subagent silently takes a default tier ([ADR-0016](../adr/0016-subagent-default-tier-and-workflow-guard.md)). |
 
-The hooks are shell + `jq`; they degrade to no-ops if a dependency is missing rather than blocking your work. The `Notification` hook uses `osascript` (macOS) and simply surfaces a desktop notification.
+The hooks are shell + `jq` (the Workflow guard needs only `sed` and `grep`); they degrade to no-ops if a dependency is missing rather than blocking your work. The `Notification` hook uses `osascript` (macOS) and simply surfaces a desktop notification.
 
 ## Codex and Copilot guardrails
 

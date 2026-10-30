@@ -11,9 +11,10 @@ The canon of the kit. Skills, agents, hooks, and the persona all originate here;
     independent-review.md       shipped agent: independent second read, no write tools
     project-agent.template.md   how-to template for a project-specific agent role
   hooks/
-    model-reminder.sh    UserPromptSubmit hook
+    model-reminder.sh         UserPromptSubmit hook
+    workflow-model-guard.sh   PreToolUse hook on Workflow
   memory-seed.example/   fictional example memories (format demo; also the sync canon)
-  settings.example.json  permissions + 6 guardrail hooks + a notifier (no model pin / theme / plugins)
+  settings.example.json  permissions + 7 guardrail hooks + a notifier + the subagent tier default (no session model pin / theme / plugins)
   statusline.sh          model · branch · dir status line
 scripts/
   install.macos-linux.sh
@@ -67,11 +68,21 @@ capacity rather than something to bake into an agent file.
 | Architecture, the verdict, the decision, hard debugging | main loop, no subagent | whatever the session is on | — |
 
 The last column is the part that bites. The three built-ins have no agent file to
-carry a `model:`, so their tier is whatever the dispatch asks for — and a
-dispatch that asks for nothing inherits the session's model. Sending broad search
-to `Explore` without naming a tier does not save anything; it runs your current
-model with a narrower toolset. The two agents this kit ships a file for are the
-ones whose tier holds on its own.
+carry a `model:`, so their tier is whatever the dispatch asks for. Sending broad
+search to `Explore` without naming a tier does not save anything; it runs your
+current model with a narrower toolset. The two agents this kit ships a file for
+are the ones whose tier holds on its own.
+
+For everything else, `settings.example.json` sets `CLAUDE_CODE_SUBAGENT_MODEL` to
+`sonnet`, so a dispatch or a `Workflow` `agent()` call that names no tier falls to
+the routine tier instead of the session's model. Claude Code resolves a
+subagent's model as per-call `model`, then agent frontmatter, then this variable,
+then the session's model, so an explicit `opus` and the reviewer's own `opus`
+still win. Per the Claude Code docs the variable does not change the built-in
+`Explore` and `Plan`, and that order holds from v2.1.251; on an older build the
+variable outranks the reviewer's tier. `hooks/workflow-model-guard.sh` asks
+before a `Workflow` script runs when its `agent()` calls outnumber its `model:`
+fields. See [`../adr/0016-subagent-default-tier-and-workflow-guard.md`](../adr/0016-subagent-default-tier-and-workflow-guard.md).
 
 Raise a project agent's alias when that project's work carries more judgment than
 its conventions cover. The shipped reviewer sits a tier above the project agent

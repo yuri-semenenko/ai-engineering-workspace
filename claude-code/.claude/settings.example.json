@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  },
   "permissions": {
     "allow": [
       "Bash(git status)",
@@ -179,6 +182,16 @@
             "type": "command",
             "command": "f=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); [ -n \"$f\" ] || exit 0; b=${f##*/}; case \"$b\" in .env.example|.env.sample|.env.template|.env.*.example) exit 0;; esac; case \"$b\" in .env|.env.*|*.pem|*.key|id_rsa|id_ed25519|*.p12|*.keystore|package-lock.json|npm-shrinkwrap.json|yarn.lock|pnpm-lock.yaml|bun.lockb) jq -n --arg f \"$b\" '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:(\"Editing protected file \\($f) (secret/key/lockfile). Confirm if intentional; lockfiles should be regenerated via the package manager.\")}}';; esac; exit 0",
             "statusMessage": "path guard"
+          }
+        ]
+      },
+      {
+        "matcher": "Workflow",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/workflow-model-guard.sh",
+            "statusMessage": "workflow model tiers"
           }
         ]
       }
