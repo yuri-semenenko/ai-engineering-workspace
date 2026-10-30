@@ -407,6 +407,24 @@ Add-Check 'model-tier-fields' {
     Assert-That ($LASTEXITCODE -eq 0) "test-check-model-tiers.sh exited $LASTEXITCODE : $out"
 }
 
+Add-Check 'permission-rule-shapes' {
+    # Claude Code reads a Bash rule's `:*` suffix only at the very end. Earlier
+    # in the rule the colon is literal, and a rule that also has an earlier `*`
+    # is matched as a literal prefix. Either way the rule never matches, and
+    # the only sign is a startup warning after install. Other tools' `name:*`
+    # parameters, such as `WebFetch(domain:*.example.com)`, are a different
+    # syntax and are left alone. One copy is enough for a platform-neutral
+    # file, so this lives here and CI requires it.
+    $settings = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'claude-code\.claude\settings.example.json') | ConvertFrom-Json
+    $rules = @(@($settings.permissions.allow) + @($settings.permissions.deny) + @($settings.permissions.ask) |
+        Where-Object { $_ -like 'Bash(*' })
+    Assert-That ($rules.Count -gt 0) 'settings.example.json has no Bash permission rules to check'
+    $mixed = @($rules | Where-Object { $_ -match '\*.*:\*\)$' })
+    Assert-That ($mixed.Count -eq 0) "Bash rules mix * with the trailing :* suffix and would never match: $($mixed -join ', ')"
+    $inner = @($rules | Where-Object { $_ -match ':\*(?!\)$)' })
+    Assert-That ($inner.Count -eq 0) "Bash rules use :* before the end, where the colon is literal: $($inner -join ', ')"
+}
+
 Add-Check 'repository-contract' {
     # ADR-0014 guard plus its fixtures, the same entrypoint both CI jobs use.
     # Run through bash for the same reason as the tier guard above — a

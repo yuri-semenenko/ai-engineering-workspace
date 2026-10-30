@@ -118,4 +118,4 @@ jobs:
         shell: pwsh
         # The runner image provides bash and jq. The degraded-path check hides
         # jq in an isolated Bash PATH, so all three checks must actually run.
-        run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,repository-contract,install-copilot-contract,hook-scripts,hook-scripts-without-jq
+        run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,permission-rule-shapes,repository-contract,install-copilot-contract,hook-scripts,hook-scripts-without-jq
