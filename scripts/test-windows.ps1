@@ -940,6 +940,10 @@ Add-Check 'hook-scripts' {
     Assert-That ($LASTEXITCODE -eq 0) "statusline.sh exited $LASTEXITCODE : $rendered"
     Assert-That ($rendered -match 'Opus') "statusline did not render the model name: '$rendered'"
     Assert-That ($rendered -match 'repo') "statusline did not render the directory: '$rendered'"
+    Assert-That ($rendered -notmatch 'ctx') "statusline rendered a context block without context data: '$rendered'"
+    $withContext = '{"model":{"display_name":"Opus"},"context_window":{"used_percentage":42.7},"workspace":{"current_dir":"' + (ConvertTo-BashPath $sb.Repo) + '"}}'
+    $rendered = ($withContext | & bash $statusline 2>&1 | Out-String).Trim()
+    Assert-That ($rendered -match 'ctx 42%') "statusline did not render context usage as a whole percent: '$rendered'"
 
     $reminder = ConvertTo-BashPath (Join-Path $sb.Repo 'claude-code\.claude\hooks\model-reminder.sh')
     $fired = ('{"prompt":"/rfc new cache layer"}' | & bash $reminder 2>&1 | Out-String)
