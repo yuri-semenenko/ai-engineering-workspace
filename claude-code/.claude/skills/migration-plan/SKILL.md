@@ -1,12 +1,12 @@
 ---
 name: migration-plan
 argument-hint: "[what you're migrating from -> to]"
-description: Turn a risky migration or refactor into a safe, incremental, reversible plan that keeps user-visible behavior stable — framework upgrades, design-system swaps, API version migrations, legacy-to-modern replacement. Produces the invariant, the current-to-target seam, a migration shape (strangler / adapter / expand-contract / branch-by-abstraction), independently shippable slices each gated by before/after verification, and a rollout plus rollback plan. Use for "plan this migration", "how do I migrate X to Y safely", "refactor plan for", "strangler plan", "migrate from A to B", "спланируй миграцию", "как безопасно перейти на". Different from /rfc (decides whether and what to migrate; its Migration Strategy section hands off to this) and /module-design (shapes the target interface; this sequences getting there safely). Pairs with both.
+description: Turn a risky migration or refactor into a safe, incremental, reversible plan that keeps user-visible behavior stable — framework upgrades, design-system swaps, API version migrations, legacy replacement. Use for "plan this migration", "how do I migrate X to Y safely", "refactor plan for", "strangler plan", "migrate from A to B", "спланируй миграцию", "как безопасно перейти на".
 ---
 
 # Migration Plan
 
-Sequence a migration so the system stays releasable and reversible at every step, and user-visible behavior does not change. A migration is not a redesign: behavior-preserving by default, new features kept out of it. Prefer many small reversible steps over one big cutover.
+Sequence a migration so the system stays releasable and reversible at every step, and user-visible behavior does not change. A migration is not a redesign: behavior-preserving by default, new features kept out of it. Prefer many small reversible steps over one big cutover. This sequences the move; shaping the target interface is `/module-design`.
 
 ## The loop
 

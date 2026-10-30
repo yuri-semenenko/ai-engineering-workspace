@@ -1,11 +1,11 @@
 ---
 name: pr-classify
-description: Review a pull request and classify every finding as Critical / Important / Optional per the user's persona framework. Use when the user asks for a "PR review", "review this PR", "проревьюй PR", or wants PR-level triage. Different from /review (generic GitHub PR review) and from /code-review (working-diff bug scan) — this skill enforces the 3-tier classification and filters nitpicks.
+description: Review a pull request and classify every finding as Critical / Important / Optional per the user's persona framework, filtering nitpicks. Use when the user asks for a "PR review", "review this PR", "проревьюй PR", or wants PR-level triage.
 ---
 
 # PR classify
 
-Review the current branch (or a specified PR) and produce structured feedback in the user's canonical classification scheme. The user is a Staff Engineer who explicitly wants to filter out nitpicks and focus on meaningful engineering concerns.
+Review the current branch (or a specified PR) and produce structured feedback in the user's canonical classification scheme. The user is a Staff Engineer who explicitly wants to filter out nitpicks and focus on meaningful engineering concerns. This is not the generic `/review` or the working-diff bug scan `/code-review`; it enforces the three-tier classification.
 
 ## Preconditions (before any review work)
 

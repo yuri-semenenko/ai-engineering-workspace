@@ -1,6 +1,6 @@
 ---
 name: security-pass
-description: Run a security hardening pass using the persona's validated workflow — recon, then a numbered remediation checklist for approval, then atomic commits with a typecheck gate after each task. Use when the user asks for a "security pass", "harden this", "security hardening", "пройди по безопасности", or a staged remediation (not a one-shot scan). Different from the built-in /security-review (single-pass diff scan) — this is the multi-task remediation loop with an approval gate.
+description: Run a security hardening pass using the persona's validated, staged workflow (recon, approved remediation checklist, atomic commits). Use when the user asks for a "security pass", "harden this", "security hardening", "пройди по безопасности", or a staged remediation, not a one-shot scan.
 ---
 
 # Security Pass

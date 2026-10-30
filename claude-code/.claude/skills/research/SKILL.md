@@ -1,7 +1,7 @@
 ---
 name: research
 argument-hint: "[the question or the options to compare]"
-description: Gather evidence from primary sources to decide a concrete technical question — compare libraries, frameworks, APIs, or approaches — and produce a cited decision matrix with a recommendation and its uncertainty, ready to hand to an RFC or ADR. Use for "research X", "compare A vs B", "which library should we use", "evaluate options for", "decision matrix for", "исследуй", "сравни варианты", "что выбрать". Different from /rfc (explores and decides at system altitude across 10 sections — research produces the cited evidence its Options and Trade-offs consume) and /adr (records a settled decision — research is what you did before it was settled). Deliberately lighter than a full research-report harness: bounded to what the decision needs.
+description: Gather evidence from primary sources to decide a technical question — compare libraries, frameworks, APIs, or approaches — and produce a cited decision matrix with a recommendation and its uncertainty, ready for an RFC or ADR. Use for "research X", "compare A vs B", "which library should we use", "evaluate options for", "decision matrix for", "исследуй", "сравни варианты", "что выбрать". Produces evidence, not the decision doc.
 ---
 
 # Research

@@ -1,6 +1,6 @@
 ---
 name: web-security-checklist
-description: Web application security checklist — OWASP Top 10 + LLM Top 10, threat modeling (STRIDE), auth/authz, input validation, secrets, security headers, CORS, data protection, and supply-chain hygiene. Use when reviewing security, hardening a feature, threat-modeling, or before merging security-sensitive changes (auth, user input, secrets, external or LLM-derived data). Pairs with /security-review.
+description: Web application security checklist — OWASP Top 10 + LLM Top 10, STRIDE threat modeling, auth/authz, input validation, secrets, headers, CORS, data protection, supply chain. Use when reviewing security, hardening a feature, threat-modeling, or before merging security-sensitive changes (auth, user input, secrets, external or LLM-derived data).
 ---
 
 # Web Security Checklist

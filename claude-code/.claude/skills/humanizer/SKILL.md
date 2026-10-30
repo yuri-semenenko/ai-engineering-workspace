@@ -1,15 +1,11 @@
 ---
 name: humanizer
 description: |
-  Rewrite text to remove the telltale patterns of AI-generated writing. Use only
-  when the user explicitly asks to humanize / de-AI a piece of text ("humanize
-  this", "убери признаки AI", "make it sound less AI / more natural", "this
-  sounds robotic") — not on every text edit. Covers five pattern families:
-  inflation (fake significance, promo tone, vague authority), diction (AI-frequent
-  vocabulary, copula avoidance, hedging, filler), structure (rule of three,
-  negative parallelism, false ranges, signposting), formatting (em dashes, bold
-  labels, emoji, title case), and chat residue (helper phrases, disclaimers,
-  sycophancy). Ends with an adversarial self-audit pass.
+  Rewrite text to remove the telltale patterns of AI-generated writing, ending
+  with an adversarial self-audit pass. Use only when the user explicitly asks
+  to humanize / de-AI a piece of text ("humanize this", "убери признаки AI",
+  "make it sound less AI / more natural", "this sounds robotic"), not on every
+  text edit.
 ---
 
 # Humanizer

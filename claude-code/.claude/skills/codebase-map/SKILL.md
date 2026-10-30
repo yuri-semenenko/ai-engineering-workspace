@@ -1,12 +1,12 @@
 ---
 name: codebase-map
 argument-hint: "[path or subtree, default: whole repo]"
-description: Orient fast in unfamiliar code — a new repo, a subsystem you don't own, or a PR touching code you don't know — and produce a short, high-signal map: what it is, entry points, architecture sketch, domain glossary, key seams, risky areas, how to run and test, known tradeoffs. Use for "map this repo", "orient me in this codebase", "where do I start", "help me understand this project", "разберись в репозитории", "с чего начать". Different from Codex project-onboarding / an AGENTS.md pass (that writes durable agent config; this is a read-first orientation for a human or reviewer, and can feed it), /complexity-audit (a whole-tree critique of over-engineering; this is comprehension, not judgment), and /debug (drives a known failure; this orients before you know where anything is).
+description: Orient fast in a new repo, a subsystem you don't own, or a PR touching unfamiliar code, and produce a short, high-signal map. Use for "map this repo", "orient me in this codebase", "where do I start", "help me understand this project", "разберись в репозитории", "с чего начать". Comprehension, not critique.
 ---
 
 # Codebase Map
 
-Build a fast, honest orientation to code you don't know yet, so you (or an agent you're about to point at it) can work in it safely. This is reconnaissance for comprehension: what the code is, where it starts, how it flows, and what not to touch. It is a map, not a tour — pointers over prose, evidence over guesses.
+Build a fast, honest orientation to code you don't know yet, so you (or an agent you're about to point at it) can work in it safely. This is reconnaissance for comprehension: what the code is, where it starts, how it flows, and what not to touch. It is a map, not a tour — pointers over prose, evidence over guesses. To chase a known failure use `/debug`; this orients before you know where anything is.
 
 ## How to run (keep main context lean)
 

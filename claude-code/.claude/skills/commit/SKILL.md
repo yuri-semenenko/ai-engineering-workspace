@@ -1,7 +1,7 @@
 ---
 name: commit
 argument-hint: "[optional scope hint, e.g. 'split the auth changes']"
-description: Plan and create small, logically-grouped git commits per the persona's git conventions — propose a commit plan first, wait for approval, then commit in atomic units. Use when the user asks to "commit", "закоммить", "make commits", "split this into commits", "сделай коммиты", or "commit plan". Enforces the no-Co-Authored-By rule and the ask-before-branch/push/PR gate.
+description: Plan and create small, logically-grouped git commits per the persona's git conventions — propose a plan, wait for approval, then commit in atomic units. Use when the user asks to "commit", "закоммить", "make commits", "split this into commits", "сделай коммиты", or "commit plan". Enforces the no-Co-Authored-By rule and the ask-before-branch/push/PR gate.
 ---
 
 # Commit

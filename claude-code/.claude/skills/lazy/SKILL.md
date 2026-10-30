@@ -1,6 +1,6 @@
 ---
 name: lazy
-description: Apply the "laziest solution that actually works" enforcement ladder when writing or proposing code — question whether the work needs to exist (YAGNI), reach for stdlib / native platform / already-installed deps before custom code, prefer one line over fifty. Supports intensity lite | full (default) | ultra. Use when implementing a feature, scaffolding, or whenever the user wants the minimal viable change ("the lazy way", "minimal diff", "do the least that works"). Different from /simplify (which cleans up an existing diff after the fact) — /lazy runs the ladder before the code is written. Aligned to the persona's simplicity bias.
+description: Apply the "laziest solution that actually works" enforcement ladder (YAGNI first, then stdlib, native platform, existing deps) when writing or proposing code. Intensity lite | full (default) | ultra. Use when implementing a feature, scaffolding, or whenever the user wants the minimal viable change ("the lazy way", "minimal diff", "do the least that works"). Runs before the code is written.
 argument-hint: "[lite|full|ultra]"
 ---
 

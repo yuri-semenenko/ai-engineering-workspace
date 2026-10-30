@@ -1,6 +1,6 @@
 ---
 name: rfc
-description: Draft an architecture RFC using the user's canonical 10-section format (Problem → Context → Constraints → Assumptions → Options → Trade-offs → Recommendation → Risks → Migration Strategy → Open Questions). Use when the user asks for an "RFC", "design doc", "architectural proposal", or "RFC по <теме>". Optimized for the persona in ~/.claude/CLAUDE.md.
+description: Draft an architecture RFC in the user's canonical 10-section format (Problem through Open Questions). Use when the user asks for an "RFC", "design doc", "architectural proposal", or "RFC по [теме]".
 ---
 
 # RFC

@@ -1,7 +1,7 @@
 ---
 name: start
 argument-hint: "[shell | powershell]"
-description: Onboarding entrypoint for this kit. Explains what the persona wizard does and hands you the exact command to generate your own persona (persona.md, CLAUDE.md, recommended-skills.md) from the shared templates. Use when the user says "/start", "get started", "onboard me", "set up my persona", or is new to the workspace. Does not run the wizard or edit files unless you explicitly ask.
+description: Onboarding entrypoint for this kit. Explains the persona wizard and hands you the exact command to generate your own persona from the shared templates. Use when the user says "/start", "get started", "onboard me", "set up my persona", or is new to the workspace. Does not run the wizard or edit files unless you explicitly ask.
 ---
 
 # Start
