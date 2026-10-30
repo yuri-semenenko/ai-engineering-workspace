@@ -86,6 +86,8 @@
       "Bash(gh pr diff:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh pr status)",
+      "Bash(gh auth status)",
+      "Bash(gh search:*)",
       "Bash(gh issue view:*)",
       "Bash(gh issue list:*)",
       "Bash(gh repo view:*)",

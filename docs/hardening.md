@@ -13,7 +13,7 @@ Claude Code checks each tool call against allow/deny lists. Anything not matched
 - Scoped npm: `install`/`ci`, `run test|lint|typecheck|format|build`, workspace flags, version checks.
 - Test/lint binaries: `tsc`, `vitest`, `eslint`, `prettier`, `jest`, `next lint|build`.
 - Search and inspection: `ls`, `pwd`, `which`, `tree`, `find .`, `rg`, `grep`, `jq`, `file`, `stat`, `wc`.
-- Read-only `gh`: `pr view|list|diff|checks|status`, `issue view|list`, `repo view`, `run list|view`, `workflow list|view`.
+- Read-only `gh`: `pr view|list|diff|checks|status`, `issue view|list`, `repo view`, `run list|view`, `workflow list|view`, `auth status`, `search`.
 
 **Denylist (always blocked)** covers the irreversible and the outbound:
 
