@@ -480,7 +480,9 @@ I value token efficiency. Apply these rules to keep sessions sharp.
 
 ### Suggest a fresh context on task boundaries
 
-When the conversation pivots from one unrelated task to another (for example, finished an RFC and starting a bug fix, or finished one PR review and starting another), proactively suggest clearing the context rather than continuing.
+When the conversation pivots from one unrelated task to another (for example, finished an RFC and starting a bug fix, or finished one PR review and starting another), proactively suggest clearing the context rather than continuing. A pivot also happens inside one ticket: a PR changes state (ready for review, approved, merged), or a review round or a fan-out has been fully worked through and the next step is new work.
+
+Before suggesting it, write a handoff (the `handoff` skill) outside the repository: the next step, the state with its evidence, the decisions and why, the constraints I set, and what is still open. Give me the resume line with the suggestion, so clearing loses nothing that matters. Do not suggest it mid-step: not while background agents or workflows are still running, and not while a question to me is still unanswered.
 
 Auto-compaction is not a substitute for a clean context.
 

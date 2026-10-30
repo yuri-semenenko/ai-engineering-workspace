@@ -1,6 +1,6 @@
 ---
 name: context-brief
-description: Use when preparing a compact handoff, task brief, implementation context, or review packet before a complex change, PR review, debugging session, or agent delegation.
+description: Use when preparing a compact handoff, task brief, implementation context, or review packet before a complex change, PR review, debugging session, or agent delegation. Not for carrying a work stream into a fresh session; that is handoff.
 ---
 
 # Context Brief

@@ -6,7 +6,7 @@ The canon of the kit. Skills, agents, hooks, and the persona all originate here;
 
 ```
 .claude/
-  skills/               20 process skills + a /start onboarding entrypoint (see the root README catalog)
+  skills/               21 process skills + a /start onboarding entrypoint (see the root README catalog)
   agents/
     independent-review.md       shipped agent: independent second read, no write tools
     project-agent.template.md   how-to template for a project-specific agent role

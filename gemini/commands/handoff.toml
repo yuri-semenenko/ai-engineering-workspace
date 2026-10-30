@@ -1,0 +1,61 @@
+# Ported from claude-code/.claude/skills/handoff/SKILL.md — Gemini CLI custom command.
+description = "Write a handoff file that carries one work stream into a fresh session, or resume from one."
+prompt = '''
+# Handoff
+
+A fresh context is cheap only if nothing that matters dies with the old one. A handoff carries what the next session needs to continue without re-deriving it: the next step, the state, the decisions and their reasons. Leave out whatever the next session can re-read from git, the PR, the ticket, or memory.
+
+Decide the mode from the request: **write** (the default, at a task boundary), **resume** (the user gives a handoff path), or **close** (the stream's last PR merged or the work was abandoned).
+
+## When
+
+At a task boundary: write the handoff, then suggest a fresh context with the resume line. Which moments are boundaries, and when not to offer one, is the Session Hygiene rule in the persona. When the boundary is the stream's last PR merging, close instead of writing.
+
+## Write
+
+Path: `~/.handoffs/<repo>/<stream>.md`. `<repo>` is the main checkout's directory name, the same from every worktree: `basename "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"`. `<stream>` is the ticket key (`PROJ-123`) or a kebab-case topic.
+
+The directory sits outside every repository and every assistant's config directory, because a handoff carries work details. Never write one inside a repository. If the sandbox blocks the write, ask for approval rather than falling back to a path in the workspace.
+
+One file per stream, overwritten each time. It is state, not a log. Skip empty sections and stay under about 60 lines:
+
+```markdown
+# <stream>: <one-line goal>
+
+Updated <YYYY-MM-DD HH:MM>. Repo <path>, worktree <path>, branch <name> @ <short sha>, PR <url> (<state>), ticket <url>.
+
+## Next step
+The first concrete action, specific enough to run without asking.
+
+## State
+Done / in progress / not started, one line each, with its evidence (commit, test run, PR link).
+
+## Decisions
+What was decided, by whom, and why. Rejected options with the reason. This is the part git does not keep.
+
+## Constraints
+Rules the user set this session that bear on the next step. Authorizations given here (commit, push, PR, apply) are history, not permission: the next session asks again.
+
+## Open
+Questions for the user; what is being waited on (reviewer, CI, another PR).
+
+## Pointers
+Absolute paths and links.
+```
+
+A lesson that outlives the stream goes into memory, not the handoff. Copy anything the next step needs from a temporary directory into `~/.handoffs/<repo>/<stream>/`.
+
+After writing, give one paste-ready line for the next session: `/handoff resume ~/.handoffs/<repo>/<stream>.md`.
+
+## Resume
+
+1. Read the file.
+2. Check the live state before acting: `git -C <worktree> status -sb`, `git -C <worktree> log -1 --oneline`, and `gh pr view <url> --json state,reviewDecision,headRefOid` when there is a PR. If it drifted from the handoff, say what changed and plan from the live state.
+3. State the next step in one line and continue. Ask again for any authorization the handoff mentions.
+
+## Close
+
+Fold anything durable into memory, then delete `<repo>/<stream>.md` and, if it exists, the `<repo>/<stream>/` folder. Never delete `<repo>/` itself; other streams live there.
+
+User request / arguments: {{args}}
+'''
