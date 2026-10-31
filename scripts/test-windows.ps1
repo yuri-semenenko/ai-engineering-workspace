@@ -591,6 +591,7 @@ foreach ($hostExe in $Hosts) {
         Assert-FileExists (Join-Path $target 'settings.json') 'seeded settings.json'
         Assert-FileExists (Join-Path $target 'statusline.sh') 'statusline'
         Assert-FileExists (Join-Path $target 'hooks\model-reminder.sh') 'hook'
+        Assert-FileExists (Join-Path $target 'hooks\workflow-model-guard.sh') 'Workflow hook'
         Assert-FileExists (Join-Path $fakeHome 'persona.md') 'full persona at home root'
         Assert-NoPlaceholders (Join-Path $target 'CLAUDE.md')
 
@@ -997,6 +998,42 @@ Add-Check 'hook-scripts-without-jq' {
             $env:TMPDIR = $previousTmp
         }
     }
+}
+
+Add-Check 'workflow-model-guard' {
+    # The Workflow guard is the one hook that needs no jq, so it is checked
+    # apart from the pair above and runs wherever bash does.
+    if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
+        Skip-Check 'no bash on PATH (Git for Windows provides it)'
+    }
+
+    $sb = Get-Sandbox $PrimaryHost
+    $guard = ConvertTo-BashPath (Join-Path $sb.Repo 'claude-code\.claude\hooks\workflow-model-guard.sh')
+
+    $asked = ('{"tool_input":{"script":"agent(1, {model: 2}); agent(3, {label: 4})"}}' | & bash $guard 2>&1 | Out-String)
+    Assert-That ($LASTEXITCODE -eq 0) "workflow-model-guard.sh exited $LASTEXITCODE : $asked"
+    Assert-That ($asked -match '"permissionDecision":"ask"') "the guard did not ask on an untiered agent() call: $asked"
+    Assert-That ($asked -match '1 agent\(\) call\(s\) of 2') "the guard miscounted the untiered calls: $asked"
+
+    $quiet = ('{"tool_input":{"script":"agent(1, {model: 2}); agent(3, {model: 4})"}}' | & bash $guard 2>&1 | Out-String)
+    Assert-That ([string]::IsNullOrWhiteSpace($quiet)) "the guard asked although every call names a tier: $quiet"
+
+    # Formatting is not a bypass: whitespace before the parenthesis is still a call.
+    $spaced = ('{"tool_input":{"script":"agent (1, {model: 2}); agent (3, {label: 4})"}}' | & bash $guard 2>&1 | Out-String)
+    Assert-That ($spaced -match '1 agent\(\) call\(s\) of 2') "the guard missed an untiered call written as agent (: $spaced"
+
+    # scriptPath outranks the inline script, and JSON doubles a Windows path's
+    # separators; the guard has to read the file, not the stale inline text.
+    $scriptFile = Join-Path $sb.Root 'workflow script.js'
+    Set-Content -LiteralPath $scriptFile -Value "agent(1)`nagent(2, {model: 3})" -Encoding ASCII
+    $event = @{ tool_input = @{ scriptPath = $scriptFile; script = 'agent(1, {model: 2})' } } | ConvertTo-Json -Compress
+    $fromPath = ($event | & bash $guard 2>&1 | Out-String)
+    Assert-That ($fromPath -match 'scriptPath') "the guard ignored scriptPath: $fromPath"
+    Assert-That ($fromPath -match '1 agent\(\) call\(s\) of 2') "the guard did not count the file's calls: $fromPath"
+
+    Set-Content -LiteralPath $scriptFile -Value "agent (1)`nagent (2, {model: 3})" -Encoding ASCII
+    $fromSpacedPath = ($event | & bash $guard 2>&1 | Out-String)
+    Assert-That ($fromSpacedPath -match '1 agent\(\) call\(s\) of 2') "the guard missed a spaced untiered call in scriptPath: $fromSpacedPath"
 }
 
 # --- run ---------------------------------------------------------------------

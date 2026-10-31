@@ -9,7 +9,7 @@ with guardrail hooks and the sandbox turned on.
 ```
 references/
   GEMINI.md            MIRROR of persona/CLAUDE.template.md (do not hand-edit)
-commands/              20 hand-authored command ports + a start entrypoint (*.toml)
+commands/              21 hand-authored command ports + a start entrypoint (*.toml)
 scripts/
   install.macos-linux.sh
   install.windows.ps1

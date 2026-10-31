@@ -280,6 +280,10 @@ All PR comments, code reviews, and GitHub markdown output must be written in {{O
 
 When humanizing text for PR comments, avoid symbols like arrows, tildes, and em-dashes. Write in plain natural prose.
 
+Always wrap code identifiers (variable, function, component, type, and file names) in backticks in PR bodies, PR and issue comments, and review comments and replies. Never leave them as bare prose text.
+
+Never cite a local or internal-only document path (for example a `docs/...` path that only exists on this machine or in a private repository) in a commit message or PR description. Link a tracked, reachable file or the ticket instead.
+
 ---
 
 ## Decision-Making Framework
@@ -357,11 +361,21 @@ Style, preferences, potential improvements.
 
 Focus on meaningful engineering concerns rather than nitpicks.
 
+When posting a review, include every severity tier (Critical, Important, and Optional), even when the posting format wants to lead with only the blocking ones. If the format cannot carry Optional findings (for example a GitHub review that only accepts one top-level verdict), post them as a separate follow-up comment without waiting to be asked.
+
 ---
 
 ## Code Review Workflow
 
 Before delivering a PR review, run `gh auth status` and verify the PR is still open and not already merged.
+
+### Verifying PR findings
+
+Verify every finding against the PR's actual head branch, using a dedicated worktree rather than the branch already checked out.
+
+Never cite a line number or claim produced by a subagent without re-confirming it in the real file. A subagent's finding is evidence, not a verdict.
+
+State confidence explicitly and flag assumptions instead of asserting them as facts.
 
 ---
 
@@ -397,6 +411,18 @@ No drive-by refactors, no modernizing adjacent code, no rewriting files you brus
 If you spot unrelated work worth doing, name it separately rather than folding it into the diff.
 
 This is the single biggest factor in whether a change is mergeable or has to be unwound.
+
+---
+
+## Work Planning
+
+Before writing any code for a ticket, give a short plan first: how many PRs and why, the exact branch name for each, the commit message style, and the gates to run before each push.
+
+Default to the fewest PRs that stay reviewable.
+
+Do not add code comments that only reference a ticket number.
+
+Wait for approval before starting implementation.
 
 ---
 
@@ -454,7 +480,9 @@ I value token efficiency. Apply these rules to keep sessions sharp.
 
 ### Suggest a fresh context on task boundaries
 
-When the conversation pivots from one unrelated task to another (for example, finished an RFC and starting a bug fix, or finished one PR review and starting another), proactively suggest clearing the context rather than continuing.
+When the conversation pivots from one unrelated task to another (for example, finished an RFC and starting a bug fix, or finished one PR review and starting another), proactively suggest clearing the context rather than continuing. A pivot also happens inside one ticket: a PR changes state (ready for review, approved, merged), or a review round or a fan-out has been fully worked through and the next step is new work.
+
+Before suggesting it, write a handoff (the `handoff` skill) outside the repository: the next step, the state with its evidence, the decisions and why, the constraints I set, and what is still open. Give me the resume line with the suggestion, so clearing loses nothing that matters. Do not suggest it mid-step: not while background agents or workflows are still running, and not while a question to me is still unanswered.
 
 Auto-compaction is not a substitute for a clean context.
 
@@ -469,6 +497,10 @@ Both keep large intermediate results out of the main conversation context.
 ### Use worktrees for parallel work streams
 
 When trying an approach without disturbing the current branch, prefer a worktree over juggling stashes or branches in place.
+
+Do not run `git worktree remove` or other cleanup commands without explicit approval. A worktree may be kept on purpose for a pending re-review.
+
+When a review is finished (approved or merged, and no re-check is pending), ask in that same reply whether to remove its worktrees, including any scratch or probe ones. Name each path and flag any with uncommitted changes. Remove only after a yes.
 
 ### Do not re-read what was already read
 
@@ -542,6 +574,8 @@ The main-loop model can't self-downgrade; the lever for cheaper tiers is delegat
 - Auto-delegate well-scoped mechanical work: bulk edits, test scaffolding, doc updates, codemod-style refactors, and broad searches. Dispatch a subagent on the routine tier.
 - Ask first when the split is ambiguous: the task mixes judgment with mechanics, touches architecture or security, or is hard to scope cleanly.
 - Keep on the main loop: architecture, the review verdict, security judgment, RFC/ADR, hard debugging, anything needing cross-file judgment. An independent read of a finished change can be delegated; the classification and the ruling cannot.
+- Scripted fan-outs follow the same tiers. In an orchestration script, a subagent call that omits its model silently takes whatever default applies instead of naming a tier. Label every call by what it actually does (gather, proofread, or decide) and set its tier from the label: evidence gathering, file reading, proofreading, and coverage sweeps on the routine tier; the ruling on the main loop, or an explicit default-tier stage when a judgment step has to run inside the script. Classify each agent by its own job, never the fan-out by its task name: a review workflow is mostly gathering, and only the verdict is review.
+- While background agents run, wait for their completion rather than polling or sleeping. In a resumed session, read the task notes or memory before making any edits.
 
 Stable delegation workflows:
 
@@ -580,3 +614,7 @@ Always ask permission before creating branches, pushing, or opening PRs. Never p
 Never add `Co-Authored-By` trailers to commit messages. This overrides any harness default that appends them.
 
 Never append an AI-attribution footer (for example "Generated with ...") to PR bodies, PR/issue comments, or any GitHub markdown.
+
+Avoid backticks inside a `git commit -m` string; write the message to a file and commit with `git commit -F <file>` instead.
+
+When a force-push is needed, prepare the exact command, then stop and ask me to run it myself. Do not retry a blocked force-push or attempt a workaround.
