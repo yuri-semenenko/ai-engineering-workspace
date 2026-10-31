@@ -38,8 +38,10 @@ discussion — with a one-sentence rationale.
 
 The `pr-classify` skill produces this first-pass review. `pr-recheck` does the
 second pass after fixes: it re-reads the diff against the existing open threads,
-marks each addressed / partial / not addressed, and only approves when everything
-is genuinely clean. Both verify the PR is still open and unmerged before they
+marks each addressed / partial / not addressed, and approves only when nothing
+blocking is left: every Critical and Important item fixed, or its risk accepted
+by the user with a recorded reason. Open Optional items are listed but do not
+hold the PR, and an author's "won't fix" is not an acceptance. Both verify the PR is still open and unmerged before they
 start — reviewing a merged PR is wasted work.
 
 ## The verification exit criterion

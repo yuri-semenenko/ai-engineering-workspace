@@ -27,9 +27,25 @@ resolve and nothing to approve.
    Keep only threads with `isResolved: false`.
 2. **Load new work.** Diff and commits since the previous review (`gh pr diff <id>`
    plus the commit log). Read the new code fully, cross-referencing touched files.
-3. **Build the verification matrix.** For each open thread, classify one of:
-   `addressed` / `partial` / `not addressed` / `wont-fix (author replied)`, each
-   with the file:line and the commit that addresses it. Output as a table.
+3. **Build the verification matrix.** For each open thread, record three separate
+   things, with the file:line and the commit that addresses it. Output as a table.
+   - **Severity**, from the first review: Critical / Important / Optional. When the
+     thread does not state it, classify it from what it describes under
+     pr-classify rules and mark the severity as inferred.
+   - **Status**: `addressed` / `partial` / `not addressed` /
+     `wont-fix (author replied)`. A `wont-fix` reply is the author's position,
+     not the reviewer's acceptance.
+   - **Blocks approval**: `yes`, `no`, or `no (accepted risk)`. A Critical or
+     Important thread blocks unless it is `addressed` or its risk is accepted. An
+     Optional thread does not block.
+
+   Accepting a risk is a decision about what remains, recorded with its reason:
+   why the risk is small, where it is mitigated, or the follow-up ticket. On a
+   Critical or Important item, thread or new finding alike, the decision is the
+   user's: propose it with the reason, keep the item blocking, and mark it
+   `no (accepted risk)` only after the user says yes. Record the agreed reason as a
+   drafted reply on the thread, posted on confirmation like any comment.
+
    `addressed` means the scenario the thread described no longer happens, not that
    the cited line changed. A regression test added for it counts only if it would
    fail without the fix: read it against the fix, or, when that is cheap, run it
@@ -42,31 +58,39 @@ resolve and nothing to approve.
    including regressions the fix itself introduced on adjacent paths.
    Classify them Critical / Important / Optional per pr-classify rules — the
    anti-nitpick gate applies (drop Optional whose cost of ignoring is "none").
+   A new Critical or Important finding blocks approval unless its risk is accepted
+   the same way; a new Optional one does not.
 
 ## Delegation
 
-Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the open threads, load the new work and read the changed code) to cheaper-tier subagents, each returning compact evidence: the unresolved threads, and what changed since the last review with `file:line`. Keep on the main model the addressed / partial / not-addressed matrix (step 3), the new-findings classification (step 4), and the decision gate below. Resolving threads, posting comments, and approving are gated actions — never delegated to a subagent.
+Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the open threads, load the new work and read the changed code) to cheaper-tier subagents, each returning compact evidence: the unresolved threads, and what changed since the last review with `file:line`. Keep on the main model the verification matrix with its severity, status, and blocking calls (step 3), the new-findings classification (step 4), and the decision gate below. Resolving threads, posting comments, and approving are gated actions — never delegated to a subagent.
 
 ## Decision gate
 
-**Clean path.** If AND only if every prior open thread is `addressed`
-AND there are zero new findings of any tier:
-- Resolve each addressed thread via
+**Clean path.** If AND only if nothing blocks approval: no thread and no new
+finding is marked `yes` in steps 3 and 4. Open Optional threads and new Optional
+findings do not change this path; list them as non-blocking, with any new ones
+drafted as comments.
+- Resolve each `addressed` thread via
   `gh api graphql -f query='mutation($id:ID!){ resolveReviewThread(input:{threadId:$id}){ thread{ isResolved } } }' -f id=THREAD_ID`
-  (resolution is reversible — no confirmation needed).
-- Print the matrix and the line `all clear — N threads resolved; ready to approve`.
+  (resolution is reversible — no confirmation needed). Leave every other thread
+  open; resolving one is a separate explicit yes.
+- Print the matrix and the line
+  `all clear — N threads resolved, M non-blocking items open; ready to approve`.
 - **Do NOT auto-approve.** Approving a PR is an outward action; per the persona's
   git policy ("always ask permission before … opening PRs"), state that the PR is
   clean and wait for an explicit yes before running `gh pr review <id> --approve`.
+  Show the non-blocking drafts with that question: approving and posting them are
+  separate yeses, so the user can take either, and an approval alone posts nothing.
 
-**Blocked path — draft, then confirm.** If any thread is `partial` / `not addressed`
-/ `wont-fix`, or any new finding exists:
-- Do NOT approve. Do NOT resolve `partial` / `not addressed` threads.
+**Blocked path — draft, then confirm.** Otherwise, when anything blocks approval:
+- Do NOT approve. Do NOT resolve threads that are not `addressed`.
 - Resolving any genuinely-addressed threads in this path still requires explicit
   confirmation, and is a separate yes from posting new comments.
-- Output the verification matrix and the new draft comments, then stop and wait.
+- Output the verification matrix, the new draft comments, and any proposed risk
+  acceptance with its reason, then stop and wait.
 
-## Posting & resolving (blocked path only)
+## Posting & resolving
 - New inline comments: same rules as pr-classify "Posting inline comments" — draft
   first, confirm (a confirmation covers the drafts it names; a finding added after
   it is confirmed on its own; an explicit earlier instruction to post this
@@ -79,10 +103,10 @@ AND there are zero new findings of any tier:
 ## Output format
 ```
 ## Verification matrix
-| Thread (file:line) | Original point | Status | Evidence (commit) |
+| Thread (file:line) | Severity | Original point | Status | Blocks approval | Evidence (commit) |
 
 ## New findings   (draft, not posted)
-### Critical / Important / Optional
+### Critical / Important (blocking) / Optional (non-blocking)
 
 ## Verdict
 <ready to approve | still blocked> — <one sentence>. Next action.
