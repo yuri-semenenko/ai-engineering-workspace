@@ -15,7 +15,7 @@ Produce a migration plan that sequences the work into small, independently shipp
 
 Constraints:
 - Behavior-preserving by default. Keep new behavior or features as a separate change, after the migration.
-- Every slice must be independently shippable and reversible; no step that can only be undone by a second migration.
+- Every slice must be independently shippable and reversible; no step that can only be undone by a second migration. A step that writes data or external state says what a rerun after a partial failure does: idempotent, skips finished work, or a named recovery procedure. Do not assume idempotency, and do not count a retry as a rollback.
 - Capture the invariant (user-visible behavior that must not change) as characterization tests or golden output before touching anything.
 - Feature flags are temporary: name the removal trigger and date when you add one.
 - Prefer incremental over big-bang; if a big-bang cutover is unavoidable, say why and how you rehearse it.
@@ -26,7 +26,7 @@ Output Format:
 1. The invariant, and how it is captured (characterization tests / golden output)
 2. Current to target, and the seam you migrate across
 3. Migration shape and why: strangler / adapter / expand-contract / branch-by-abstraction
-4. Ordered slices, each with its before/after verification, flag, and rollback criteria
+4. Ordered slices, each with its before/after verification, flag, rollback criteria, and rerun behavior where it writes state
 5. Rollout and rollback plan, ending with flag and dead-code cleanup
 6. The highest-risk or least-reversible step, and its mitigation
 
