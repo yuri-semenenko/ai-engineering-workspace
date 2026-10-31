@@ -70,8 +70,11 @@ AND there are zero new findings of any tier:
 
 ## Posting & resolving (blocked path only)
 - New inline comments: same rules as pr-classify "Posting inline comments" — draft
-  first, confirm, conversational English plain prose, no →/~/em-dash, run through
-  the `humanizer` skill before posting. Anchor each to file:line via the gh review API.
+  first, confirm (a confirmation covers the drafts it names; a finding added after
+  it is confirmed on its own; an explicit earlier instruction to post this
+  recheck's comments is the confirmation), conversational English plain prose, no →/~/em-dash,
+  run through the `humanizer` skill before posting. Anchor each to file:line via
+  the gh review API.
 - Thread resolution and any approve are separate confirmations. Never bundle
   "resolve + approve" into a single yes here.
 

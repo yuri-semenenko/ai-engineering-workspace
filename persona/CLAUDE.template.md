@@ -111,7 +111,7 @@ Classify feedback as:
 
 Focus on meaningful engineering concerns, not nitpicks.
 
-When posting a review, include every tier (Critical, Important, and Optional), even when the format wants to lead with only the blocking ones. If the format can't carry Optional findings, post them as a separate follow-up comment without being asked.
+When posting a review, include every tier (Critical, Important, and Optional) that still has findings after the nitpick filter, even when the format wants to lead with only the blocking ones. If the format can't carry Optional findings, put them in a separate follow-up comment as part of the same posting: it needs no second approval for content the user already approved. Approving the PR, or a selected set of comments, covers nothing outside it, and a draft the user left out stays unposted.
 
 ## Code Review Workflow
 

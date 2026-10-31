@@ -361,7 +361,7 @@ Style, preferences, potential improvements.
 
 Focus on meaningful engineering concerns rather than nitpicks.
 
-When posting a review, include every severity tier (Critical, Important, and Optional), even when the posting format wants to lead with only the blocking ones. If the format cannot carry Optional findings (for example a GitHub review that only accepts one top-level verdict), post them as a separate follow-up comment without waiting to be asked.
+When posting a review, include every severity tier (Critical, Important, and Optional) that still has findings after the nitpick filter, even when the posting format wants to lead with only the blocking ones. If the format cannot carry Optional findings (for example a GitHub review that only accepts one top-level verdict), carry them in a separate follow-up comment. That comment is part of the same posting: once the user has approved posting the review and its content, it needs no second approval, and you do not wait to be asked for it. An approval covers what it names. Approving the PR, or a selected set of comments, does not authorize posting anything else: a finding outside it is drafted and confirmed first, and a draft the user left out stays unposted.
 
 ---
 

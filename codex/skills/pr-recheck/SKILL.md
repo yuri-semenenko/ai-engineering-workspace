@@ -28,7 +28,7 @@ Never bundle thread resolution, posting comments, and approval into one yes.
 
 ## Posting
 
-New inline comments follow the pr-classify rules and are drafted before they are posted. Write them as conversational English prose, without arrows, tildes, or em dashes, and run them through the humanizer skill first. Anchor each one to a `path:line`.
+New inline comments follow the pr-classify rules and are drafted before they are posted. Post them only after the user confirms; a confirmation covers the drafts it names, and a finding added after it is confirmed on its own. An explicit instruction earlier in the conversation to post this recheck's comments is that confirmation; do not ask for it twice. Write them as conversational English prose, without arrows, tildes, or em dashes, and run them through the humanizer skill first. Anchor each one to a `path:line`.
 
 ## Delegation
 

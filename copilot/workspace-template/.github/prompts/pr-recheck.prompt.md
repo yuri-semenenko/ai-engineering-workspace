@@ -47,7 +47,10 @@ Decision gate:
 - Blocked path: if any thread is `partial` / `not addressed` / `wont-fix`, or any new
   finding exists, do not approve and do not resolve unaddressed threads. Output the
   matrix and the new draft comments, then wait for confirmation before posting or
-  resolving anything. Resolution and approve are separate confirmations.
+  resolving anything. Resolution and approve are separate confirmations. A
+  confirmation covers the drafts it names; a finding added after it is confirmed
+  on its own. An explicit instruction earlier in the chat to post this recheck's
+  comments is that confirmation; do not ask for it twice.
 
 Output Format:
 

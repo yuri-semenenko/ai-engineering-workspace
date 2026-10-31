@@ -89,7 +89,7 @@ If a bucket is empty, write `_None._` rather than removing the heading.
 
 The classified output above is for the chat. Posting it as inline PR comments is a separate, opt-in step.
 
-- **Draft first, post on confirmation only.** Show the drafted inline comments and wait for the user to explicitly confirm. Never post to GitHub before that.
+- **Draft first, post on confirmation only.** Show the drafted inline comments, with the Optional findings that passed the anti-nitpick rule and, when the review format cannot carry them, the follow-up comment that will, and wait for the user to explicitly confirm. Never post to GitHub before that. A confirmation covers what it names: post all of it, follow-up comment included, without asking again, and if the user picked some comments, post only those. A finding added after the confirmation is drafted and confirmed on its own. An explicit instruction earlier in the conversation to post this review's comments is the confirmation for the drafts that review produces; show them as you post them, and do not ask for it twice.
 - **Conversational English, plain prose.** Write each comment the way a peer would leave it, not as a classification dump. English unless told otherwise.
 - **No symbols, no AI tells.** Do not use arrows (→), tildes (~), or em-dashes. Strip AI-sounding phrasing — run the text through the `humanizer` skill's rules before posting.
 - **Anchor every comment to file:line** via the `gh` review API; keep the Critical/Important/Optional context but phrase it naturally.
