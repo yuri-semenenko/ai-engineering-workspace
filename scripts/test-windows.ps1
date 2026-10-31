@@ -979,6 +979,10 @@ Add-Check 'workflow-model-guard' {
     $quiet = ('{"tool_input":{"script":"agent(1, {model: 2}); agent(3, {model: 4})"}}' | & bash $guard 2>&1 | Out-String)
     Assert-That ([string]::IsNullOrWhiteSpace($quiet)) "the guard asked although every call names a tier: $quiet"
 
+    # Formatting is not a bypass: whitespace before the parenthesis is still a call.
+    $spaced = ('{"tool_input":{"script":"agent (1, {model: 2}); agent (3, {label: 4})"}}' | & bash $guard 2>&1 | Out-String)
+    Assert-That ($spaced -match '1 agent\(\) call\(s\) of 2') "the guard missed an untiered call written as agent (: $spaced"
+
     # scriptPath outranks the inline script, and JSON doubles a Windows path's
     # separators; the guard has to read the file, not the stale inline text.
     $scriptFile = Join-Path $sb.Root 'workflow script.js'
@@ -987,6 +991,10 @@ Add-Check 'workflow-model-guard' {
     $fromPath = ($event | & bash $guard 2>&1 | Out-String)
     Assert-That ($fromPath -match 'scriptPath') "the guard ignored scriptPath: $fromPath"
     Assert-That ($fromPath -match '1 agent\(\) call\(s\) of 2') "the guard did not count the file's calls: $fromPath"
+
+    Set-Content -LiteralPath $scriptFile -Value "agent (1)`nagent (2, {model: 3})" -Encoding ASCII
+    $fromSpacedPath = ($event | & bash $guard 2>&1 | Out-String)
+    Assert-That ($fromSpacedPath -match '1 agent\(\) call\(s\) of 2') "the guard missed a spaced untiered call in scriptPath: $fromSpacedPath"
 }
 
 # --- run ---------------------------------------------------------------------

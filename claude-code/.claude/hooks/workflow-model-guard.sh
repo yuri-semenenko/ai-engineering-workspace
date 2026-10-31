@@ -49,7 +49,9 @@ count_matches() {
   printf '%s' "$script" | grep -o "$1" | grep -c . || true
 }
 
-agent_calls=$(count_matches 'agent(')
+# `agent (` is valid JavaScript too, so whitespace before the parenthesis still
+# counts as a call; otherwise ordinary formatting walks past the guard.
+agent_calls=$(count_matches 'agent[[:space:]]*(')
 model_fields=$(count_matches 'model[[:space:]]*:')
 
 if [ "${agent_calls:-0}" -gt "${model_fields:-0}" ]; then
