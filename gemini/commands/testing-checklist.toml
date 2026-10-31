@@ -12,7 +12,7 @@ A pragmatic checklist for writing and reviewing tests. Read the relevant section
 | "I'll add tests later." | Later is the load-bearing word — it rarely arrives. The test is part of the change, not a follow-up. |
 | "Tests pass, ship it." | Passing tests are evidence, not proof. They only cover what they assert — check what they *don't* cover. |
 | "This code is too simple to break." | Simple code with branch logic breaks at the boundaries. Test the boundaries, skip the trivial middle. |
-| "Coverage is at N%, we're good." | Coverage measures execution, not assertion. A test with no meaningful assert inflates N and catches nothing. |
+| "Coverage is at N%, we're good." | Coverage measures execution, not assertion. A test with no meaningful assert inflates N and catches nothing. A mutation score is no better as a target. |
 | "The bug is fixed, no test needed." | A fix without a regression test is a bug on a return ticket. Red first, then green. |
 | "I'll write the code first, then add tests." | Test-after validates the code you happened to write, not the behavior you wanted. Red first keeps the test honest. |
 | "I'll DRY up these tests with helpers." | Test code is spec, not production code. DAMP wins: some duplication beats indirection the reader must unfold. |
@@ -44,7 +44,7 @@ A pragmatic checklist for writing and reviewing tests. Read the relevant section
 
 - [ ] The failing output alone tells you what broke — descriptive name, explicit expected value, no dig into helpers to understand the setup.
 - [ ] Setup visible at the test site: prefer inline literals or a plainly-named builder over layers of `beforeEach` mutation.
-- [ ] Assert on values, not on "did not throw".
+- [ ] Assert on values, not on "did not throw". Judge the tests of one unit as a set: if together they would still pass when the code under test did nothing or returned a constant, they do not pin it down. One example can survive a constant on its own and still be a good test. On critical logic, a targeted mutation run, by a tool if the repo has one or by breaking a line by hand, shows which realistic bugs the tests miss. A survivor is a missing assertion, an equivalent mutant, or a tool limit; only the first earns a new test.
 - [ ] Mocks are visible in the test that uses them; a mock configured three files away is a trap for the next reader.
 
 ## Stack specifics (Vitest / React Testing Library)
@@ -68,7 +68,7 @@ Slice **vertically** — a tracer bullet, one thin path through every layer, dem
 
 ## Bug-fix protocol
 
-1. Write the test that reproduces the bug. Run it — it must fail for the *reported* reason.
+1. Write the test that reproduces the bug. Run it — it must fail for the *reported* reason. If the fix already exists, revert it to see that failure; a regression test that passes either way proves nothing.
 2. Fix. Run it — green.
 3. Run the surrounding suite — the fix didn't move the bug next door.
 

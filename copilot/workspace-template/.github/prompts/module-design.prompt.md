@@ -14,14 +14,15 @@ Task:
 Recommend a concrete module shape: the interface, what stays hidden, and where the test seam is. When reviewing, name the boundary that is wrong and give the smaller shape.
 
 Constraints:
-- Prefer a small, stable interface over a wide one. Expose what the caller needs; hide how it works.
+- Prefer a small, stable interface over a wide one. Expose what the caller needs; hide how it works. Mutable state is part of the how: give each caller its own when they do not need to share it, otherwise make the module its single writer, and only then reach for locks or synchronization.
 - Depth is a property of the interface, not the line count. A layer that only forwards calls hides nothing — flag it.
 - Apply the deletion test: if removing the module scatters its knowledge back into callers, it encapsulates nothing; inline it.
 - One implementation behind an abstraction is a hypothetical seam; introduce the interface when the second appears, not before.
-- Inject dependencies and return results rather than reaching for globals or firing hidden side effects.
+- Inject dependencies and return results rather than reaching for globals or firing hidden side effects. Settle the data shape before the logic: where it can be in more than one state, name the valid states and transitions, and let a type rule out an impossible combination where that is simpler than a runtime check.
+- Parse outside data once where it crosses a trust boundary and pass the checked value inward. A TypeScript type or an `as` cast is not runtime validation; re-check inside only at a new trust boundary, such as a separately deployed service that consumes it.
 - Prefer composition of small functions over inheritance and framework hooks.
 - A boundary you cannot test through cheaply is the wrong boundary. Fix the boundary rather than mocking around it.
-- Present the simplest shape first and justify every layer against its indirection cost.
+- Present the simplest shape first and justify every layer against its indirection cost, a state machine, validation schema, or adapter included; a plain union and one parse function are often enough.
 
 Output Format:
 

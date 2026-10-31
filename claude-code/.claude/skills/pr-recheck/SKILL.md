@@ -9,9 +9,11 @@ Follow-up pass on a PR that has already been reviewed once. Assumes a prior roun
 of inline comments exists and the author has pushed fixes since.
 
 ## Preconditions
-Same as pr-classify: run `gh auth status`; require a PR number/URL or a checked-out
-branch with an open PR; verify open state via `gh pr view <id> --json state,mergedAt`.
-If merged or closed, surface that and stop.
+The same checks as pr-classify: run `gh auth status`; require a PR number/URL or a
+checked-out branch with an open PR; verify open state via
+`gh pr view <id> --json state,mergedAt`. One difference: if it is merged or closed,
+surface that and stop rather than asking, because there is no thread left to
+resolve and nothing to approve.
 
 ## Steps
 
@@ -30,7 +32,12 @@ If merged or closed, surface that and stop.
 3. **Build the verification matrix.** For each open thread, classify one of:
    `addressed` / `partial` / `not addressed` / `wont-fix (author replied)`, each
    with the file:line and the commit that addresses it. Output as a table.
-4. **Scan for new findings.** Re-reading the changed code may surface fresh issues.
+   `addressed` means the scenario the thread described no longer happens, not that
+   the cited line changed. A regression test added for it counts only if it would
+   fail without the fix: read it against the fix, or revert the fix and run it when
+   that is cheap.
+4. **Scan for new findings.** Re-reading the changed code may surface fresh issues,
+   including regressions the fix itself introduced on adjacent paths.
    Classify them Critical / Important / Optional per pr-classify rules — the
    anti-nitpick gate applies (drop Optional whose cost of ignoring is "none").
 
@@ -73,6 +80,6 @@ AND there are zero new findings of any tier:
 ### Critical / Important / Optional
 
 ## Verdict
-<approved automatically | still blocked> — <one sentence>. Next action.
+<ready to approve | still blocked> — <one sentence>. Next action.
 ```
 If a section is empty, write `_None._` rather than dropping the heading.

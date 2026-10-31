@@ -20,7 +20,8 @@ Constraints:
 - Keep the pyramid: mostly fast unit tests, integration at real seams, few end-to-end. Flag inverted (E2E-heavy) suites.
 - Deterministic tests only: no real time, no real network, no order dependence, no logic inside a test.
 - For new behavior, follow the TDD loop: agree the seam, write a failing test (red), write the least code to pass (green), then refactor as a separate step.
-- For a bug fix, write the failing regression test first (red for the reported reason), then fix (green), then run the surrounding suite.
+- For a bug fix, write the failing regression test first (red for the reported reason), then fix (green), then run the surrounding suite. If the fix already exists, revert it to see the test fail.
+- Judge the tests of one unit as a set: if together they would still pass when the code under test did nothing or returned a constant, they do not pin it down; one example can survive a constant on its own and still be a good test. On critical logic, a targeted mutation run, by a tool if the repo has one or by breaking a line by hand, shows which realistic bugs the tests miss; a survivor is a missing assertion, an equivalent mutant, or a tool limit, and only the first earns a test. A mutation score is not a target.
 - Slice vertically (a thin path through every layer) rather than horizontally.
 - If a test is impossible (non-deterministic or environment-bound), say so plainly rather than implying coverage.
 - Delegate mechanical scaffolding (boilerplate, fixtures, codemods) to a focused pass; keep the seam choice and whether the behavior is actually covered as the main judgment. A green suite is evidence, not proof.
