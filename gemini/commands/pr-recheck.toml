@@ -7,9 +7,11 @@ Follow-up pass on a PR that has already been reviewed once. Assumes a prior roun
 of inline comments exists and the author has pushed fixes since.
 
 ## Preconditions
-Same as pr-classify: run `gh auth status`; require a PR number/URL or a checked-out
-branch with an open PR; verify open state via `gh pr view <id> --json state,mergedAt`.
-If merged or closed, surface that and stop.
+The same checks as pr-classify: run `gh auth status`; require a PR number/URL or a
+checked-out branch with an open PR; verify open state via
+`gh pr view <id> --json state,mergedAt`. One difference: if it is merged or closed,
+surface that and stop rather than asking, because there is no thread left to
+resolve and nothing to approve.
 
 ## Steps
 
@@ -71,7 +73,7 @@ AND there are zero new findings of any tier:
 ### Critical / Important / Optional
 
 ## Verdict
-<approved automatically | still blocked> — <one sentence>. Next action.
+<ready to approve | still blocked> — <one sentence>. Next action.
 ```
 If a section is empty, write `_None._` rather than dropping the heading.
 
