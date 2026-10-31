@@ -77,6 +77,7 @@ Verified against `.github/workflows/ci.yml`.
 | Repository contract guard | `scripts/check-repository-contract.sh` |
 | Contract guard plus its fixtures | `scripts/test-check-repository-contract.sh` |
 | Model-tier guard plus its fixtures | `scripts/test-check-model-tiers.sh` |
+| Workflow tier hook against its fixtures | `scripts/test-workflow-model-guard.sh` |
 | Installer outcome reporting | `scripts/test-installer-persona-outcomes.sh` |
 | Copilot workspace contract delivery | `scripts/test-copilot-workspace-contract.sh` |
 | Shell syntax | `bash -n` over every path from `git ls-files '*.sh'` |
@@ -132,6 +133,7 @@ Full contribution rules in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 2. `scripts/test-check-repository-contract.sh` exits 0 (it runs the guard against
    the checkout first, then its fixtures).
 3. `test-check-model-tiers.sh` if you touched committed config;
+   `test-workflow-model-guard.sh` if you touched the Workflow hook;
    `test-installer-persona-outcomes.sh` and
    `test-copilot-workspace-contract.sh` if you touched an installer.
 4. `pwsh scripts\test-windows.ps1` if you touched a `.ps1`, an installer, or

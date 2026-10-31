@@ -1001,39 +1001,24 @@ Add-Check 'hook-scripts-without-jq' {
 }
 
 Add-Check 'workflow-model-guard' {
-    # The Workflow guard is the one hook that needs no jq, so it is checked
-    # apart from the pair above and runs wherever bash does.
+    # The fixtures live in scripts\test-workflow-model-guard.sh, which the Linux
+    # job runs as well. Here the same file runs under Git for Windows' bash, so
+    # the hook meets native jq.exe and Windows-form paths. The no-jq case is in
+    # that file too: it hides jq inside the hook's own PATH.
     if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
         Skip-Check 'no bash on PATH (Git for Windows provides it)'
     }
+    if (-not (Get-Command jq -ErrorAction SilentlyContinue)) {
+        Skip-Check 'no jq on PATH: the guard decodes its event with jq (ADR-0018)'
+    }
 
     $sb = Get-Sandbox $PrimaryHost
-    $guard = ConvertTo-BashPath (Join-Path $sb.Repo 'claude-code\.claude\hooks\workflow-model-guard.sh')
-
-    $asked = ('{"tool_input":{"script":"agent(1, {model: 2}); agent(3, {label: 4})"}}' | & bash $guard 2>&1 | Out-String)
-    Assert-That ($LASTEXITCODE -eq 0) "workflow-model-guard.sh exited $LASTEXITCODE : $asked"
-    Assert-That ($asked -match '"permissionDecision":"ask"') "the guard did not ask on an untiered agent() call: $asked"
-    Assert-That ($asked -match '1 agent\(\) call\(s\) of 2') "the guard miscounted the untiered calls: $asked"
-
-    $quiet = ('{"tool_input":{"script":"agent(1, {model: 2}); agent(3, {model: 4})"}}' | & bash $guard 2>&1 | Out-String)
-    Assert-That ([string]::IsNullOrWhiteSpace($quiet)) "the guard asked although every call names a tier: $quiet"
-
-    # Formatting is not a bypass: whitespace before the parenthesis is still a call.
-    $spaced = ('{"tool_input":{"script":"agent (1, {model: 2}); agent (3, {label: 4})"}}' | & bash $guard 2>&1 | Out-String)
-    Assert-That ($spaced -match '1 agent\(\) call\(s\) of 2') "the guard missed an untiered call written as agent (: $spaced"
-
-    # scriptPath outranks the inline script, and JSON doubles a Windows path's
-    # separators; the guard has to read the file, not the stale inline text.
-    $scriptFile = Join-Path $sb.Root 'workflow script.js'
-    Set-Content -LiteralPath $scriptFile -Value "agent(1)`nagent(2, {model: 3})" -Encoding ASCII
-    $event = @{ tool_input = @{ scriptPath = $scriptFile; script = 'agent(1, {model: 2})' } } | ConvertTo-Json -Compress
-    $fromPath = ($event | & bash $guard 2>&1 | Out-String)
-    Assert-That ($fromPath -match 'scriptPath') "the guard ignored scriptPath: $fromPath"
-    Assert-That ($fromPath -match '1 agent\(\) call\(s\) of 2') "the guard did not count the file's calls: $fromPath"
-
-    Set-Content -LiteralPath $scriptFile -Value "agent (1)`nagent (2, {model: 3})" -Encoding ASCII
-    $fromSpacedPath = ($event | & bash $guard 2>&1 | Out-String)
-    Assert-That ($fromSpacedPath -match '1 agent\(\) call\(s\) of 2') "the guard missed a spaced untiered call in scriptPath: $fromSpacedPath"
+    $cases = ConvertTo-BashPath (Join-Path $sb.Repo 'scripts\test-workflow-model-guard.sh')
+    $output = (& bash $cases 2>&1 | Out-String)
+    Assert-That ($LASTEXITCODE -eq 0) "test-workflow-model-guard.sh exited $LASTEXITCODE : $output"
+    # The Windows-form path case runs only where cygpath exists; on this
+    # platform a silent skip of it would be lost coverage.
+    Assert-That ($output -match 'ok - scriptPath in Windows form') "the Windows-form path case did not run: $output"
 }
 
 # --- run ---------------------------------------------------------------------

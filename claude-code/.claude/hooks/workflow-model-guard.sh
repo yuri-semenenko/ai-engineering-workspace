@@ -9,10 +9,11 @@
 # meta.description. Permission rules cannot see inside the script argument, so
 # this has to be a hook (ADR-0016).
 #
-# Dependency-free on purpose, unlike the jq-based hooks: the payload is scanned
-# as text rather than parsed. `agent(` and `model:` survive JSON string
-# escaping unchanged, so counting them in the raw event covers an inline
-# `script` as well as a `scriptPath` once the path is resolved.
+# The event is JSON and is decoded with jq, like the kit's other hooks
+# (ADR-0018). Matching the raw event as text misread a scriptPath that arrived
+# with \uXXXX escapes and then checked a script that was not going to run. When
+# the guard cannot see the script that will run (no jq, an event it cannot
+# parse, a scriptPath it cannot read) it asks and says why instead of passing.
 #
 # This is an `ask`, never a deny: the count is a heuristic, and a false
 # positive should cost one keypress rather than deadlock a script against a
@@ -21,43 +22,75 @@
 set -u
 
 payload=$(cat)
-script=$payload
-source_note='inline script'
 
-# `scriptPath` takes precedence over `script`, and editing the persisted script
-# is how a workflow is iterated, so a hook that reads only `script` is bypassed
-# on every run after the first.
-script_path=$(
-  printf '%s' "$payload" |
-    sed -n 's/.*"scriptPath"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' |
-    head -n 1
-)
-if [ -n "$script_path" ]; then
-  # JSON escapes a Windows path's separators, so each one arrives doubled. The
-  # separator is passed to tr as an octal escape because a literal backslash
-  # argument warns as non-portable; repeated slashes then collapse back to one.
-  script_path=$(printf '%s' "$script_path" | tr '\134' '/' | sed 's|//*|/|g')
-  if [ -f "$script_path" ]; then
-    script=$(cat "$script_path")
-    source_note="scriptPath $script_path"
-  else
-    source_note="scriptPath $script_path (unreadable, scanned the raw event instead)"
-  fi
+if ! command -v jq >/dev/null 2>&1; then
+  # Fixed text, because nothing here can encode a dynamic string without jq.
+  printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"The Workflow tier guard did not check this script: jq is not on PATH, so it cannot read the event. Install jq (winget install jqlang.jq on Windows, brew install jq on macOS, the distro package on Linux) and restart the session. Until then, confirm that every agent() call names a model before approving."}}'
+  exit 0
 fi
 
-count_matches() {
-  printf '%s' "$script" | grep -o "$1" | grep -c . || true
+# Values reach jq on stdin, never as arguments: Git for Windows rewrites a
+# path-like argument before a native jq.exe sees it. `-j` prints a field without
+# a trailing newline, which native jq on Windows would otherwise end with CR.
+# A jq that is on PATH but fails to run (blocked, a broken shim) must still
+# produce a prompt, so its failure falls back to fixed text.
+ask() {
+  printf '%s' "$1" |
+    jq -Rsc '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "ask", permissionDecisionReason: .}}' 2>/dev/null ||
+    printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"The Workflow tier guard did not check this script: jq is on PATH but failed to run. Confirm that every agent() call names a model before approving."}}'
+  exit 0
 }
 
+if ! printf '%s' "$payload" | jq -e '.tool_input | type == "object"' >/dev/null 2>&1; then
+  ask "The Workflow tier guard could not parse this event, so it did not check the script. Confirm that every agent() call names a model before approving."
+fi
+
+script_path=$(printf '%s' "$payload" | jq -j '.tool_input.scriptPath // empty | strings')
+
+# `scriptPath` takes precedence over `script`, and editing the persisted script
+# is how a workflow is iterated, so the file is what runs. A path the guard
+# cannot read is reported rather than swapped for the inline text, which is
+# stale whenever the file was edited after the first run.
+if [ -n "$script_path" ]; then
+  if [ ! -f "$script_path" ] || ! script=$(cat -- "$script_path" 2>/dev/null); then
+    ask "The Workflow tier guard cannot read scriptPath $script_path, so it did not check the script that will run. The inline script was not checked in its place: scriptPath takes precedence, and the inline text may be stale. Fix the path, or confirm that every agent() call in the file names a model before approving."
+  fi
+  source_note="scriptPath $script_path"
+else
+  # A named workflow carries no script in the event, so there is nothing to
+  # count and it passes unchecked.
+  script=$(printf '%s' "$payload" | jq -j '.tool_input.script // empty | strings')
+  source_note='inline script'
+fi
+
+# The script is matched as one line, so a line break between `agent` and its
+# parenthesis, or between `model` and its colon, is whitespace like any other.
+count_matches() {
+  printf '%s' "$script" | tr '\r\n' '  ' | grep -Eo "$1" | grep -c . || true
+}
+
+# The two sides are counted, not paired call by call. A `model:` outside any
+# call (prompt text, a schema property, a value that is not a tier) can cover
+# for a call that has none, a call made through a reference (`map(agent)`, an
+# alias) is not seen, and a commented-out call still counts. The guard catches
+# the common omission; it does not prove that every call names a tier.
+#
 # `agent (` is valid JavaScript too, so whitespace before the parenthesis still
-# counts as a call; otherwise ordinary formatting walks past the guard.
-agent_calls=$(count_matches 'agent[[:space:]]*(')
-model_fields=$(count_matches 'model[[:space:]]*:')
+# counts as a call. A longer name such as `subagent(` is subtracted rather than
+# excluded by matching the character before `agent`: that character would be
+# consumed, and a call nested directly inside another (`agent(agent(`) would
+# lose its count. A tier counts under a bare or a quoted key: model:, "model":,
+# 'model':.
+word='[[:alnum:]_$]'
+key_quote="[\"']"
+call='agent[[:space:]]*\('
+field="${key_quote}?model${key_quote}?[[:space:]]*:"
+agent_calls=$(( $(count_matches "$call") - $(count_matches "$word$call") ))
+model_fields=$(( $(count_matches "$field") - $(count_matches "$word$field") ))
 
 if [ "${agent_calls:-0}" -gt "${model_fields:-0}" ]; then
   missing=$((agent_calls - model_fields))
-  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s agent() call(s) of %s carry no model field (%s). Those take a default instead of naming a tier, which the persona Delegation rules forbid. Reject and label each call gather / proofread / decide, then set model from the label. If the count is a false positive from a nested call or a string literal, say so rather than editing the script to appease the check."}}\n' \
-    "$missing" "$agent_calls" "$source_note"
+  ask "$missing agent() call(s) of $agent_calls carry no model field ($source_note). Those take a default instead of naming a tier, which the persona Delegation rules forbid. Reject and label each call gather / proofread / decide, then set model from the label. If the count is a false positive from a nested call or a string literal, say so rather than editing the script to appease the check."
 fi
 
 exit 0
