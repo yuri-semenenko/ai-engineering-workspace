@@ -1,6 +1,6 @@
 ---
 name: pr-recheck
-description: Second-pass re-review of a PR that already has review comments. Re-reads the diff and new commits against the existing open threads, marks each as addressed / partial / not addressed, resolves the addressed ones, and then either approves (only when everything is clean) or drafts new inline comments. Use when the user asks to "re-review", "recheck the PR", "перепроверь PR после фиксов", or do a follow-up pass. Different from pr-classify, which is the first-pass review.
+description: Second-pass re-review of a PR that already has review comments. Checks new commits against the existing open threads, marks each addressed, partial, or not addressed, then approves or drafts new comments. Use when the user asks to "re-review", "recheck the PR", "перепроверь PR после фиксов", or do a follow-up pass.
 ---
 
 # PR recheck

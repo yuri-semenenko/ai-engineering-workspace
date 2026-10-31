@@ -1,7 +1,7 @@
 ---
 name: complexity-audit
 argument-hint: "[path to subtree, default: whole repo]"
-description: Scan an entire codebase (or a chosen subtree) for over-engineering — premature abstraction, speculative generality, needless layering, wrapper-only modules, dead config/flags, indirection without payoff — and return a prioritized, deletion-oriented report. Use for "audit complexity", "find over-engineering", "where are we over-built", "complexity-audit". Complements the per-diff /code-review and /simplify (which look at the current change); this looks at the whole tree. Aligned to the persona's anti-pattern list.
+description: Scan a whole codebase or subtree for over-engineering (premature abstraction, needless layering, dead config) and return a prioritized, deletion-oriented report. Use for "audit complexity", "find over-engineering", "where are we over-built", "complexity-audit".
 ---
 
 # Complexity Audit

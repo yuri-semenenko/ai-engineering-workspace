@@ -15,7 +15,7 @@ The canon of the kit. Skills, agents, hooks, and the persona all originate here;
     workflow-model-guard.sh   PreToolUse hook on Workflow
   memory-seed.example/   fictional example memories (format demo; also the sync canon)
   settings.example.json  permissions + 7 guardrail hooks + a notifier + the subagent tier default (no session model pin / theme / plugins)
-  statusline.sh          model · branch · dir status line
+  statusline.sh          model · branch · dir · context usage status line
 scripts/
   install.macos-linux.sh
   install.windows.ps1

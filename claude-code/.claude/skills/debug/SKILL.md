@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Systematic root-cause debugging methodology — reproduce, isolate, hypothesize, verify, fix the cause not the symptom. Use when something is broken and the cause is unknown: "debug this", "why is X failing/broken", "find the root cause", "разберись почему падает", "найди причину бага", "debug по <issue>". Not for confirming a known fix works (use /verify) and not for reviewing a diff (use /code-review).
+description: Systematic root-cause debugging — find and fix the cause, not the symptom. Use when something is broken and the cause is unknown, such as "debug this", "why is X failing/broken", "find the root cause", "разберись почему падает", "найди причину бага", "debug по [issue]". Not for confirming a known fix or reviewing a diff.
 ---
 
 # Debug

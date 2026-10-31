@@ -1,7 +1,7 @@
 ---
 name: adr
 argument-hint: "[decision title or slug]"
-description: Scaffold an Architecture Decision Record (ADR) for a concrete decision that's already been made or is being made now. Use when the user says "ADR for X", "write up that decision", "ADR по <решение>", or wants to record a choice for future readers. Different from /rfc — RFC explores options; ADR commits to one.
+description: Scaffold an Architecture Decision Record (ADR) for a concrete decision that's already been made or is being made now. Use when the user says "ADR for X", "write up that decision", "ADR по [решение]", or wants to record a choice for future readers.
 ---
 
 # ADR

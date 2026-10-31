@@ -1,6 +1,6 @@
 ---
 name: web-performance-checklist
-description: Web performance checklist — Core Web Vitals (LCP/INP/CLS), TTFB diagnosis, and frontend levers (JS/CSS/fonts/images/network/rendering) plus backend (DB N+1, API latency, caching, infra). Use when optimizing performance, diagnosing a slow page or unresponsive interaction, setting a performance budget, or reviewing a perf-sensitive change.
+description: Web performance checklist — Core Web Vitals (LCP/INP/CLS), TTFB, frontend levers (JS/CSS/fonts/images/network/rendering), backend (DB N+1, API latency, caching). Use when optimizing performance, diagnosing a slow page or unresponsive interaction, setting a performance budget, or reviewing a perf-sensitive change.
 ---
 
 # Web Performance Checklist

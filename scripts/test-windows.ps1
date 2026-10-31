@@ -43,6 +43,23 @@ if (-not $OnWindows) {
     exit 2
 }
 
+# Every check that shells out calls plain `bash`, and on Windows the first
+# bash on PATH can be the WSL launcher in System32, which runs a Linux distro
+# against Windows paths and fails for reasons unrelated to the kit. Put Git for
+# Windows' own bash first for this process so every call site, present and
+# future, resolves to it. Without Git for Windows, PATH is left alone.
+$gitCommand = Get-Command git -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($gitCommand) {
+    $gitParent = Split-Path -Parent (Split-Path -Parent $gitCommand.Source)
+    foreach ($gitRoot in @($gitParent, (Split-Path -Parent $gitParent))) {
+        $gitBashDir = Join-Path $gitRoot 'bin'
+        if (Test-Path -LiteralPath (Join-Path $gitBashDir 'bash.exe')) {
+            $env:PATH = $gitBashDir + [System.IO.Path]::PathSeparator + $env:PATH
+            break
+        }
+    }
+}
+
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $SandboxRoot = Join-Path $env:TEMP ('aiw win tests ' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 
@@ -388,6 +405,24 @@ Add-Check 'model-tier-fields' {
     $test = ConvertTo-BashPath (Join-Path $RepoRoot 'scripts\test-check-model-tiers.sh')
     $out = (& bash $test 2>&1 | Out-String).Trim()
     Assert-That ($LASTEXITCODE -eq 0) "test-check-model-tiers.sh exited $LASTEXITCODE : $out"
+}
+
+Add-Check 'permission-rule-shapes' {
+    # Claude Code reads a Bash rule's `:*` suffix only at the very end. Earlier
+    # in the rule the colon is literal, and a rule that also has an earlier `*`
+    # is matched as a literal prefix. Either way the rule never matches, and
+    # the only sign is a startup warning after install. Other tools' `name:*`
+    # parameters, such as `WebFetch(domain:*.example.com)`, are a different
+    # syntax and are left alone. One copy is enough for a platform-neutral
+    # file, so this lives here and CI requires it.
+    $settings = Get-Content -Raw -LiteralPath (Join-Path $RepoRoot 'claude-code\.claude\settings.example.json') | ConvertFrom-Json
+    $rules = @(@($settings.permissions.allow) + @($settings.permissions.deny) + @($settings.permissions.ask) |
+        Where-Object { $_ -like 'Bash(*' })
+    Assert-That ($rules.Count -gt 0) 'settings.example.json has no Bash permission rules to check'
+    $mixed = @($rules | Where-Object { $_ -match '\*.*:\*\)$' })
+    Assert-That ($mixed.Count -eq 0) "Bash rules mix * with the trailing :* suffix and would never match: $($mixed -join ', ')"
+    $inner = @($rules | Where-Object { $_ -match ':\*(?!\)$)' })
+    Assert-That ($inner.Count -eq 0) "Bash rules use :* before the end, where the colon is literal: $($inner -join ', ')"
 }
 
 Add-Check 'repository-contract' {
@@ -906,6 +941,10 @@ Add-Check 'hook-scripts' {
     Assert-That ($LASTEXITCODE -eq 0) "statusline.sh exited $LASTEXITCODE : $rendered"
     Assert-That ($rendered -match 'Opus') "statusline did not render the model name: '$rendered'"
     Assert-That ($rendered -match 'repo') "statusline did not render the directory: '$rendered'"
+    Assert-That ($rendered -notmatch 'ctx') "statusline rendered a context block without context data: '$rendered'"
+    $withContext = '{"model":{"display_name":"Opus"},"context_window":{"used_percentage":42.7},"workspace":{"current_dir":"' + (ConvertTo-BashPath $sb.Repo) + '"}}'
+    $rendered = ($withContext | & bash $statusline 2>&1 | Out-String).Trim()
+    Assert-That ($rendered -match 'ctx 42%') "statusline did not render context usage as a whole percent: '$rendered'"
 
     $reminder = ConvertTo-BashPath (Join-Path $sb.Repo 'claude-code\.claude\hooks\model-reminder.sh')
     $fired = ('{"prompt":"/rfc new cache layer"}' | & bash $reminder 2>&1 | Out-String)

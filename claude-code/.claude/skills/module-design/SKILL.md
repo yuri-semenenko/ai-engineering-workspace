@@ -1,11 +1,11 @@
 ---
 name: module-design
-description: Shape a module so a small, stable interface hides substantial implementation — deep modules, information hiding, and the test for whether an abstraction earns its keep. Use when designing or reviewing a module or interface boundary, extracting a helper or wrapper, or deciding whether an abstraction is worth it: "design this module", "what should this interface expose", "is this abstraction worth it", "спроектируй модуль", "какой интерфейс здесь нужен", "стоит ли эта абстракция". Different from /lazy (whether the code should exist at all — the rung before this), /complexity-audit (whole-tree over-engineering scan after the fact), and /rfc (system-level decisions). Pairs with both.
+description: Shape a module so a small, stable interface hides substantial implementation — deep modules, information hiding, whether an abstraction earns its keep. Use when designing or reviewing a module or interface boundary, or extracting a helper or wrapper, for example "design this module", "what should this interface expose", "is this abstraction worth it", "спроектируй модуль", "какой интерфейс здесь нужен", "стоит ли эта абстракция".
 ---
 
 # Module Design
 
-Shape modules so a small, stable interface hides substantial implementation. The unit of design is the interface a caller sees, not the code behind it. Favor composition and explicit data flow; add an abstraction only when it earns the indirection it introduces.
+Shape modules so a small, stable interface hides substantial implementation. The unit of design is the interface a caller sees, not the code behind it. Favor composition and explicit data flow; add an abstraction only when it earns the indirection it introduces. Whether the code should exist at all is `/lazy`, a whole-tree over-engineering scan is `/complexity-audit`, and system-level decisions are `/rfc`.
 
 ## Rationalizations
 

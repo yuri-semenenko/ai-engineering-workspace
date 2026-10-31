@@ -1,12 +1,12 @@
 ---
 name: spec
-description: Write a minimal spec — goal, non-goals, acceptance criteria, open questions — before implementing a feature or change. Use when the user asks to "spec this", "напиши спеку", "what does done mean here", "acceptance criteria for X", or before starting a non-trivial implementation without a clear definition of done. Different from /rfc (explores architecture options, 10 sections) and /adr (records a decision already made) — /spec pins down what "done" means for one concrete change, in five to twenty lines. Its acceptance criteria become the input for /verify.
+description: Write a minimal spec — goal, non-goals, acceptance criteria, open questions — before implementing a feature or change. Use when the user asks to "spec this", "напиши спеку", "what does done mean here", "acceptance criteria for X", or before starting a non-trivial implementation without a clear definition of done. Pins down what "done" means in five to twenty lines.
 argument-hint: "[feature or task to spec]"
 ---
 
 # Spec
 
-Pin down what "done" means before writing code. Even a five-line spec beats none: it forces the boundary question (what are we *not* doing?) and gives `/verify` something concrete to check against. This is the lightweight entry to the Define phase — reach for `/rfc` only when there are genuinely competing architectural options to weigh.
+Pin down what "done" means before writing code. Even a five-line spec beats none: it forces the boundary question (what are we *not* doing?) and gives `/verify` something concrete to check against. This is the lightweight entry to the Define phase — reach for `/rfc` only when there are genuinely competing architectural options to weigh, and `/adr` for a decision already made.
 
 ## Rationalizations
 

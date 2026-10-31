@@ -1,6 +1,6 @@
 ---
 name: testing-checklist
-description: Testing checklist — test pyramid, what to test vs skip, DAMP over DRY, the TDD red-green-refactor loop for new code, failing-test-first for bug fixes, Vitest / React Testing Library patterns. Use when writing or reviewing tests, deciding test coverage for a change, driving new code test-first, fixing a bug (regression test), or when the user asks "what should I test here", "покрой тестами", "review the tests". Pairs with /verify (runtime verification) and the persona's Verification Exit Criterion. Sibling of /web-security-checklist and /web-performance-checklist.
+description: Testing checklist — test pyramid, what to test vs skip, DAMP over DRY, TDD red-green-refactor, failing-test-first for bug fixes, Vitest / React Testing Library patterns. Use when writing or reviewing tests, deciding coverage, driving new code test-first, fixing a bug (regression test), or when the user asks "what should I test here", "покрой тестами", "review the tests".
 ---
 
 # Testing Checklist
