@@ -1,6 +1,6 @@
 # Hardening
 
-The Claude Code package ships `claude-code/.claude/settings.example.json`. The installer seeds it to `settings.json` (gitignored) on first run. It combines a permission model with six write- and command-time hooks. This is the practical answer to "how do I let an agent work autonomously without it doing something irreversible or leaking a secret".
+The Claude Code package ships `claude-code/.claude/settings.example.json`. The installer seeds it to `settings.json` (gitignored) on first run. It combines a permission model with seven write- and command-time hooks. This is the practical answer to "how do I let an agent work autonomously without it doing something irreversible or leaking a secret".
 
 ## Permission model
 
@@ -13,7 +13,7 @@ Claude Code checks each tool call against allow/deny lists. Anything not matched
 - Scoped npm: `install`/`ci`, `run test|lint|typecheck|format|build`, workspace flags, version checks.
 - Test/lint binaries: `tsc`, `vitest`, `eslint`, `prettier`, `jest`, `next lint|build`.
 - Search and inspection: `ls`, `pwd`, `which`, `tree`, `find .`, `rg`, `grep`, `jq`, `file`, `stat`, `wc`.
-- Read-only `gh`: `pr view|list|diff|checks|status`, `issue view|list`, `repo view`, `run list|view`, `workflow list|view`.
+- Read-only `gh`: `pr view|list|diff|checks|status`, `issue view|list`, `repo view`, `run list|view`, `workflow list|view`, `auth status`, `search`.
 
 **Denylist (always blocked)** covers the irreversible and the outbound:
 
@@ -30,12 +30,13 @@ Adjust these to your stack. The lists are deliberately conservative; add stack-s
 | --- | --- | --- |
 | `UserPromptSubmit` | model-reminder | On `/rfc` or `/adr`, reminds you to confirm the session is on your top reasoning tier. |
 | `PostToolUse` (Write/Edit) | Prettier | Formats supported files on write, only when a Prettier config resolves. |
-| `PostCompact` | guardrail re-assert | Re-injects the core persona rules after context compaction so they survive summarization. |
+| `SessionStart` (clear/compact) | guardrail re-assert | Re-injects the core persona rules after `/clear` or context compaction so they survive summarization. `PostCompact` cannot add context, so the hook runs on the session that starts after either one. |
 | `PreToolUse` (Bash) | branch guard | If a `git commit` runs on the default branch, prompts to create a feature branch first. |
 | `PreToolUse` (Write/Edit) | secret scan | Blocks-to-ask when a write contains a private-key header or an AWS/GitHub/Slack token pattern. |
 | `PreToolUse` (Write/Edit) | path guard | Prompts before editing `.env`, `*.pem`/`*.key`, or lockfiles (allows `.env.example` and friends). |
+| `PreToolUse` (Workflow) | workflow model tiers | Prompts when a `Workflow` script has more `agent()` calls than `model:` fields, so no scripted subagent silently takes a default tier ([ADR-0016](../adr/0016-subagent-default-tier-and-workflow-guard.md)). |
 
-The hooks are shell + `jq`; they degrade to no-ops if a dependency is missing rather than blocking your work. The `Notification` hook uses `osascript` (macOS) and simply surfaces a desktop notification.
+The hooks are shell + `jq` (the Workflow guard needs only `sed` and `grep`); they degrade to no-ops if a dependency is missing rather than blocking your work. The `Notification` hook uses `osascript` (macOS) and simply surfaces a desktop notification.
 
 ## Codex and Copilot guardrails
 

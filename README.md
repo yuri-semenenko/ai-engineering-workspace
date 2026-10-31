@@ -111,9 +111,9 @@ behind it as records in [`adr/`](adr/).
 | | Claude Code | Codex | Copilot | Gemini CLI |
 | --- | --- | --- | --- | --- |
 | Persona | `~/.claude/CLAUDE.md` (condensed) + `~/persona.md` (full) | `references/persona.md` (mirror) | `home/.copilot` instructions | `~/.gemini/GEMINI.md` (condensed, always-on) |
-| Skills / prompts | 20 process skills + `/start` | 16 skill ports + `start` (`+ agents/openai.yaml`) | 16 workspace prompts + `start` + instruction files | 20 command ports + `start` (`.gemini/commands/*.toml`) |
+| Skills / prompts | 21 process skills + `/start` | 17 skill ports + `start` (`+ agents/openai.yaml`) | 17 workspace prompts + `start` + instruction files | 21 command ports + `start` (`.gemini/commands/*.toml`) |
 | Delegation | tier alias in agent config, one shipped reviewer | runtime tier override, no agent files | model picker per request | built-in agent routing + `agents.overrides` |
-| Guardrails | `settings.json` permissions + 6 guardrail hooks | always-on `$CODEX_HOME/AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
+| Guardrails | `settings.json` permissions + 7 guardrail hooks | always-on `$CODEX_HOME/AGENTS.md` | corporate-safe instructions | `settings.json` allowlist + hooks + sandbox |
 | Repo contract | root `CLAUDE.md` importing `@AGENTS.md` | root `AGENTS.md`, root-down, closest wins | root `AGENTS.md` on CLI + VS Code, combined with `.github/` instructions | root `AGENTS.md` via `context.fileName` |
 | Install mode | symlink (copy on Windows) | copy into `$CODEX_HOME` | Markdown copy only | copy into `~/.gemini` |
 | Assumed constraint | full local control | portable seed, on-demand references | locked-down corporate laptop, Markdown-only | local control, sandbox available |
@@ -225,10 +225,11 @@ Read it in [`docs/principles/`](docs/principles/).
 | `web-security-checklist` | OWASP + LLM Top 10, STRIDE | "security review" |
 | `web-performance-checklist` | Core Web Vitals, TTFB, FE/BE levers | "why is this page slow" |
 | `humanizer` | strips telltale AI-writing patterns | "humanize this", "make it less AI" |
+| `handoff` | carries one work stream across `/clear` in a file outside every repo; resume and close | "write a handoff", "resume from handoff" |
 
 Codex carries the canon name wherever a canon skill exists — `debug`,
 `testing-checklist`, `pr-classify`, `pr-comment`, `pr-recheck`, `module-design`,
-`codebase-map`, `research`, `migration-plan`, plus RFC/ADR/humanizer — and keeps
+`codebase-map`, `research`, `migration-plan`, `handoff`, plus RFC/ADR/humanizer — and keeps
 its own name only for the four with no canon counterpart: `architect`,
 `context-brief`, `project-onboarding`, and `prompt-engineer`. Copilot exposes the
 same ideas as `.github/prompts/*.prompt.md`.
@@ -250,10 +251,12 @@ The Claude Code package ships an opinionated `settings.example.json`:
 - **Permission denylist** — `rm -rf`, force-push, hard reset, history rewrites,
   `npm publish`, `gh pr merge`, `node -e`, and similar irreversible or outbound
   actions.
-- **Six guardrail hooks** — a model-tier reminder on heavy-reasoning commands,
-  Prettier-on-write, a post-compaction guardrail re-assert, a default-branch
-  commit guard, a secret-pattern scanner, and a protected-file (env/key/lockfile)
-  guard. A seventh hook is a macOS notifier, silent on other platforms.
+- **Seven guardrail hooks** — a model-tier reminder on heavy-reasoning commands,
+  Prettier-on-write, a guardrail re-assert after `/clear` or compaction, a
+  default-branch commit guard, a secret-pattern scanner, a protected-file
+  (env/key/lockfile) guard, and a `Workflow` guard that asks when scripted
+  subagents name no model tier. An eighth hook is a macOS notifier, silent on
+  other platforms.
 
 Details and rationale in [`docs/hardening.md`](docs/hardening.md).
 

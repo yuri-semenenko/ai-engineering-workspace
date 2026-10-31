@@ -101,6 +101,8 @@ When the user supplies a sample of their own writing, imitate it: typical senten
 
 **4.5 Curly quotes and unicode artifacts.** Straight quotes in technical text; watch for “smart” quotes surviving a paste.
 
+**4.6 Bare code identifiers.** A variable, function, component, type, or file name left as plain prose text — `activeIndex`, not activeIndex. In this user's PR bodies, PR and issue comments, and review comments and replies, every code identifier gets backticks (persona rule).
+
 ### Family 5 — Chat residue
 
 **5.1 Assistant pleasantries.** "I hope this helps", "Certainly!", "Great question!", "Let me know if you'd like me to expand" — chat turns pasted as content. Delete.
