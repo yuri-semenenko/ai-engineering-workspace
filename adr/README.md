@@ -28,8 +28,9 @@ one, not an edit here.
 | [0014](./0014-agents-md-is-the-repository-contract.md) | A repository's root `AGENTS.md` is the tool-agnostic repository contract; `CLAUDE.md` only imports it | Accepted |
 | [0015](./0015-codex-skills-carry-canon-names.md) | Codex skills carry the canon name wherever a canon skill exists; a Codex-only name only where it does not | Accepted |
 | [0016](./0016-subagent-default-tier-and-workflow-guard.md) | Claude Code subagents default to the routine tier, and a `Workflow` hook asks when a scripted fan-out leaves calls without a tier | Accepted; its dependency-free parsing superseded by [0018](./0018-workflow-guard-decodes-with-jq.md) |
-| [0017](./0017-handoff-skill.md) | A `handoff` skill across all four tools, carrying one work stream across a fresh context in a file outside every repository | Accepted |
+| [0017](./0017-handoff-skill.md) | A `handoff` skill across all four tools, carrying one work stream across a fresh context in a file outside every repository | Accepted; its `<repo>` folder name superseded by [0019](./0019-handoff-key-is-repository-identity.md) |
 | [0018](./0018-workflow-guard-decodes-with-jq.md) | The `Workflow` guard decodes its event with `jq` and asks, naming the reason, whenever it cannot read the script that will run | Accepted |
+| [0019](./0019-handoff-key-is-repository-identity.md) | Handoff folders are keyed by the directory name plus a hash of the repository's `origin` (or main checkout path), and a write checks ownership before overwriting | Accepted |
 
 For a standalone example of the format applied to a fictional decision, see
 [`examples/adr-sample.md`](../examples/adr-sample.md).

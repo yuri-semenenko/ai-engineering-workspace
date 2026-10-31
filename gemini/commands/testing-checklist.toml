@@ -44,7 +44,7 @@ A pragmatic checklist for writing and reviewing tests. Read the relevant section
 
 - [ ] The failing output alone tells you what broke — descriptive name, explicit expected value, no dig into helpers to understand the setup.
 - [ ] Setup visible at the test site: prefer inline literals or a plainly-named builder over layers of `beforeEach` mutation.
-- [ ] Assert on values, not on "did not throw". Judge the tests of one unit as a set: if together they would still pass when the code under test did nothing or returned a constant, they do not pin it down. One example can survive a constant on its own and still be a good test. On critical logic, a targeted mutation run, by a tool if the repo has one or by breaking a line by hand, shows which realistic bugs the tests miss. A survivor is a missing assertion, an equivalent mutant, or a tool limit; only the first earns a new test.
+- [ ] Assert on values, not on "did not throw". Judge the tests of one unit as a set: if together they would still pass when the code under test did nothing or returned a constant, they do not pin it down. One example can survive a constant on its own and still be a good test. On critical logic, a targeted mutation run, by a tool if the repo has one or by breaking a line by hand in an isolated copy (the same rules as taking a fix out in the bug-fix protocol), shows which realistic bugs the tests miss. A survivor is a missing assertion, an equivalent mutant, or a tool limit; only the first earns a new test.
 - [ ] Mocks are visible in the test that uses them; a mock configured three files away is a trap for the next reader.
 
 ## Stack specifics (Vitest / React Testing Library)
@@ -68,7 +68,7 @@ Slice **vertically** — a tracer bullet, one thin path through every layer, dem
 
 ## Bug-fix protocol
 
-1. Write the test that reproduces the bug. Run it — it must fail for the *reported* reason. If the fix already exists, revert it to see that failure; a regression test that passes either way proves nothing.
+1. Write the test that reproduces the bug. Run it — it must fail for the *reported* reason. If the fix already exists, take it out to see that failure; a regression test that passes either way proves nothing. Do that in an isolated copy, never in the working tree: a scratch copy of the tree, or `git worktree add --detach <dir>` so no branch is created, with the uncommitted and untracked files the test needs copied in. Remove only the fix under test, keep every other change, and make no revert commit and no stash. Compare `git status` before and after to confirm the working tree is unchanged; an error or a timeout in the copy leaves nothing there to restore. If the copy errors or times out, or no isolated copy can run the test, read the test against the fix instead and say the failure was not observed. A worktree made for this is removed only under the usual cleanup question.
 2. Fix. Run it — green.
 3. Run the surrounding suite — the fix didn't move the bug next door.
 
