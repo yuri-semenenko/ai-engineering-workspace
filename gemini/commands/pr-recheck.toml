@@ -30,7 +30,12 @@ resolve and nothing to approve.
 3. **Build the verification matrix.** For each open thread, classify one of:
    `addressed` / `partial` / `not addressed` / `wont-fix (author replied)`, each
    with the file:line and the commit that addresses it. Output as a table.
-4. **Scan for new findings.** Re-reading the changed code may surface fresh issues.
+   `addressed` means the scenario the thread described no longer happens, not that
+   the cited line changed. A regression test added for it counts only if it would
+   fail without the fix: read it against the fix, or revert the fix and run it when
+   that is cheap.
+4. **Scan for new findings.** Re-reading the changed code may surface fresh issues,
+   including regressions the fix itself introduced on adjacent paths.
    Classify them Critical / Important / Optional per pr-classify rules — the
    anti-nitpick gate applies (drop Optional whose cost of ignoring is "none").
 

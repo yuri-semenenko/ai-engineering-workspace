@@ -14,7 +14,7 @@ Sequence a migration so the system stays releasable and reversible at every step
 3. Choose the migration shape and justify it: strangler, adapter / compatibility layer, expand-contract, or branch-by-abstraction. Pick per blast radius.
 4. Slice it: vertical, independently shippable steps, each small, each leaving the system releasable, each behind a flag if user-facing. No big-bang cutover.
 5. Gate each slice with before/after verification against the invariant. A slice that cannot be verified is not ready.
-6. Plan rollout and rollback: feature flag with a removal trigger and date, staged or canary rollout, explicit rollback criteria per slice. Removing the flag and the dead old path is the final slice.
+6. Plan rollout and rollback: feature flag with a removal trigger and date, staged or canary rollout, explicit rollback criteria per slice. For a step that writes data or external state, also state what a rerun after a partial failure does: idempotent, skips finished work, or a named recovery procedure. Do not assume idempotency, and do not count a retry as a rollback. Removing the flag and the dead old path is the final slice.
 7. Sequence by dependency and risk; call out the highest-risk or least-reversible step and how you de-risk it.
 
 ## Guardrails

@@ -38,7 +38,7 @@ Pre-written rebuttals to the excuses that precede over-building. If you catch yo
 ## Rules
 
 - Code-first, explanation brief. If the explanation is longer than the code, that usually signals hidden complexity — reconsider.
-- **Never simplify away** validation, error handling, security, accessibility, or an explicitly requested feature. Laziness is about *avoiding work*, not *cutting corners that matter*.
+- **Never simplify away** validation, error handling, security, accessibility, or an explicitly requested feature. Laziness is about *avoiding work*, not *cutting corners that matter*. The lazy move comes before the guard, though: when a check or a lock is about to be added, first ask whether the invalid state or the second writer has to exist at all. Removing it is often less code than guarding it; if it cannot go, the check stays.
 - When you deliberately ship a simpler-than-ideal solution, mark it with the persona's tradeoff convention so it is greppable later:
   `// TRADEOFF(ceiling: <what this maxes out at>; upgrade: <path when the ceiling is hit>): <note>`
   These are collected by `/debt-ledger`.

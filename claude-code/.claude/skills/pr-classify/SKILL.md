@@ -19,7 +19,7 @@ Review the current branch (or a specified PR) and produce structured feedback in
 2. **Read the tests first, then the diff fully.** Start with the tests and the PR description to recover intended behavior — what the change is supposed to do — then read the implementation against that intent, not just changed-line context. Cross-reference touched files for callers and tests.
 3. **For each finding, decide the bucket BEFORE writing it.** If it's borderline Important/Optional and you can't articulate the cost of ignoring it, drop it.
 4. **Group findings by bucket**, not by file. Within each bucket, order by severity.
-5. **Cite file:line for every comment.** Never describe an issue abstractly.
+5. **Cite file:line for every comment.** Never describe an issue abstractly: name the input or sequence that triggers it and what breaks.
 6. **End with a summary verdict**: approve / request changes / needs discussion. One sentence rationale.
 
 ## Classification rules
@@ -28,8 +28,8 @@ Review the current branch (or a specified PR) and produce structured feedback in
 Correctness, security, reliability. Examples:
 - Logic bug that breaks the happy path or a documented edge case
 - SQL injection, XSS, auth bypass, secret leak
-- Race condition, unhandled promise rejection in hot path
-- Data loss / migration that can't roll back
+- Race condition (two writers to one piece of state), unhandled promise rejection in hot path
+- Data loss / migration that can't roll back, or that corrupts data when retried after a partial failure
 - Regression in existing test coverage
 
 If you write more than ~3 Critical comments on a normal-sized PR, re-check — you're probably over-classifying.
@@ -40,7 +40,7 @@ Maintainability, scalability, readability. Examples:
 - Missing test for non-trivial branch logic
 - N+1 query, O(n²) where O(n) is trivial
 - Naming that misleads future readers (not "I'd prefer X")
-- Abstraction that leaks implementation across module boundary
+- Abstraction that leaks implementation across module boundary, or outside data passed inward without being parsed at its trust boundary
 
 ### Optional
 Style, preferences, "would be nice". Examples:

@@ -17,15 +17,15 @@ Shape modules so a small, stable interface hides substantial implementation. The
 ## What a deep module looks like
 
 - **Small interface, substantial body.** The value is the ratio: much hidden behind little exposed. Depth is a property of the interface, not the line count.
-- **Information hiding.** Callers depend on what it does, never on how. A change to the implementation must not ripple outward.
+- **Information hiding.** Callers depend on what it does, never on how. A change to the implementation must not ripple outward. Mutable state is part of the how: if callers do not need the same state, give each its own; if they do, the module is its single writer. Reach for locks or synchronization only after both.
 - **The interface is the test surface.** A small, honest interface is the natural seam to test through. If it is hard to test without reaching inside, the boundary is wrong.
 
 ## Design moves
 
 - **Deletion test.** If you removed the module, would its knowledge scatter back into callers? If nothing leaks, it was not encapsulating anything — inline it.
 - **Adapter rule.** One implementation behind an abstraction is a hypothetical seam; two is a real one. Introduce the interface when the second appears, not in anticipation of it.
-- **Inject dependencies, return results.** Prefer functions that take what they need and return a value over ones that reach for globals or fire hidden side effects. Testability follows for free.
-- **Push complexity down, not out.** A module earns its keep by absorbing hard cases so callers do not repeat them. A module that hands its edge cases back to every caller is shallow.
+- **Inject dependencies, return results.** Prefer functions that take what they need and return a value over ones that reach for globals or fire hidden side effects. Testability follows for free. Settle the shape of that data before the logic: where it can be in more than one state, name the valid states and transitions, and where a type (a discriminated union, say) rules out an impossible combination more simply than a runtime check, let it.
+- **Push complexity down, not out.** A module earns its keep by absorbing hard cases so callers do not repeat them. A module that hands its edge cases back to every caller is shallow. Outside data is the common case: parse it once where it crosses a trust boundary and pass the checked value inward. A TypeScript type or an `as` cast is not runtime validation; re-check inside only where a new trust boundary appears, such as a separately deployed service that consumes it.
 
 ## Glossary (use these words precisely)
 
@@ -43,7 +43,7 @@ Shape modules so a small, stable interface hides substantial implementation. The
 
 ## Rules
 
-- Present the simplest shape first; justify every layer and abstraction against its indirection cost.
+- Present the simplest shape first; justify every layer and abstraction against its indirection cost. That holds for a state machine, a validation schema, or an adapter too; a plain union and one parse function are often enough.
 - Prefer composition of small functions over inheritance and framework hooks.
 - A boundary you cannot test through cheaply is the wrong boundary — fix the boundary, do not mock around it.
 - When you accept a shallow module or a speculative seam on purpose, mark it with the `TRADEOFF(...)` convention so /debt-ledger can find it.
