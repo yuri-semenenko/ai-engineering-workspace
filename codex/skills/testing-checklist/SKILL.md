@@ -24,14 +24,14 @@ Slice vertically (one thin path through every layer), not horizontally. One slic
 
 ## Bug-fix protocol
 
-1. Write the regression test that reproduces the bug; it must fail for the reported reason. If the fix already exists, revert it to see that failure.
+1. Write the regression test that reproduces the bug; it must fail for the reported reason. If the fix already exists, take it out to see that failure, in an isolated copy and never in the working tree: a scratch copy of the tree, or `git worktree add --detach <dir>` so no branch is created, with the uncommitted and untracked files the test needs copied in. Remove only the fix under test, keep every other change, and make no revert commit and no stash. Compare `git status` before and after to confirm the working tree is unchanged. If the copy errors or times out, or no isolated copy can run the test, read the test against the fix and say the failure was not observed. A worktree made for this is removed only under the usual cleanup question.
 2. Fix; the test goes green.
 3. Run the surrounding suite so the fix did not move the bug elsewhere.
 
 ## Guardrails
 
 - DAMP over DRY: the failing output alone should say what broke.
-- Judge the tests of one unit as a set: if together they would still pass when the code under test did nothing or returned a constant, they do not pin it down; one example can survive a constant on its own and still be a good test. On critical logic, a targeted mutation run, by a tool if the repo has one or by breaking a line by hand, shows which realistic bugs the tests miss; a survivor is a missing assertion, an equivalent mutant, or a tool limit, and only the first earns a test. A mutation score is not a target.
+- Judge the tests of one unit as a set: if together they would still pass when the code under test did nothing or returned a constant, they do not pin it down; one example can survive a constant on its own and still be a good test. On critical logic, a targeted mutation run, by a tool if the repo has one or by breaking a line by hand in an isolated copy (the same rules as taking a fix out in the bug-fix protocol), shows which realistic bugs the tests miss; a survivor is a missing assertion, an equivalent mutant, or a tool limit, and only the first earns a test. A mutation score is not a target.
 - Deterministic only: no real time, no real network, no order dependence, no logic inside a test.
 - Keep the pyramid: mostly unit, integration at real seams, few end-to-end.
 - If a test is impossible (non-deterministic or environment-bound), say so plainly rather than implying coverage.

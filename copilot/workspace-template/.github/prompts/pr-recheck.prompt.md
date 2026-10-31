@@ -20,8 +20,12 @@ Task:
    `addressed` / `partial` / `not addressed` / `wont-fix (author replied)`, with the
    file:line and the commit that addresses it. `addressed` means the scenario the
    thread described no longer happens, not that the cited line changed; a regression
-   test added for it counts only if it would fail without the fix (read it against
-   the fix, or revert the fix and run it when that is cheap).
+   test added for it counts only if it would fail without the fix. Read it against
+   the fix, or, when that is cheap, run it with the fix taken out in an isolated
+   copy of the PR head (a scratch copy or `git worktree add --detach`, never your
+   working tree or the PR branch, nothing committed or pushed). When that cannot
+   be done safely, or the run errors or times out, say the failure was read, not
+   observed.
 4. Scan the changed code for new findings, classified Critical / Important / Optional,
    including regressions the fix itself introduced on adjacent paths.
 
