@@ -11,7 +11,7 @@ references/
   memory-seed.example/ MIRROR of the Claude memory-seed example
   checklists/          codex-owned: security.md, performance.md
   humanizer/           codex-owned: ai-writing-patterns.md
-skills/                16 hand-authored skill ports + a start onboarding entrypoint, each with agents/openai.yaml
+skills/                17 hand-authored skill ports + a start onboarding entrypoint, each with agents/openai.yaml
 scripts/
   install.macos-linux.sh
   install.windows.ps1
@@ -90,3 +90,4 @@ Trigger a narrower workflow explicitly:
 - `$prompt-engineer` — design or harden an agent prompt
 - `$project-onboarding` — create or update a repository's root `AGENTS.md` contract
 - `$context-brief` — compact handoff before complex implementation or review
+- `$handoff` — carry one work stream into a fresh session, resume it, or close it

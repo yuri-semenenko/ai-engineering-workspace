@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  },
   "permissions": {
     "allow": [
       "Bash(git status)",
@@ -83,6 +86,8 @@
       "Bash(gh pr diff:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh pr status)",
+      "Bash(gh auth status)",
+      "Bash(gh search:*)",
       "Bash(gh issue view:*)",
       "Bash(gh issue list:*)",
       "Bash(gh repo view:*)",
@@ -140,13 +145,13 @@
         ]
       }
     ],
-    "PostCompact": [
+    "SessionStart": [
       {
-        "matcher": "",
+        "matcher": "clear|compact",
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostCompact\",\"additionalContext\":\"Persona guardrails re-asserted after compaction (full rules in ~/.claude/CLAUDE.md). Act as a senior peer: be concise, skip basics, recommend rather than survey. Prefer the simplest solution and challenge unclear requirements before coding. Git discipline: small logical commits, ask before any commit/push/branch, never add Co-Authored-By trailers. Write PR and code-review output in English. State assumptions explicitly.\"}}'"
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"Persona guardrails re-asserted after /clear or compaction (condensed rules in ~/.claude/CLAUDE.md, full persona in ~/persona.md). Act as a senior peer: be concise, skip basics, recommend rather than survey. Prefer the simplest solution and challenge unclear requirements before coding. Git discipline: small logical commits, ask before any commit/push/branch, never add Co-Authored-By trailers. Write PR and code-review output in English. State assumptions explicitly.\"}}'"
           }
         ]
       }
@@ -179,6 +184,16 @@
             "type": "command",
             "command": "f=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); [ -n \"$f\" ] || exit 0; b=${f##*/}; case \"$b\" in .env.example|.env.sample|.env.template|.env.*.example) exit 0;; esac; case \"$b\" in .env|.env.*|*.pem|*.key|id_rsa|id_ed25519|*.p12|*.keystore|package-lock.json|npm-shrinkwrap.json|yarn.lock|pnpm-lock.yaml|bun.lockb) jq -n --arg f \"$b\" '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:(\"Editing protected file \\($f) (secret/key/lockfile). Confirm if intentional; lockfiles should be regenerated via the package manager.\")}}';; esac; exit 0",
             "statusMessage": "path guard"
+          }
+        ]
+      },
+      {
+        "matcher": "Workflow",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/workflow-model-guard.sh",
+            "statusMessage": "workflow model tiers"
           }
         ]
       }

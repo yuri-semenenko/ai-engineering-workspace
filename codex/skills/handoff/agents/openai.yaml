@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Carry a work stream into a fresh session"
+  default_prompt: "Write a handoff for this work stream so a fresh session can continue it."
