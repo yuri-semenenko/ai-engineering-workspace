@@ -29,13 +29,20 @@ nothing checked whose file it was before replacing it.
 2. **Each port ships the key command for a POSIX shell and for PowerShell, to be
    run as written.** The hash covers exact bytes, and a hand translation does
    not: piping the URL to `git hash-object` in PowerShell adds a line ending and
-   prints a different key. The two forms were checked to print the same key in
-   bash, PowerShell 7, and Windows PowerShell 5.1.
+   prints a different key. The PowerShell form also reads git's output as UTF-8,
+   because PowerShell otherwise decodes it with the console code page and hashes
+   different bytes for a non-ASCII path, and it strips `.git` case-sensitively,
+   as `basename` does. Both forms fall back to the path when `origin` is unset or
+   empty. They were checked to print the same key in bash, PowerShell 7, and
+   Windows PowerShell 5.1, including for a Cyrillic path, a Cyrillic `origin`,
+   an empty `origin`, and a `.GIT` suffix.
 3. **Write checks ownership before overwriting.** A file is this stream's when
-   the session resumed from it or wrote it, or when its branch, PR, or ticket is
-   the work in hand. Anything else is shown to the user, who agrees a different
-   stream name. When only the `Repo` path differs, the skill asks whether the
-   checkout moved.
+   the session resumed from it or wrote it, or when its `Repo` path is this
+   checkout's and its branch, PR, or ticket is the work in hand. A matching
+   branch alone is not enough, because two clones of one repository share the
+   key and often the branch. When only the `Repo` path differs, the skill asks
+   whether the checkout moved and replaces the file only if it did. Anything else
+   is shown to the user, who agrees a different stream name.
 4. **Existing handoffs stay where they are.** Nothing renames or migrates files
    under the old `~/.handoffs/<repo>/` layout. A handoff there is resumed by its
    explicit path. When the next write lands at the new path, the new file lists

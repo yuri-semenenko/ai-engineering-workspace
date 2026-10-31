@@ -17,22 +17,24 @@ At a task boundary: write the handoff, then suggest a fresh session with the res
 
   ```sh
   main=$(git worktree list --porcelain | sed -n '1s/^worktree //p')
-  id=$(git config --get remote.origin.url || printf '%s' "$main")
+  id=$(git config --get remote.origin.url); [ -n "$id" ] || id=$main
   printf '%s-%s\n' "$(basename "$main" .git)" "$(printf '%s' "$id" | git hash-object --stdin | cut -c1-8)"
   ```
 
   ```powershell
-  $main = (git worktree list --porcelain)[0] -replace '^worktree '
+  $enc = [Console]::OutputEncoding; [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+  $main = (git worktree list --porcelain)[0] -creplace '^worktree '
   $id = git config --get remote.origin.url; if (-not $id) { $id = $main }
+  [Console]::OutputEncoding = $enc
   $f = [IO.Path]::GetTempFileName(); [IO.File]::WriteAllText($f, $id); $h = git hash-object $f; Remove-Item $f
-  '{0}-{1}' -f ((Split-Path -Leaf $main) -replace '\.git$'), $h.Substring(0, 8)
+  '{0}-{1}' -f ((Split-Path -Leaf $main) -creplace '(?<=.)\.git$'), $h.Substring(0, 8)
   ```
 
-  The URL goes into the hash, never into the path or the handoff, so a credential in it does not land there. Renaming the checkout's directory, changing `origin`, or moving a checkout that has none changes the key. `<stream>` is the ticket key (`PROJ-123`) or a kebab-case topic.
+  The PowerShell form reads git's output as UTF-8 and strips `.git` case-sensitively, as `basename` does; without either, a non-ASCII path or a `.GIT` suffix prints a different key. The URL goes into the hash, never into the path or the handoff, so a credential in it does not land there. Renaming the checkout's directory, changing `origin`, or moving a checkout that has none changes the key. `<stream>` is the ticket key (`PROJ-123`) or a kebab-case topic.
 - When a write lands at a different path from the handoff this session resumed (one under the older `~/.handoffs/<repo>/` layout, or under a key that has since changed), list the old path under Pointers as `Supersedes <path>`. Nothing moves, renames, or deletes it before Close.
 - The directory sits outside every repository and every assistant's config directory, because a handoff carries work details. Never write one inside a repository. If the sandbox blocks the write, ask for approval rather than falling back to a path in the workspace.
 - One file per stream, overwritten each time. It is state, not a log. Skip empty sections and stay under about 60 lines.
-- Before overwriting an existing file, decide whether it is this stream's: it is when this session resumed from it or wrote it, or when its branch, PR, or ticket is the work in hand. Anything else (another clone, another branch, or a stream that reused the name and was never closed) is not yours to replace: show the user what it holds and agree a different `<stream>`. If only its repo path differs, ask whether the checkout moved.
+- Before overwriting an existing file, decide whether it is this stream's: it is when this session resumed from it or wrote it, or when its repo path is this checkout's and its branch, PR, or ticket is the work in hand. A matching branch alone is not enough: two clones of one repository share the key and often the branch. If only the repo path differs, ask whether this checkout moved; replace the file only if it did. Anything else (another clone, another branch, or a stream that reused the name and was never closed) is not yours to replace: show the user what it holds and agree a different `<stream>`.
 
 Sections, in order:
 
