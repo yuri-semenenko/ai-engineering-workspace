@@ -45,6 +45,9 @@ jobs:
       - name: Committed model fields name a tier, not a version
         run: bash scripts/test-check-model-tiers.sh
 
+      - name: Workflow guard checks the script that will run
+        run: bash scripts/test-workflow-model-guard.sh
+
       - name: Recommended skills reference only shipped skills
         run: bash scripts/check-recommended-skills.sh
 
@@ -116,6 +119,6 @@ jobs:
 
       - name: Windows script suite (drift guard, persona wizard, installers)
         shell: pwsh
-        # The runner image provides bash and jq. The degraded-path check hides
-        # jq in an isolated Bash PATH, so all three checks must actually run.
-        run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,permission-rule-shapes,repository-contract,install-copilot-contract,hook-scripts,hook-scripts-without-jq
+        # The runner image provides bash and jq. The degraded-path checks hide
+        # jq in an isolated Bash PATH, so every named check must actually run.
+        run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,permission-rule-shapes,repository-contract,install-copilot-contract,hook-scripts,hook-scripts-without-jq,workflow-model-guard
