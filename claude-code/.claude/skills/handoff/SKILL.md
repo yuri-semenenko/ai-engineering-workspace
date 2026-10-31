@@ -19,7 +19,7 @@ At a task boundary: write first, then suggest `/clear` with the resume line. Whi
 
 ## Write
 
-Path: `~/.handoffs/<repo>/<stream>.md`. `<repo>` is the main checkout's directory name, the same from every worktree: `basename "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"`. `<stream>` is the ticket key (`PROJ-123`) or a kebab-case topic.
+Path: `~/.handoffs/<repo>/<stream>.md`. `<repo>` is the main checkout's directory name, the same from every worktree: `basename "$(git worktree list --porcelain | sed -n '1s/^worktree //p')" .git`. `<stream>` is the ticket key (`PROJ-123`) or a kebab-case topic.
 
 The directory sits outside every repository and every assistant's config directory on purpose. A handoff carries work details, and a config directory can be a symlink into a repository (this kit's own symlink install links `~/.claude` to its checkout). Never write a handoff inside a repository or under a symlinked path.
 

@@ -13,7 +13,7 @@ At a task boundary: write the handoff, then suggest a fresh context with the res
 
 ## Write
 
-Path: `~/.handoffs/<repo>/<stream>.md`. `<repo>` is the main checkout's directory name, the same from every worktree: `basename "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"`. `<stream>` is the ticket key (`PROJ-123`) or a kebab-case topic.
+Path: `~/.handoffs/<repo>/<stream>.md`. `<repo>` is the main checkout's directory name, the same from every worktree: `basename "$(git worktree list --porcelain | sed -n '1s/^worktree //p')" .git`. `<stream>` is the ticket key (`PROJ-123`) or a kebab-case topic.
 
 The directory sits outside every repository and every assistant's config directory, because a handoff carries work details. Never write one inside a repository. If the sandbox blocks the write, ask for approval rather than falling back to a path in the workspace.
 
