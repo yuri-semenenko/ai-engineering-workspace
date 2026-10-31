@@ -46,7 +46,7 @@ A pragmatic checklist for writing and reviewing tests. Read the relevant section
 
 - [ ] The failing output alone tells you what broke — descriptive name, explicit expected value, no dig into helpers to understand the setup.
 - [ ] Setup visible at the test site: prefer inline literals or a plainly-named builder over layers of `beforeEach` mutation.
-- [ ] Assert on values, not on "did not throw". A test that would still pass if the code under test did nothing, or returned a constant, asserts nothing. On critical logic, a targeted mutation run, by a tool if the repo has one or by breaking a line by hand, shows which realistic bugs the tests miss. A survivor is a missing assertion, an equivalent mutant, or a tool limit; only the first earns a new test.
+- [ ] Assert on values, not on "did not throw". Judge the tests of one unit as a set: if together they would still pass when the code under test did nothing or returned a constant, they do not pin it down. One example can survive a constant on its own and still be a good test. On critical logic, a targeted mutation run, by a tool if the repo has one or by breaking a line by hand, shows which realistic bugs the tests miss. A survivor is a missing assertion, an equivalent mutant, or a tool limit; only the first earns a new test.
 - [ ] Mocks are visible in the test that uses them; a mock configured three files away is a trap for the next reader.
 
 ## Stack specifics (Vitest / React Testing Library)
