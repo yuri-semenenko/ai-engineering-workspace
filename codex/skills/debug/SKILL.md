@@ -15,7 +15,7 @@ Find the confirmed cause before changing code. A fix that only removes the sympt
 4. Write 1-3 falsifiable hypotheses. Each must predict what evidence would disprove it.
 5. Test the cheapest hypothesis first. Change one variable at a time.
 6. Fix the root cause with the smallest targeted change.
-7. Verify the original reproduction and add or update a regression test when the repo has a natural test location.
+7. Verify the original reproduction and add or update a regression test when the repo has a natural test location. If verification fails, return to step 4; when two fixes resting on the same premise fail the same check, state that premise in one sentence and test it as a hypothesis before a third attempt, without turning it into a redesign.
 8. Remove temporary instrumentation before completion.
 
 ## Guardrails
