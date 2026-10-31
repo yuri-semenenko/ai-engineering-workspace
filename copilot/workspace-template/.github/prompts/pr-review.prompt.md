@@ -11,12 +11,12 @@ Context:
 Review the current branch, diff, or PR. Focus on meaningful engineering concerns, not preference-driven nitpicks.
 
 Task:
-Find correctness, security, reliability, maintainability, scalability, and readability issues.
+Find correctness, security, reliability, maintainability, scalability, and readability issues. Where the diff touches them, these include two writers racing on one piece of state, a step that corrupts data when retried after a partial failure, and outside data passed inward without being parsed at its trust boundary.
 
 Constraints:
 - Read the tests and PR description first to recover intended behavior, then read the implementation against that intent.
 - Read enough surrounding code to understand the changed behavior.
-- Cite file and line references when possible.
+- Cite file and line references when possible, and name the input or sequence that triggers each issue and what breaks.
 - Classify every finding before writing it.
 - Classification is severity, not certainty: when unsure a finding is real, phrase it as a question rather than an assertion, and do not inflate a Critical you cannot fully trace.
 - Run the same gather-then-judge sequence every review, not only on large diffs: first orient on the changed surface, then gather findings by angle (correctness, tests, security when the surface is sensitive, performance), then classify and rule as one judgment pass. Gathering is evidence, not the verdict.

@@ -18,8 +18,12 @@ Task:
    GraphQL, not REST: `gh api graphql` over `reviewThreads`, keeping `isResolved: false`.
 3. Read the new commits and current diff, then classify each open thread as
    `addressed` / `partial` / `not addressed` / `wont-fix (author replied)`, with the
-   file:line and the commit that addresses it.
-4. Scan the changed code for new findings, classified Critical / Important / Optional.
+   file:line and the commit that addresses it. `addressed` means the scenario the
+   thread described no longer happens, not that the cited line changed; a regression
+   test added for it counts only if it would fail without the fix (read it against
+   the fix, or revert the fix and run it when that is cheap).
+4. Scan the changed code for new findings, classified Critical / Important / Optional,
+   including regressions the fix itself introduced on adjacent paths.
 
 Constraints:
 - Write in English unless explicitly requested otherwise.

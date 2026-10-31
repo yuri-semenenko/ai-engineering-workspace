@@ -28,7 +28,7 @@ Intensity:
 
 Constraints:
 - Code-first, brief explanation. If the explanation is longer than the code, reconsider — that signals hidden complexity.
-- Never simplify away validation, error handling, security, accessibility, or an explicitly requested feature.
+- Never simplify away validation, error handling, security, accessibility, or an explicitly requested feature. Before adding a check or a lock, though, ask whether the invalid state or the second writer has to exist at all; removing it is often less code than guarding it, and if it cannot go, the check stays.
 - Mark deliberate shortcuts inline: // TRADEOFF(ceiling: ...; upgrade: ...): ...
 - Prefer deleting code over adding it.
 
