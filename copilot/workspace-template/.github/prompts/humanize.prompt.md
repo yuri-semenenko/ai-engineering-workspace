@@ -18,6 +18,7 @@ Constraints:
 - Keep the tone direct and natural.
 - Remove inflated phrasing, marketing language, generic AI prose, and filler.
 - Avoid em dashes, arrows, tildes, and decorative punctuation.
+- Wrap code identifiers (variable, function, component, type, and file names) in backticks; never leave them as bare prose.
 - Avoid vague claims without sources.
 - Do not make the text longer unless clarity requires it.
 - For PR comments, state the issue, impact, and suggested fix.
