@@ -67,7 +67,8 @@ Decision gate:
   first comment's author matches `gh api user --jq .login`; GraphQL
   `resolveReviewThread`; resolution is reversible). Mark another reviewer's
   addressed thread `addressed (not resolved)` and resolve it only if the user says
-  so, and leave every other thread open. Open Optional threads and new Optional findings do not change this path;
+  so. Resolve a thread whose risk the user accepted in step 3, since that yes
+  covers it, and leave every other thread open. Open Optional threads and new Optional findings do not change this path;
   list them as non-blocking, with any new ones drafted as comments. Do NOT
   auto-approve: approving a PR is an outward action, so state that the PR is clean
   and wait for an explicit yes before running `gh pr review <id> --approve`.
@@ -75,7 +76,8 @@ Decision gate:
   separate yeses, and an approval alone posts nothing. Print the matrix and the
   line `all clear - N threads resolved, M non-blocking items open; ready to approve`.
 - Blocked path: otherwise, when anything blocks approval, do not approve and do
-  not resolve unaddressed threads. Output the matrix, the new draft comments, and
+  not resolve unaddressed threads, except one whose risk the user accepted in
+  step 3: that yes covers resolving it. Output the matrix, the new draft comments, and
   any proposed risk acceptance with its reason, then wait for confirmation before posting or
   resolving anything. Resolution and approve are separate confirmations. A
   confirmation covers the drafts it names; a finding added after it is confirmed

@@ -83,8 +83,9 @@ drafted as comments.
   the `author{login}` of its first comment (step 1) matches
   `gh api user --jq .login`. Mark another reviewer's addressed thread
   `addressed (not resolved)` in the matrix: that conversation is theirs, so resolve
-  it only if the user says so. Leave every other thread open; resolving one is a
-  separate explicit yes.
+  it only if the user says so. Resolve a thread whose risk the user accepted in
+  step 3, since that yes covers it. Leave every other thread open; resolving one
+  is a separate explicit yes.
 - Print the matrix and the line
   `all clear — N threads resolved, M non-blocking items open; ready to approve`.
 - **Do NOT auto-approve.** Approving a PR is an outward action; per the persona's
@@ -94,7 +95,8 @@ drafted as comments.
   separate yeses, so the user can take either, and an approval alone posts nothing.
 
 **Blocked path — draft, then confirm.** Otherwise, when anything blocks approval:
-- Do NOT approve. Do NOT resolve threads that are not `addressed`.
+- Do NOT approve. Do NOT resolve threads that are not `addressed`, except a
+  thread whose risk the user accepted in step 3: that yes covers resolving it.
 - Resolving any genuinely-addressed threads in this path still requires explicit
   confirmation, and is a separate yes from posting new comments.
 - Output the verification matrix, the new draft comments, and any proposed risk
