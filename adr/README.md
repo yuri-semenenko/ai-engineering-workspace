@@ -30,7 +30,8 @@ one, not an edit here.
 | [0016](./0016-subagent-default-tier-and-workflow-guard.md) | Claude Code subagents default to the routine tier, and a `Workflow` hook asks when a scripted fan-out leaves calls without a tier | Accepted; its dependency-free parsing superseded by [0018](./0018-workflow-guard-decodes-with-jq.md) |
 | [0017](./0017-handoff-skill.md) | A `handoff` skill across all four tools, carrying one work stream across a fresh context in a file outside every repository | Accepted; its `<repo>` folder name superseded by [0019](./0019-handoff-key-is-repository-identity.md) |
 | [0018](./0018-workflow-guard-decodes-with-jq.md) | The `Workflow` guard decodes its event with `jq` and asks, naming the reason, whenever it cannot read the script that will run | Accepted |
-| [0019](./0019-handoff-key-is-repository-identity.md) | Handoff folders are keyed by the directory name plus a hash of the repository's `origin` (or main checkout path), and a write checks ownership before overwriting | Accepted |
+| [0019](./0019-handoff-key-is-repository-identity.md) | Handoff folders are keyed by the directory name plus a hash of the repository's `origin` (or main checkout path), and a write checks ownership before overwriting | Accepted; its ownership exemption superseded by [0020](./0020-handoff-ownership-on-every-write-resume-and-close.md) |
+| [0020](./0020-handoff-ownership-on-every-write-resume-and-close.md) | Handoff ownership is checked on every overwrite with no exemption, flagged on resume, and required before close deletes anything | Accepted |
 
 For a standalone example of the format applied to a fictional decision, see
 [`examples/adr-sample.md`](../examples/adr-sample.md).
