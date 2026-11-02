@@ -65,8 +65,12 @@ fi
 
 # The script is matched as one line, so a line break between `agent` and its
 # parenthesis, or between `model` and its colon, is whitespace like any other.
+# tr and grep run with LC_ALL=C: in a UTF-8 locale the BSD tools on macOS stop
+# at a byte that is not valid UTF-8, and every call after it would drop out of
+# the count without a prompt. A file at scriptPath is read as raw bytes, so
+# nothing guarantees it is UTF-8.
 count_matches() {
-  printf '%s' "$script" | tr '\r\n' '  ' | grep -Eo "$1" | grep -c . || true
+  printf '%s' "$script" | LC_ALL=C tr '\r\n' '  ' | LC_ALL=C grep -Eo "$1" | LC_ALL=C grep -c . || true
 }
 
 # The two sides are counted, not paired call by call. A `model:` outside any
@@ -89,8 +93,7 @@ agent_calls=$(( $(count_matches "$call") - $(count_matches "$word$call") ))
 model_fields=$(( $(count_matches "$field") - $(count_matches "$word$field") ))
 
 if [ "${agent_calls:-0}" -gt "${model_fields:-0}" ]; then
-  missing=$((agent_calls - model_fields))
-  ask "$missing agent() call(s) of $agent_calls carry no model field ($source_note). Those take a default instead of naming a tier, which the persona Delegation rules forbid. Reject and label each call gather / proofread / decide, then set model from the label. If the count is a false positive from a nested call or a string literal, say so rather than editing the script to appease the check."
+  ask "$agent_calls agent() call(s) against $model_fields model field(s) ($source_note). The guard compares the two counts and does not pair them; a call without a model takes a default instead of naming a tier, which the persona Delegation rules forbid. Reject and label each call gather / proofread / decide, then set model from the label. If the count is a false positive from a nested call or a string literal, say so rather than editing the script to appease the check."
 fi
 
 exit 0
