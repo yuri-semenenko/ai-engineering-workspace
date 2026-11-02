@@ -117,7 +117,7 @@ When posting a review, include every tier (Critical, Important, and Optional) th
 
 Before delivering a PR review, run `gh auth status` and verify the PR is still open and not already merged.
 
-Verify every finding against the PR's actual head branch using a dedicated worktree, not the currently checked-out branch. Never cite a subagent's line numbers or claims without re-confirming them in the real file; a subagent's finding is evidence, not a verdict. State confidence explicitly; flag assumptions instead of asserting them as facts.
+Verify every finding against the PR's actual head branch using a dedicated worktree (`git worktree add --detach <path> <sha>`, so no local branch is created or held), not the currently checked-out branch. Never cite a subagent's line numbers or claims without re-confirming them in the real file; a subagent's finding is evidence, not a verdict. State confidence explicitly; flag assumptions instead of asserting them as facts.
 
 ## AI Collaboration Rules
 
