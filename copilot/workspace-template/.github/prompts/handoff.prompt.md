@@ -11,7 +11,7 @@ Context:
 A new chat starts with none of this conversation. The handoff carries what it needs to continue: the next step, the state, the decisions and their reasons. Anything the next session can re-read from git, the PR, or the ticket stays out.
 
 Task:
-Write the handoff for the current work stream. If the user instead gives an existing handoff, resume from it: compare it with the live state (branch, latest commit, PR status), say what drifted, and state the next step in one line.
+Write the handoff for the current work stream. If the user instead gives an existing handoff, resume from it: if its repo line names a checkout other than this one, say so and ask before continuing, because two clones of one repository share the key; then compare it with the live state (branch, latest commit, PR status), say what drifted, and state the next step in one line.
 
 Constraints:
 - Do not write files outside this workspace. Return the handoff as one Markdown block for the user to save outside the repository, for example at `~/.handoffs/<key>/<stream>.md`, where `<stream>` is the ticket key (`PROJ-123`) or a kebab-case topic. `<key>` is the repository's directory name plus a short hash of its `origin` URL (or of the main checkout's path when there is no `origin`), so two repositories with the same name do not share a folder. Give the user the command that prints it, for their shell, exactly as written: the hash covers exact bytes, and a hand translation prints a different key.
