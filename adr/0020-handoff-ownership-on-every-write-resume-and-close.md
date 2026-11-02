@@ -31,14 +31,19 @@ That left three gaps:
 1. **The ownership check runs on every overwrite, with no exemption.** Whether
    the session resumed or wrote the file is not part of the test: the file's
    `Repo` path and its branch, PR, or ticket are. The rest of the check stands as
-   ADR-0019 decided it, including the question about a moved checkout.
-2. **Resume flags a foreign `Repo`.** When the session runs in a checkout other
-   than the file's `Repo` path, it says so and asks before continuing.
+   ADR-0019 decided it, including the question about a moved checkout. `Repo`
+   holds the main checkout path, so it is compared with this repository's main
+   checkout path, which every linked worktree shares, never with the directory
+   the session runs in.
+2. **Resume flags a foreign `Repo`.** When this repository's main checkout path
+   is not the file's `Repo` path, it says so and asks before continuing. A
+   session in a linked worktree of the same repository matches.
 3. **Close runs the same check before deleting.** When the check fails, nothing
    is deleted and the user is shown the file.
 4. **All four ports change together**, as ADR-0017 requires. The Copilot prompt
    never writes or deletes the file, and the overwrite check it hands the user
-   already had no exemption, so it gains only the resume check.
+   already had no exemption, so it gains the resume check and the main-checkout
+   comparison.
 
 This supersedes the exemption in ADR-0019 decision 3. The rest of ADR-0019
 stands.

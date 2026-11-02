@@ -44,7 +44,7 @@ When a write lands at a different path from the handoff this session resumed (on
 
 The directory sits outside every repository and every assistant's config directory on purpose. A handoff carries work details, and a config directory can be a symlink into a repository (this kit's own symlink install links `~/.claude` to its checkout). Never write a handoff inside a repository or under a symlinked path.
 
-One file per stream, overwritten each time. It is state, not a log. Before overwriting an existing file, decide whether it is this stream's, every time, including a file this session resumed from or wrote: it is when its `Repo` path is this checkout's and its branch, PR, or ticket is the work in hand. Having resumed the file is not the test, because a session can resume another clone's handoff. A matching branch alone is not enough: two clones of one repository share the key and often the branch. If only the `Repo` path differs, ask whether this checkout moved; replace the file only if it did. Anything else (another clone, another branch, or a stream that reused the name and was never closed) is not yours to replace: show the user what it holds and agree a different `<stream>`.
+One file per stream, overwritten each time. It is state, not a log. Before overwriting an existing file, decide whether it is this stream's, every time, including a file this session resumed from or wrote: it is when its `Repo` path is this repository's main checkout path (the `main` value of the key command, the same from every worktree, not the directory the session runs in) and its branch, PR, or ticket is the work in hand. Having resumed the file is not the test, because a session can resume another clone's handoff. A matching branch alone is not enough: two clones of one repository share the key and often the branch. If only the `Repo` path differs, ask whether this checkout moved; replace the file only if it did. Anything else (another clone, another branch, or a stream that reused the name and was never closed) is not yours to replace: show the user what it holds and agree a different `<stream>`.
 
 Template. Skip empty sections and stay under about 60 lines:
 
@@ -85,7 +85,7 @@ After writing, suggest `/clear` and give one paste-ready line for the next sessi
 
 ## Resume
 
-1. Read the file. If this session runs in a checkout other than its `Repo` path, say so and ask before continuing: two clones of one repository share the key, so the handoff may be another clone's.
+1. Read the file. If its `Repo` path is not this repository's main checkout path, compared as in Write (a linked worktree of the same repository matches), say so and ask before continuing: two clones of one repository share the key, so the handoff may be another clone's.
 2. Check the live state before acting: `git -C <worktree> status -sb` and `git -C <worktree> log -1 --oneline`, plus `gh pr view <url> --json state,reviewDecision,headRefOid` when there is a PR. If it drifted from the handoff (new commits, a review landed, the PR merged), say what changed and plan from the live state.
 3. State the next step in one line and continue. Ask again for any authorization the handoff mentions.
 
