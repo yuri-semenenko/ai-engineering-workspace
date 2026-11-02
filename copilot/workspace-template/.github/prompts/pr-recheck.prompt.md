@@ -15,12 +15,15 @@ to check whether each open comment is now resolved, not to redo the first review
 Task:
 1. Confirm `gh auth status` and that the PR is still open (`gh pr view <id> --json state,mergedAt`).
 2. Load the open review threads. Thread resolution state is only available via
-   GraphQL, not REST: `gh api graphql` over `reviewThreads`, keeping `isResolved: false`.
+   GraphQL, not REST: `gh api graphql` over `reviewThreads`, keeping `isResolved: false`
+   and the author of each thread's first comment.
 3. Read the new commits and current diff, then record three separate things for
    each open thread, with the file:line and the commit that addresses it:
    - Severity, from the first review: Critical / Important / Optional. When the
      thread does not state it, classify it from what it describes and mark the
-     severity as inferred.
+     severity as inferred. When it reads as either of two tiers, take the higher
+     one: severity alone decides what blocks, and first-review comments are prose
+     that rarely names a tier.
    - Status: `addressed` / `partial` / `not addressed` /
      `wont-fix (author replied)`. A `wont-fix` reply is the author's position,
      not the reviewer's acceptance.
@@ -33,7 +36,9 @@ Task:
    Critical or Important item, thread or new finding alike, the decision is the
    user's: propose it with the reason, keep the item blocking, and mark it
    `no (accepted risk)` only after the user says yes. Record the agreed reason as a
-   drafted reply on the thread, posted on confirmation like any comment.
+   drafted reply on the thread, posted on confirmation like any comment. On a
+   thread, that yes is also the yes to resolve it, so the next recheck does not
+   load it again and repeat the question.
 
    `addressed` means the scenario the
    thread described no longer happens, not that the cited line changed; a regression
@@ -58,9 +63,11 @@ Constraints:
 
 Decision gate:
 - Clean path: if nothing blocks approval (no thread and no new finding is marked
-  `yes` in steps 3 and 4), resolve the `addressed` threads (GraphQL
-  `resolveReviewThread`; resolution is reversible) and leave every other thread
-  open. Open Optional threads and new Optional findings do not change this path;
+  `yes` in steps 3 and 4), resolve the `addressed` threads the user opened (the
+  first comment's author matches `gh api user --jq .login`; GraphQL
+  `resolveReviewThread`; resolution is reversible). Mark another reviewer's
+  addressed thread `addressed (not resolved)` and resolve it only if the user says
+  so, and leave every other thread open. Open Optional threads and new Optional findings do not change this path;
   list them as non-blocking, with any new ones drafted as comments. Do NOT
   auto-approve: approving a PR is an outward action, so state that the PR is clean
   and wait for an explicit yes before running `gh pr review <id> --approve`.
