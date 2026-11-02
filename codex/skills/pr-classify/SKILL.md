@@ -22,6 +22,7 @@ Lead with findings. Use English for GitHub markdown unless the user explicitly a
 - Order by severity, not by file.
 - Classification is severity, not certainty: when unsure a finding is real, phrase it as a question, not an assertion, and do not inflate a Critical you cannot fully trace.
 - End with verdict: approve, request changes, or needs discussion.
+- Posting to GitHub is a separate, opt-in step. Draft the inline comments, show them, and post only after the user explicitly confirms. When the review format cannot carry Optional findings, draft the follow-up comment that will with the rest, so the same confirmation covers it. A confirmation covers what it names: a finding added after it is drafted and confirmed on its own, and an explicit instruction earlier in the conversation to post this review's comments is that confirmation. Write posted comments as conversational English prose without arrows, tildes, or em dashes, run them through the humanizer skill, and anchor each to a `path:line`. Approving the PR and posting comments are separate yeses; neither implies the other.
 
 ## Review Loop
 
