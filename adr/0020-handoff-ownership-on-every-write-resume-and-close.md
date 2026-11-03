@@ -13,40 +13,47 @@ path was this checkout's and its branch, PR, or ticket was the work in hand.
 
 That left three gaps:
 
-- **The exemption trusted the session's memory, not the file.** Two clones of
-  one repository with the same `origin` share a key, and a resume line names a
-  file, not a checkout. A session in one clone could resume the other clone's
-  handoff, count it as its own because it had resumed it, and overwrite that
-  clone's state with its own `Repo`. The exemption saved nothing in the case it
-  was meant for: a file the session wrote carries its own `Repo` and its own
-  work, so it passes the check anyway.
+- **The exemption never read the file.** Two clones of one repository with the
+  same `origin` share a key, and a resume line names a file, not a checkout. A
+  session in one clone could resume the other clone's handoff, count it as its
+  own because it had resumed it, and overwrite that clone's state with its own
+  `Repo`.
 - **Resume never compared the checkout.** It read the file and checked the
   worktree the file names, so a session running in another clone continued
   without saying so.
 - **Close ran no check at all.** It deleted the stream's file with `rm`, and a
   delete cannot be undone. An overwrite at least leaves the new state behind.
 
+The exemption itself is needed. A stream can span several PRs, and one named for
+a topic has no ticket to match. Once it moves on to its next branch or PR, the
+file still names the last one, and only the exemption lets the session that
+resumed it write it again.
+
 ## Decision
 
-1. **The ownership check runs on every overwrite, with no exemption.** Whether
-   the session resumed or wrote the file is not part of the test: the file's
-   `Repo` path and its branch, PR, or ticket are. The rest of the check stands as
-   ADR-0019 decided it, including the question about a moved checkout. `Repo`
-   holds the main checkout path, so it is compared with this repository's main
-   checkout path, which every linked worktree shares, never with the directory
-   the session runs in.
+1. **The ownership check runs on every overwrite, and the exemption needs a
+   matching `Repo`.** A file is this stream's when its `Repo` path is this
+   repository's main checkout path and either this session resumed from it or
+   wrote it, or its branch, PR, or ticket is the work in hand. Having resumed or
+   written the file no longer counts on its own, because another clone's file
+   always holds another `Repo`. The rest of the check stands as ADR-0019 decided
+   it, including the question about a moved checkout. `Repo` holds the main
+   checkout path, so it is compared with this repository's main checkout path,
+   which every linked worktree shares, never with the directory the session runs
+   in.
 2. **Resume flags a foreign `Repo`.** When this repository's main checkout path
    is not the file's `Repo` path, it says so and asks before continuing. A
    session in a linked worktree of the same repository matches.
 3. **Close runs the same check before deleting.** When the check fails, nothing
    is deleted and the user is shown the file.
 4. **All four ports change together**, as ADR-0017 requires. The Copilot prompt
-   never writes or deletes the file, and the overwrite check it hands the user
-   already had no exemption, so it gains the resume check and the main-checkout
-   comparison.
+   never writes or deletes the file. The overwrite check it hands the user asks
+   whether the file's branch, PR, or ticket is this stream's, which the user can
+   answer for an earlier PR of the stream, so it gains only the resume check and
+   the main-checkout comparison.
 
-This supersedes the exemption in ADR-0019 decision 3. The rest of ADR-0019
-stands.
+This supersedes the unconditional exemption in ADR-0019 decision 3. The rest of
+ADR-0019 stands.
 
 ## Consequences
 
@@ -55,8 +62,8 @@ stands.
 - A session that resumed another clone's handoff can no longer overwrite it
   without the user's answer.
 - Close cannot delete another clone's state.
-- The check reads the file every time, so it does not depend on what the session
-  remembers about where the file came from.
+- The check reads the file's `Repo` every time, so what the session remembers
+  about where the file came from counts only for a file of this repository.
 
 ### Negative
 
@@ -69,20 +76,25 @@ stands.
 
 ### Neutral
 
-- A file this session wrote passes the check exactly as before, so the common
-  path asks nothing new.
+- A file of this repository that the session resumed from or wrote passes the
+  check as before, including after the stream moved on to its next branch or PR,
+  so the common path asks nothing new.
 
 ## Alternatives Considered
 
-- **Keep the exemption and add only the Close check.** Rejected: the overwrite of
-  a resumed foreign handoff, the first gap, stays open.
+- **Keep the exemption as it was and add only the Close check.** Rejected: the
+  overwrite of a resumed foreign handoff, the first gap, stays open.
+- **Drop the exemption.** Rejected: a stream that moved on to its next branch or
+  PR, with no ticket to match, would fail the check on its own file and be told
+  to pick a new name, while the `Repo` match alone already tells another clone's
+  file apart.
 - **Give `Repo` a line of its own for an exact comparison.** Deferred: it changes
   the handoff format in four ports and needs a reading rule for every handoff
   written before it, while the check it would serve compares path and work, not
   one string.
-- **Compare `Repo` alone.** Rejected for the reason ADR-0019 gives for branch
-  alone: a moved checkout fails it, and the question about a move already covers
-  that case.
+- **Compare `Repo` alone.** Rejected: one checkout can still hold a stream that
+  reused the name and was never closed. Only the work, or this session having
+  resumed or written the file, tells that file apart from this stream's.
 
 ## References
 
