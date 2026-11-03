@@ -49,8 +49,12 @@ resolve and nothing to approve.
    user's: propose it with the reason, keep the item blocking, and mark it
    `no (accepted risk)` only after the user says yes. Record the agreed reason as a
    drafted reply on the thread, posted on confirmation like any comment. On a
-   thread, that yes is also the yes to resolve it, so the next recheck does not
-   load it again and repeat the question.
+   thread the user opened (as the decision gate defines it), that yes is also the
+   yes to resolve it once the reply is posted, so the next recheck does not load it
+   again and repeat the question. Another reviewer's thread stays open, because that
+   conversation is theirs: the posted reply records the acceptance, and a later
+   recheck that finds the user's acceptance reply on it marks it
+   `no (accepted risk)` from that reply instead of asking again.
 
    `addressed` means the scenario the thread described no longer happens, not that
    the cited line changed. A regression test added for it counts only if it would
@@ -83,9 +87,10 @@ drafted as comments.
   the `author{login}` of its first comment (step 1) matches
   `gh api user --jq .login`. Mark another reviewer's addressed thread
   `addressed (not resolved)` in the matrix: that conversation is theirs, so resolve
-  it only if the user says so. Resolve a thread whose risk the user accepted in
-  step 3, since that yes covers it. Leave every other thread open; resolving one
-  is a separate explicit yes.
+  it only if the user says so. Resolve a thread the user opened whose risk they
+  accepted in step 3 once its reply is posted, since that yes covers it; another
+  reviewer's accepted-risk thread stays open. Leave every other thread open;
+  resolving one is a separate explicit yes.
 - Print the matrix and the line
   `all clear — N threads resolved, M non-blocking items open; ready to approve`.
 - **Do NOT auto-approve.** Approving a PR is an outward action; per the persona's
@@ -96,7 +101,8 @@ drafted as comments.
 
 **Blocked path — draft, then confirm.** Otherwise, when anything blocks approval:
 - Do NOT approve. Do NOT resolve threads that are not `addressed`, except a
-  thread whose risk the user accepted in step 3: that yes covers resolving it.
+  thread the user opened whose risk they accepted in step 3, once its reply is
+  posted: that yes covers resolving it.
 - Resolving any genuinely-addressed threads in this path still requires explicit
   confirmation, and is a separate yes from posting new comments.
 - Output the verification matrix, the new draft comments, and any proposed risk

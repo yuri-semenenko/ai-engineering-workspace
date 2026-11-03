@@ -37,8 +37,12 @@ Task:
    user's: propose it with the reason, keep the item blocking, and mark it
    `no (accepted risk)` only after the user says yes. Record the agreed reason as a
    drafted reply on the thread, posted on confirmation like any comment. On a
-   thread, that yes is also the yes to resolve it, so the next recheck does not
-   load it again and repeat the question.
+   thread the user opened (as the Clean path defines it), that yes is also the yes
+   to resolve it once the reply is posted, so the next recheck does not load it
+   again and repeat the question. Another reviewer's thread stays open, because
+   that conversation is theirs: the posted reply records the acceptance, and a
+   later recheck that finds the user's acceptance reply on it marks it
+   `no (accepted risk)` from that reply instead of asking again.
 
    `addressed` means the scenario the
    thread described no longer happens, not that the cited line changed; a regression
@@ -67,8 +71,9 @@ Decision gate:
   first comment's author matches `gh api user --jq .login`; GraphQL
   `resolveReviewThread`; resolution is reversible). Mark another reviewer's
   addressed thread `addressed (not resolved)` and resolve it only if the user says
-  so. Resolve a thread whose risk the user accepted in step 3, since that yes
-  covers it, and leave every other thread open. Open Optional threads and new Optional findings do not change this path;
+  so. Resolve a thread the user opened whose risk they accepted in step 3 once its
+  reply is posted, since that yes covers it, and leave every other thread open,
+  including another reviewer's accepted-risk thread. Open Optional threads and new Optional findings do not change this path;
   list them as non-blocking, with any new ones drafted as comments. Do NOT
   auto-approve: approving a PR is an outward action, so state that the PR is clean
   and wait for an explicit yes before running `gh pr review <id> --approve`.
@@ -76,8 +81,8 @@ Decision gate:
   separate yeses, and an approval alone posts nothing. Print the matrix and the
   line `all clear - N threads resolved, M non-blocking items open; ready to approve`.
 - Blocked path: otherwise, when anything blocks approval, do not approve and do
-  not resolve unaddressed threads, except one whose risk the user accepted in
-  step 3: that yes covers resolving it. Output the matrix, the new draft comments, and
+  not resolve unaddressed threads, except one the user opened whose risk they
+  accepted in step 3, once its reply is posted: that yes covers resolving it. Output the matrix, the new draft comments, and
   any proposed risk acceptance with its reason, then wait for confirmation before posting or
   resolving anything. Resolution and approve are separate confirmations. A
   confirmation covers the drafts it names; a finding added after it is confirmed
@@ -101,6 +106,7 @@ If a section is empty, write `_None._`.
 
 Success Criteria:
 - Every prior open thread has a clear, evidence-backed status.
-- Nothing is approved or resolved while a real blocker remains, and no risk is
-  marked accepted on the author's word alone.
+- Nothing is approved while a real blocker remains, no thread that still blocks
+  is resolved, another reviewer's thread is resolved only on the user's explicit
+  yes, and no risk is marked accepted on the author's word alone.
 - New comments read like genuine peer feedback, not a classification dump.
