@@ -22,6 +22,7 @@ Constraints:
 - Run the same gather-then-judge sequence every review, not only on large diffs: first orient on the changed surface, then gather findings by angle (correctness, tests, security when the surface is sensitive, performance), then classify and rule as one judgment pass. Gathering is evidence, not the verdict.
 - Drop Optional findings if ignoring them has no concrete cost.
 - Write in English unless explicitly requested otherwise.
+- Posting to GitHub is a separate, opt-in step: draft the inline comments, show them, and post only after the user explicitly confirms. When the review format cannot carry Optional findings, draft the follow-up comment that will with the rest, so the same confirmation covers it. A confirmation covers what it names; a finding added after it needs its own. An explicit instruction earlier in the chat to post this review's comments is that confirmation; show the drafts as you post them. Posted comments are plain conversational prose with no arrow, tilde, or em-dash symbols; strip AI-sounding phrasing before posting, by the rules in `humanize.prompt.md`. Approving the PR and posting comments are separate yeses; neither implies the other.
 
 Output Format:
 

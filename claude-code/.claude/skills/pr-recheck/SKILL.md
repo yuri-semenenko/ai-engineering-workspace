@@ -33,10 +33,14 @@ resolve and nothing to approve.
    things, with the file:line and the commit that addresses it. Output as a table.
    - **Severity**, from the first review: Critical / Important / Optional. When the
      thread does not state it, classify it from what it describes under
-     pr-classify rules and mark the severity as inferred.
+     pr-classify rules and mark the severity as inferred. When it reads as either
+     of two tiers, take the higher one: severity alone decides what blocks, and
+     pr-classify posts comments as prose that rarely names a tier.
    - **Status**: `addressed` / `partial` / `not addressed` /
      `wont-fix (author replied)`. A `wont-fix` reply is the author's position,
-     not the reviewer's acceptance.
+     not the reviewer's acceptance. `addressed (not resolved)` marks an
+     `addressed` thread another reviewer opened, which the decision gate leaves
+     open for them; it does not block.
    - **Blocks approval**: `yes`, `no`, or `no (accepted risk)`. A Critical or
      Important thread blocks unless it is `addressed` or its risk is accepted. An
      Optional thread does not block.
@@ -46,7 +50,13 @@ resolve and nothing to approve.
    Critical or Important item, thread or new finding alike, the decision is the
    user's: propose it with the reason, keep the item blocking, and mark it
    `no (accepted risk)` only after the user says yes. Record the agreed reason as a
-   drafted reply on the thread, posted on confirmation like any comment.
+   drafted reply on the thread, posted on confirmation like any comment. On a
+   thread the user opened (as the decision gate defines it), that yes is also the
+   yes to resolve it once the reply is posted, so the next recheck does not load it
+   again and repeat the question. Another reviewer's thread stays open, because that
+   conversation is theirs: the posted reply records the acceptance, and a later
+   recheck that finds the user's acceptance reply on it marks it
+   `no (accepted risk)` from that reply instead of asking again.
 
    `addressed` means the scenario the thread described no longer happens, not that
    the cited line changed. A regression test added for it counts only if it would
@@ -65,7 +75,7 @@ resolve and nothing to approve.
 
 ## Delegation
 
-Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the open threads, load the new work and read the changed code) to cheaper-tier subagents, each returning compact evidence: the unresolved threads, and what changed since the last review with `file:line`. Keep on the main model the verification matrix with its severity, status, and blocking calls (step 3), the new-findings classification (step 4), and the decision gate below. Resolving threads, posting comments, and approving are gated actions — never delegated to a subagent.
+Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the open threads, load the new work and read the changed code) to cheaper-tier subagents, each returning compact evidence: the unresolved threads, each with the `author{login}` of its first comment for the ownership test in the decision gate, and what changed since the last review with `file:line`. Keep on the main model the verification matrix with its severity, status, and blocking calls (step 3), the new-findings classification (step 4), and the decision gate below. Resolving threads, posting comments, and approving are gated actions — never delegated to a subagent.
 
 ## Decision gate
 
@@ -73,12 +83,18 @@ Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the op
 finding is marked `yes` in steps 3 and 4. Open Optional threads and new Optional
 findings do not change this path; list them as non-blocking, with any new ones
 drafted as comments.
-- Resolve each `addressed` thread via
+- Resolve each `addressed` thread the user opened via
   `gh api graphql -f query='mutation($id:ID!){ resolveReviewThread(input:{threadId:$id}){ thread{ isResolved } } }' -f id=THREAD_ID`
-  (resolution is reversible — no confirmation needed). Leave every other thread
-  open; resolving one is a separate explicit yes.
+  (resolution is reversible — no confirmation needed). A thread is the user's when
+  the `author{login}` of its first comment (step 1) matches
+  `gh api user --jq .login`. Mark another reviewer's addressed thread
+  `addressed (not resolved)` in the matrix: that conversation is theirs, so resolve
+  it only if the user says so. Resolve a thread the user opened whose risk they
+  accepted in step 3 once its reply is posted, since that yes covers it; another
+  reviewer's accepted-risk thread stays open. Leave every other thread open;
+  resolving one is a separate explicit yes.
 - Print the matrix and the line
-  `all clear — N threads resolved, M non-blocking items open; ready to approve`.
+  `all clear — N threads resolved, K addressed threads left open for their reviewers, M non-blocking items open; ready to approve`.
 - **Do NOT auto-approve.** Approving a PR is an outward action; per the persona's
   git policy ("always ask permission before … opening PRs"), state that the PR is
   clean and wait for an explicit yes before running `gh pr review <id> --approve`.
@@ -86,7 +102,9 @@ drafted as comments.
   separate yeses, so the user can take either, and an approval alone posts nothing.
 
 **Blocked path — draft, then confirm.** Otherwise, when anything blocks approval:
-- Do NOT approve. Do NOT resolve threads that are not `addressed`.
+- Do NOT approve. Do NOT resolve threads that are not `addressed`, except a
+  thread the user opened whose risk they accepted in step 3, once its reply is
+  posted: that yes covers resolving it.
 - Resolving any genuinely-addressed threads in this path still requires explicit
   confirmation, and is a separate yes from posting new comments.
 - Output the verification matrix, the new draft comments, and any proposed risk
