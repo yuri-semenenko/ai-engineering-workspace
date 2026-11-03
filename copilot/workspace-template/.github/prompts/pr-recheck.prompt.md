@@ -26,7 +26,9 @@ Task:
      that rarely names a tier.
    - Status: `addressed` / `partial` / `not addressed` /
      `wont-fix (author replied)`. A `wont-fix` reply is the author's position,
-     not the reviewer's acceptance.
+     not the reviewer's acceptance. `addressed (not resolved)` marks an
+     `addressed` thread another reviewer opened, which the decision gate leaves
+     open for them; it does not block.
    - Blocks approval: `yes`, `no`, or `no (accepted risk)`. A Critical or
      Important thread blocks unless it is `addressed` or its risk is accepted. An
      Optional thread does not block.
@@ -79,7 +81,7 @@ Decision gate:
   and wait for an explicit yes before running `gh pr review <id> --approve`.
   Show the non-blocking drafts with that question: approving and posting them are
   separate yeses, and an approval alone posts nothing. Print the matrix and the
-  line `all clear - N threads resolved, M non-blocking items open; ready to approve`.
+  line `all clear - N threads resolved, K addressed threads left open for their reviewers, M non-blocking items open; ready to approve`.
 - Blocked path: otherwise, when anything blocks approval, do not approve and do
   not resolve unaddressed threads, except one the user opened whose risk they
   accepted in step 3, once its reply is posted: that yes covers resolving it. Output the matrix, the new draft comments, and

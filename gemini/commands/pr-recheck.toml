@@ -36,7 +36,9 @@ resolve and nothing to approve.
      pr-classify posts comments as prose that rarely names a tier.
    - **Status**: `addressed` / `partial` / `not addressed` /
      `wont-fix (author replied)`. A `wont-fix` reply is the author's position,
-     not the reviewer's acceptance.
+     not the reviewer's acceptance. `addressed (not resolved)` marks an
+     `addressed` thread another reviewer opened, which the decision gate leaves
+     open for them; it does not block.
    - **Blocks approval**: `yes`, `no`, or `no (accepted risk)`. A Critical or
      Important thread blocks unless it is `addressed` or its risk is accepted. An
      Optional thread does not block.
@@ -71,7 +73,7 @@ resolve and nothing to approve.
 
 ## Delegation
 
-Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the open threads, load the new work and read the changed code) to cheaper-tier subagents, each returning compact evidence: the unresolved threads, and what changed since the last review with `file:line`. Keep on the main model the verification matrix with its severity, status, and blocking calls (step 3), the new-findings classification (step 4), and the decision gate below. Resolving threads, posting comments, and approving are gated actions — never delegated to a subagent.
+Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the open threads, load the new work and read the changed code) to cheaper-tier subagents, each returning compact evidence: the unresolved threads, each with the `author{login}` of its first comment for the ownership test in the decision gate, and what changed since the last review with `file:line`. Keep on the main model the verification matrix with its severity, status, and blocking calls (step 3), the new-findings classification (step 4), and the decision gate below. Resolving threads, posting comments, and approving are gated actions — never delegated to a subagent.
 
 ## Decision gate
 
@@ -90,7 +92,7 @@ drafted as comments.
   reviewer's accepted-risk thread stays open. Leave every other thread open;
   resolving one is a separate explicit yes.
 - Print the matrix and the line
-  `all clear — N threads resolved, M non-blocking items open; ready to approve`.
+  `all clear — N threads resolved, K addressed threads left open for their reviewers, M non-blocking items open; ready to approve`.
 - **Do NOT auto-approve.** Approving a PR is an outward action; per the persona's
   git policy ("always ask permission before … opening PRs"), state that the PR is
   clean and wait for an explicit yes before running `gh pr review <id> --approve`.
