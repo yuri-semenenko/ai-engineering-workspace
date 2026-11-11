@@ -16,7 +16,11 @@ Task:
 1. Confirm `gh auth status` and that the PR is still open (`gh pr view <id> --json state,mergedAt`).
 2. Load the open review threads. Thread resolution state is only available via
    GraphQL, not REST: `gh api graphql` over `reviewThreads`, keeping `isResolved: false`
-   and the author of each thread's first comment.
+   and the author of each thread's first comment. Page through all threads and each
+   open thread's comments using `pageInfo { hasNextPage endCursor }`; retain every
+   reply by the authenticated user with its body. If a page cannot be read, report
+   the evidence gap and do not infer absence of acceptance or mark risk accepted
+   without evidence.
 3. Read the new commits and current diff, then record three separate things for
    each open thread, with the file:line and the commit that addresses it:
    - Severity, from the first review: Critical / Important / Optional. When the
@@ -36,7 +40,8 @@ Task:
    Accepting a risk is a decision about what remains, recorded with its reason:
    why the risk is small, where it is mitigated, or the follow-up ticket. On a
    Critical or Important item, thread or new finding alike, the decision is the
-   user's: propose it with the reason, keep the item blocking, and mark it
+   user's: propose it with the reason, state when accepting also resolves the user's
+   own thread once the reply is posted, keep the item blocking, and mark it
    `no (accepted risk)` only after the user says yes. Record the agreed reason as a
    drafted reply on the thread, posted on confirmation like any comment. On a
    thread the user opened (as the Clean path defines it), that yes is also the yes

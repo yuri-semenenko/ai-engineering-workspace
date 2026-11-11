@@ -20,13 +20,20 @@ resolve and nothing to approve.
 1. **Load prior threads.** Fetch open review threads via GraphQL — REST does not
    expose thread resolution state:
    ```
-   gh api graphql -f query='query($owner:String!,$repo:String!,$num:Int!){
+   gh api graphql -f query='query($owner:String!,$repo:String!,$num:Int!,$cursor:String){
      repository(owner:$owner,name:$repo){ pullRequest(number:$num){
-       reviewThreads(first:100){ nodes{ id isResolved
-         comments(first:20){ nodes{ path line body author{login} } } } } } } }' \
+       reviewThreads(first:100,after:$cursor){ pageInfo{hasNextPage endCursor} nodes{ id isResolved
+         comments(first:20){ pageInfo{hasNextPage endCursor} nodes{ path line body author{login} } } } } } } }' \
      -f owner=OWNER -f repo=REPO -F num=N
    ```
-   Keep only threads with `isResolved: false`.
+   Page `reviewThreads` until `hasNextPage` is false, passing each `endCursor`
+   as `cursor`. For every open thread, page its `comments` connection via
+   `node(id: $threadId) { ... on PullRequestReviewThread { comments(first: 100, after: $cursor) { pageInfo { hasNextPage endCursor } nodes { body author { login } } } } }`
+   until complete. Retain the first comment author and the authenticated user's
+   replies with bodies, including replies after the first page. If any page is
+   unavailable or incomplete, report that evidence gap; do not infer that the
+   user did not accept a risk or mark it accepted without evidence. Keep only
+   threads with `isResolved: false`.
 2. **Load new work.** Diff and commits since the previous review (`gh pr diff <id>`
    plus the commit log). Read the new code fully, cross-referencing touched files.
 3. **Build the verification matrix.** For each open thread, record three separate
@@ -48,7 +55,8 @@ resolve and nothing to approve.
    Accepting a risk is a decision about what remains, recorded with its reason:
    why the risk is small, where it is mitigated, or the follow-up ticket. On a
    Critical or Important item, thread or new finding alike, the decision is the
-   user's: propose it with the reason, keep the item blocking, and mark it
+   user's: propose it with the reason, state when accepting also resolves the user's
+   own thread once the reply is posted, keep the item blocking, and mark it
    `no (accepted risk)` only after the user says yes. Record the agreed reason as a
    drafted reply on the thread, posted on confirmation like any comment. On a
    thread the user opened (as the decision gate defines it), that yes is also the
@@ -75,7 +83,7 @@ resolve and nothing to approve.
 
 ## Delegation
 
-Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the open threads, load the new work and read the changed code) to cheaper-tier subagents, each returning compact evidence: the unresolved threads, each with the `author{login}` of its first comment for the ownership test in the decision gate, and what changed since the last review with `file:line`. Keep on the main model the verification matrix with its severity, status, and blocking calls (step 3), the new-findings classification (step 4), and the decision gate below. Resolving threads, posting comments, and approving are gated actions — never delegated to a subagent.
+Delegate the gather, keep the verification judgment. Hand steps 1-2 (load the open threads, load the new work and read the changed code) to cheaper-tier subagents, each returning compact evidence: the unresolved threads, each with the `author{login}` of its first comment for the ownership test, all replies by the authenticated user with their bodies for the acceptance test, any incomplete pages, and what changed since the last review with `file:line`. Keep on the main model the verification matrix with its severity, status, and blocking calls (step 3), the new-findings classification (step 4), and the decision gate below. Resolving threads, posting comments, and approving are gated actions — never delegated to a subagent.
 
 ## Decision gate
 
