@@ -78,7 +78,7 @@ After writing, give one paste-ready line for the next session: `/handoff resume 
 
 ## Close
 
-Fold anything durable into memory, then run the ownership check from Write on the stream's file. If it fails, delete nothing and show the user the file. If it passes, delete the stream's file (`<key>/<stream>.md`, or the older path it was resumed from) and every path it lists as `Supersedes`, and, if it exists, the `<stream>/` folder beside it. Never delete the `<key>/` or `<repo>/` directory itself; other streams live there.
+Fold anything durable into memory, then run the ownership check from Write on the stream's file. Before deleting anything, read each file listed as `Supersedes` and check its `Repo` against this repository's main checkout as in Write. If any check fails or a listed file is missing, unreadable, or ambiguous, delete nothing and show the user what needs clarification. If all checks pass, delete the stream's file (`<key>/<stream>.md`, or the older path it was resumed from) and every path it lists as `Supersedes`, and, if it exists, the `<stream>/` folder beside it. Never delete the `<key>/` or `<repo>/` directory itself; other streams live there.
 
 User request / arguments: {{args}}
 '''
