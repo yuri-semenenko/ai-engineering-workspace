@@ -22,8 +22,8 @@ Use fictional fixtures only. Never commit model transcripts or local run state.
    commits, or test results. Mark unavailable details as unavailable.
 3. An evaluator who did not write the candidate judges each output against the
    case evidence and the corresponding answer-key entry. Give the evaluator
-   anonymized outputs without variant identities; keep unused cases and holdout
-   answers out of its context. Record true findings, false comments, missed
+   anonymized outputs without variant identities; keep other cases and their
+   answer-key entries out of its context. Record true findings, false comments, missed
    issues, recheck status, unsupported security claims, and whether uncertainty
    was stated accurately.
 4. Record elapsed time and actual model usage when available; otherwise record
