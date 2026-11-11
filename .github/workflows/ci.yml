@@ -125,3 +125,19 @@ jobs:
         # The runner image provides bash and jq. The degraded-path checks hide
         # jq in an isolated Bash PATH, so every named check must actually run.
         run: .\scripts\test-windows.ps1 -RequireChecks model-tier-fields,permission-rule-shapes,repository-contract,install-copilot-contract,hook-scripts,hook-scripts-without-jq,workflow-model-guard
+
+  # In a UTF-8 locale, BSD tr and grep stop at a byte that is not valid UTF-8;
+  # the GNU tools on both legs above do not. So the Workflow guard's Latin-1 case
+  # can only go red here, and this leg fails if PATH hands it GNU tools instead.
+  verify-macos:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Workflow guard regression cases on BSD tools
+        run: |
+          if tr --version >/dev/null 2>&1; then echo "tr on PATH is not BSD tr"; exit 1; fi
+          grep --version | grep -q BSD || { echo "grep on PATH is not BSD grep"; exit 1; }
+          command -v jq >/dev/null || brew install jq
+          bash scripts/test-workflow-model-guard.sh
