@@ -371,7 +371,7 @@ Before delivering a PR review, run `gh auth status` and verify the PR is still o
 
 ### Verifying PR findings
 
-Verify every finding against the PR's actual head branch, using a dedicated worktree rather than the branch already checked out.
+Verify every finding against the PR's actual head branch, using a dedicated worktree created with `git worktree add --detach <path> <sha>` rather than the branch already checked out. A detached worktree creates no local branch and does not hold one checked out, so it never blocks the main checkout and leaves no branch behind.
 
 Never cite a line number or claim produced by a subagent without re-confirming it in the real file. A subagent's finding is evidence, not a verdict.
 

@@ -27,6 +27,7 @@ Constraints:
 - Change one variable at a time.
 - Keep refactoring separate from the bug fix.
 - If no reproduction is possible, state that verification is limited.
+- To show the verification fails without the fix, see it red before the fix is written, or take the fix out in an isolated copy outside the repository, never in the working tree, as the bug-fix rule in the testing prompt describes. If neither is possible, report the red state as not observed.
 
 Output Format:
 
@@ -42,5 +43,5 @@ Output Format:
 Success Criteria:
 - The root cause explains the symptom.
 - The fix directly addresses the confirmed cause.
-- Verification would fail without the fix and pass with it.
+- Verification would fail without the fix and pass with it, seen red before the fix or in an isolated copy, or reported as not observed.
 

@@ -4,9 +4,8 @@ set -euo pipefail
 # Regression cases for claude-code/.claude/hooks/workflow-model-guard.sh.
 #
 # Each case pipes a Workflow PreToolUse event into the real hook and checks the
-# decision it prints. CI runs this file on Linux, and scripts/test-windows.ps1
-# runs the same file under Git for Windows' bash against native jq.exe, so one
-# set of fixtures covers both platforms.
+# decision it prints. CI runs this file on Linux and macOS, and
+# scripts/test-windows.ps1 runs it under Git for Windows with native jq.exe.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOK="$SCRIPT_DIR/../claude-code/.claude/hooks/workflow-model-guard.sh"
@@ -106,22 +105,22 @@ TIERED=$'agent("gather", {model: "sonnet"})\nagent ("judge", {model: "opus"})'
 
 expect_ask 'inline: a call without a model' \
   "$(inline_event 'agent("a", {model: "sonnet"}); agent("b", {label: "x"})')" \
-  '1 agent() call(s) of 2 carry no model field (inline script)'
+  '2 agent() call(s) against 1 model field(s) (inline script)'
 
 expect_silent 'inline: every call names a model' \
   "$(inline_event 'agent("a", {model: "sonnet"}); agent("b", {model: "haiku"})')"
 
 expect_ask 'inline: a space before the parenthesis is still a call' \
   "$(inline_event 'agent ("a", {model: "sonnet"}); agent ("b", {label: "x"})')" \
-  '1 agent() call(s) of 2'
+  '2 agent() call(s) against 1 model field(s)'
 
 expect_ask 'inline: a line break before the parenthesis is still a call' \
   "$(inline_event $'agent\n("a", {label: "x"}); agent("b", {model: "sonnet"})')" \
-  '1 agent() call(s) of 2'
+  '2 agent() call(s) against 1 model field(s)'
 
 expect_ask 'inline: a call nested directly inside another counts twice' \
   "$(inline_event 'agent(agent("a", {model: "opus"}), {label: "x"})')" \
-  '1 agent() call(s) of 2'
+  '2 agent() call(s) against 1 model field(s)'
 
 expect_silent 'inline: quoted model keys count' \
   "$(inline_event $'agent("a", {"model": "sonnet"}); agent("b", {\'model\': "haiku"})')"
@@ -142,7 +141,31 @@ plain="$work/flow.js"
 printf '%s\n' "$UNTIERED" > "$plain"
 expect_ask 'scriptPath: the file is checked, not the stale inline script' \
   "$(path_event "$plain" "$TIERED")" \
-  "1 agent() call(s) of 2 carry no model field (scriptPath $plain)"
+  "2 agent() call(s) against 1 model field(s) (scriptPath $plain)"
+
+# A byte that is not valid UTF-8 ahead of the calls must not drop them from the
+# count. BSD tr and grep on macOS stop at such a byte in a UTF-8 locale; GNU tools
+# on Linux and in Git for Windows do not, so this case goes red only on macOS
+# without the hook's LC_ALL=C.
+utf8_locale="$(locale -a 2>/dev/null | grep -i -m1 -E '^(c|en_us)\.utf-?8$' || true)"
+latin1="$work/latin1.js"
+{ printf '// caf\351\n'; printf '%s\n' "$UNTIERED"; } > "$latin1"
+if [ -z "$utf8_locale" ] || ! LC_ALL="$utf8_locale" locale charmap 2>/dev/null | tr -d '\r' | grep -Eiq '^utf-?8$'; then
+  if [ "$(uname -s)" = Darwin ]; then
+    fail 'scriptPath: no verified UTF-8 locale is available for the Latin-1 case'
+  else
+    printf 'skip - scriptPath: no verified UTF-8 locale for the Latin-1 case\n'
+  fi
+else
+  out="$(path_event "$latin1" "$TIERED" | LC_ALL="$utf8_locale" "$BASH" "$HOOK")" || true
+  if printf '%s' "$out" |
+    jq -e '.hookSpecificOutput.permissionDecision == "ask" and (.hookSpecificOutput.permissionDecisionReason | contains("2 agent() call(s) against 1 model field(s)"))' \
+      >/dev/null 2>&1; then
+    pass 'scriptPath: a byte that is not UTF-8 does not hide the calls after it'
+  else
+    fail "scriptPath: a byte that is not UTF-8 hid calls from the count: $out"
+  fi
+fi
 
 tiered_file="$work/tiered.js"
 printf '%s\n' "$TIERED" > "$tiered_file"
@@ -188,7 +211,7 @@ missing="$work/missing \"quoted\" back\\slash.js"
 expect_ask 'scriptPath: a missing file asks without scanning the inline script' \
   "$(path_event "$missing" 'agent("stale")')" \
   "cannot read scriptPath $missing" \
-  'carry no model field'
+  'model field(s)'
 
 expect_ask 'scriptPath: a directory asks' \
   "$(path_event "$work" "$TIERED")" \
