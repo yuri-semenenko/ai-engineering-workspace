@@ -4,9 +4,8 @@ set -euo pipefail
 # Regression cases for claude-code/.claude/hooks/workflow-model-guard.sh.
 #
 # Each case pipes a Workflow PreToolUse event into the real hook and checks the
-# decision it prints. CI runs this file on Linux, and scripts/test-windows.ps1
-# runs the same file under Git for Windows' bash against native jq.exe, so one
-# set of fixtures covers both platforms.
+# decision it prints. CI runs this file on Linux and macOS, and
+# scripts/test-windows.ps1 runs it under Git for Windows with native jq.exe.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOK="$SCRIPT_DIR/../claude-code/.claude/hooks/workflow-model-guard.sh"
@@ -151,13 +150,21 @@ expect_ask 'scriptPath: the file is checked, not the stale inline script' \
 utf8_locale="$(locale -a 2>/dev/null | grep -i -m1 -E '^(c|en_us)\.utf-?8$' || true)"
 latin1="$work/latin1.js"
 { printf '// caf\351\n'; printf '%s\n' "$UNTIERED"; } > "$latin1"
-out="$(path_event "$latin1" "$TIERED" | LC_ALL="${utf8_locale:-C.UTF-8}" "$BASH" "$HOOK")" || true
-if printf '%s' "$out" |
-  jq -e '.hookSpecificOutput.permissionDecision == "ask" and (.hookSpecificOutput.permissionDecisionReason | contains("2 agent() call(s) against 1 model field(s)"))' \
-    >/dev/null 2>&1; then
-  pass 'scriptPath: a byte that is not UTF-8 does not hide the calls after it'
+if [ -z "$utf8_locale" ] || ! LC_ALL="$utf8_locale" locale charmap 2>/dev/null | tr -d '\r' | grep -Eiq '^utf-?8$'; then
+  if [ "$(uname -s)" = Darwin ]; then
+    fail 'scriptPath: no verified UTF-8 locale is available for the Latin-1 case'
+  else
+    printf 'skip - scriptPath: no verified UTF-8 locale for the Latin-1 case\n'
+  fi
 else
-  fail "scriptPath: a byte that is not UTF-8 hid calls from the count: $out"
+  out="$(path_event "$latin1" "$TIERED" | LC_ALL="$utf8_locale" "$BASH" "$HOOK")" || true
+  if printf '%s' "$out" |
+    jq -e '.hookSpecificOutput.permissionDecision == "ask" and (.hookSpecificOutput.permissionDecisionReason | contains("2 agent() call(s) against 1 model field(s)"))' \
+      >/dev/null 2>&1; then
+    pass 'scriptPath: a byte that is not UTF-8 does not hide the calls after it'
+  else
+    fail "scriptPath: a byte that is not UTF-8 hid calls from the count: $out"
+  fi
 fi
 
 tiered_file="$work/tiered.js"
