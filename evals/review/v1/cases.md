@@ -70,9 +70,10 @@ or a connection reset. New code suppresses duplicate retries after a timeout;
 the connection-reset path is unchanged and still schedules the retry twice.
 The added test covers only the timeout path.
 
-### H4 — no evidence the original scenario existed
+### H4 — an explicitly accepted remaining risk
 
-Prior Important thread says `isEnabled(false)` returns true. Old and new code
-are identical: `function isEnabled(value) { return value === true; }`.
-A direct check of the original scenario returns false. No other scenario is
-provided and the author says no change is needed.
+Prior Important thread: a non-critical background export can take several
+minutes when a remote service is slow. The author replied that the delay remains
+and will not be fixed in this PR. The user explicitly accepted that same risk
+in a later reply, explaining that exports are rare and the delay is visible to
+the operator. There is no new evidence that the risk has changed.
