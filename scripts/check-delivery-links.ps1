@@ -6,14 +6,46 @@ try { $config = Get-Content -LiteralPath $settings -Raw | ConvertFrom-Json } cat
     exit 1
 }
 $bad = $false
-$commands = @($config.statusLine.command)
-foreach ($event in $config.hooks.PSObject.Properties) {
-    foreach ($group in $event.Value) { foreach ($hook in $group.hooks) { $commands += $hook.command } }
+if ($null -eq $config -or $null -eq $config.hooks -or $config.hooks -isnot [pscustomobject] -or
+    $config.statusLine.command -isnot [string] -or -not $config.statusLine.command.StartsWith('bash ~/.claude/')) {
+    [Console]::Error.WriteLine("delivery-links: local hooks and status line are required in $settings")
+    exit 1
 }
+$commands = @()
+foreach ($event in $config.hooks.PSObject.Properties) {
+    if ($event.Value -isnot [array]) {
+        [Console]::Error.WriteLine("delivery-links: hook event must be an array in $settings")
+        exit 1
+    }
+    foreach ($group in $event.Value) {
+        if ($group -isnot [pscustomobject] -or $group.hooks -isnot [array]) {
+            [Console]::Error.WriteLine("delivery-links: hook group must contain an array in $settings")
+            exit 1
+        }
+        foreach ($hook in $group.hooks) {
+            if ($hook -isnot [pscustomobject]) {
+                [Console]::Error.WriteLine("delivery-links: hook must be an object in $settings")
+                exit 1
+            }
+            $commands += $hook.command
+        }
+    }
+}
+$localHooks = @($commands | Where-Object { $_ -is [string] -and $_.StartsWith('bash ~/.claude/') })
+if ($localHooks.Count -eq 0) {
+    [Console]::Error.WriteLine("delivery-links: no local hooks in $settings")
+    exit 1
+}
+$commands += $config.statusLine.command
 foreach ($command in $commands) {
-    if ($command -isnot [string] -or -not $command.StartsWith('bash ~/.claude/')) { continue }
+    if ($command -isnot [string]) { continue }
+    if ($command.Contains("`n") -or $command.Contains("`r")) {
+        [Console]::Error.WriteLine("delivery-links: multiline command in $settings")
+        $bad = $true; continue
+    }
+    if (-not $command.StartsWith('bash ~/.claude/')) { continue }
     $relative = $command.Substring('bash ~/.claude/'.Length)
-    if ($relative.Contains('..') -or $relative.Contains(' ') -or ($relative -notmatch '^hooks/[^/\s]+\.sh$' -and $relative -ne 'statusline.sh')) {
+    if ($relative.Contains('..') -or ($relative -cnotmatch '^hooks/[A-Za-z0-9._-]+\.sh$' -and $relative -cne 'statusline.sh')) {
         [Console]::Error.WriteLine("delivery-links: unsupported command in ${settings}: $command")
         $bad = $true; continue
     }

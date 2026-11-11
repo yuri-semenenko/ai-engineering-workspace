@@ -1,0 +1,77 @@
+[
+  {
+    "name": "valid local commands",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":[{\"command\":\"bash ~/.claude/hooks/model-reminder.sh\"},{\"command\":\"external-tool\"}]}]},\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\"}}",
+    "valid": true
+  },
+  {
+    "name": "empty file",
+    "settings": "",
+    "valid": false
+  },
+  {
+    "name": "invalid JSON",
+    "settings": "{",
+    "valid": false
+  },
+  {
+    "name": "multiple JSON values",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":[{\"command\":\"bash ~/.claude/hooks/model-reminder.sh\"}]}]},\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\"}} {}",
+    "valid": false
+  },
+  {
+    "name": "empty object",
+    "settings": "{}",
+    "valid": false
+  },
+  {
+    "name": "missing hooks",
+    "settings": "{\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\"}}",
+    "valid": false
+  },
+  {
+    "name": "missing status line",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":[{\"command\":\"bash ~/.claude/hooks/model-reminder.sh\"}]}]}}",
+    "valid": false
+  },
+  {
+    "name": "hook event is not an array",
+    "settings": "{\"hooks\":{\"PreToolUse\":{\"hooks\":[{\"command\":\"bash ~/.claude/hooks/model-reminder.sh\"}]}},\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\"}}",
+    "valid": false
+  },
+  {
+    "name": "hook group is not an array",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":{\"command\":\"bash ~/.claude/hooks/model-reminder.sh\"}}]},\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\"}}",
+    "valid": false
+  },
+  {
+    "name": "no local hook",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":[{\"command\":\"external-tool\"}]}]},\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\"}}",
+    "valid": false
+  },
+  {
+    "name": "unrecognized status line",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":[{\"command\":\"bash ~/.claude/hooks/model-reminder.sh\"}]}]},\"statusLine\":{\"command\":\"sh ~/.claude/statusline.sh\"}}",
+    "valid": false
+  },
+  {
+    "name": "uppercase extension",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":[{\"command\":\"bash ~/.claude/hooks/model-reminder.SH\"}]}]},\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\"}}",
+    "valid": false
+  },
+  {
+    "name": "newline in hook",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":[{\"command\":\"bash ~/.claude/hooks/model-reminder.sh\\nignored\"}]}]},\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\"}}",
+    "valid": false
+  },
+  {
+    "name": "newline in status line",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":[{\"command\":\"bash ~/.claude/hooks/model-reminder.sh\"}]}]},\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\\nignored\"}}",
+    "valid": false
+  },
+  {
+    "name": "alternate hook shell",
+    "settings": "{\"hooks\":{\"PreToolUse\":[{\"hooks\":[{\"command\":\"sh ~/.claude/hooks/model-reminder.sh\"}]}]},\"statusLine\":{\"command\":\"bash ~/.claude/statusline.sh\"}}",
+    "valid": false
+  }
+]

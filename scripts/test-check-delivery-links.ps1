@@ -22,6 +22,20 @@ $actual = Run-Check $root
 if ($actual.Code -ne 0) { throw "checkout failed: $($actual.Output)" }
 $actual = Run-Check $tmp
 if ($actual.Code -ne 0) { throw "fixture failed: $($actual.Output)" }
+$settings = Join-Path $tmp 'claude-code/.claude/settings.example.json'
+$originalSettings = [IO.File]::ReadAllText($settings)
+$fixtures = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'fixtures/delivery-link-settings.json') -Raw | ConvertFrom-Json
+foreach ($fixture in $fixtures) {
+    [IO.File]::WriteAllText($settings, $fixture.settings)
+    $actual = Run-Check $tmp
+    if (($actual.Code -eq 0) -ne $fixture.valid) { throw "settings fixture '$($fixture.name)' returned exit $($actual.Code): $($actual.Output)" }
+}
+[IO.File]::WriteAllText($settings, $originalSettings)
+$statusline = Join-Path $tmp 'claude-code/.claude/statusline.sh'
+Move-Item -LiteralPath $statusline -Destination "$statusline.saved"
+$actual = Run-Check $tmp
+if ($actual.Code -eq 0 -or $actual.Output -notmatch 'references missing claude-code/.claude/statusline.sh') { throw "missing statusline was not reported: $($actual.Output)" }
+Move-Item -LiteralPath "$statusline.saved" -Destination $statusline
 $hook = Join-Path $tmp 'claude-code/.claude/hooks/model-reminder.sh'
 Move-Item -LiteralPath $hook -Destination "$hook.saved"
 $actual = Run-Check $tmp
@@ -39,7 +53,7 @@ if ($actual.Code -eq 0 -or $actual.Output -notmatch 'codex/skills/pr-recheck/SKI
 [IO.File]::WriteAllText($reference, ([IO.File]::ReadAllText($reference).Replace('missing-review','pr-review-missing')))
 $actual = Run-Check $tmp
 if ($actual.Code -eq 0 -or $actual.Output -notmatch 'codex/skills/pr-recheck/SKILL.md does not reference pr-review') { throw "extended skill name was accepted: $($actual.Output)" }
-Write-Output 'delivery-links fixtures: missing hook, skill and reference rejected'
+Write-Output 'delivery-links fixtures: settings, status line, hooks and review links checked'
 } finally {
     $resolved = [IO.Path]::GetFullPath($tmp)
     $prefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())

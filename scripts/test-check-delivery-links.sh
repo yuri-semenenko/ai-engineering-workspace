@@ -12,6 +12,24 @@ for p in claude-code/.claude/settings.example.json claude-code/.claude/hooks/mod
   cp "$root/$p" "$tmp/$p"
 done
 bash "$tmp/scripts/check-delivery-links.sh" >/dev/null
+settings="$tmp/claude-code/.claude/settings.example.json"
+fixtures="$script_dir/fixtures/delivery-link-settings.json"
+cp "$settings" "$tmp/original-settings.json"
+count=$(jq 'length' "$fixtures")
+for ((i=0; i<count; i++)); do
+  name=$(jq -r ".[$i].name" "$fixtures")
+  expected=$(jq -r ".[$i].valid" "$fixtures")
+  jq -rj ".[$i].settings" "$fixtures" > "$settings"
+  if bash "$tmp/scripts/check-delivery-links.sh" >/dev/null 2>&1; then actual=true; else actual=false; fi
+  if [ "$actual" != "$expected" ]; then
+    echo "settings fixture '$name': expected $expected, got $actual" >&2; exit 1
+  fi
+done
+cp "$tmp/original-settings.json" "$settings"
+mv "$tmp/claude-code/.claude/statusline.sh" "$tmp/claude-code/.claude/statusline.saved"
+if out=$(bash "$tmp/scripts/check-delivery-links.sh" 2>&1); then echo 'missing statusline was accepted' >&2; exit 1; fi
+[[ "$out" == *'references missing claude-code/.claude/statusline.sh'* ]] || { echo "$out" >&2; exit 1; }
+mv "$tmp/claude-code/.claude/statusline.saved" "$tmp/claude-code/.claude/statusline.sh"
 mv "$tmp/claude-code/.claude/hooks/model-reminder.sh" "$tmp/claude-code/.claude/hooks/model-reminder.saved"
 if out=$(bash "$tmp/scripts/check-delivery-links.sh" 2>&1); then echo 'missing hook was accepted' >&2; exit 1; fi
 [[ "$out" == *'references missing claude-code/.claude/hooks/model-reminder.sh'* ]] || { echo "$out" >&2; exit 1; }
@@ -28,4 +46,4 @@ sed 's/missing-review/pr-review-missing/g' "$tmp/codex/skills/pr-recheck/SKILL.m
 mv "$tmp/codex/skills/pr-recheck/changed.md" "$tmp/codex/skills/pr-recheck/SKILL.md"
 if out=$(bash "$tmp/scripts/check-delivery-links.sh" 2>&1); then echo 'extended skill name was accepted' >&2; exit 1; fi
 [[ "$out" == *'codex/skills/pr-recheck/SKILL.md does not reference pr-review'* ]] || { echo "$out" >&2; exit 1; }
-echo 'delivery-links fixtures: missing hook, skill and reference rejected'
+echo 'delivery-links fixtures: settings, status line, hooks and review links checked'

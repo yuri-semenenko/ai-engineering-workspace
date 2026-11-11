@@ -48,11 +48,13 @@ The sync script validates this structure; there is no auto-fix.
 
 Root [`AGENTS.md`](./AGENTS.md) is this repository's contract for coding agents: ownership boundaries, the exact validation commands, the invariants, and which ADR to read before changing one of them. Root `CLAUDE.md` is the Claude Code adapter, because Claude Code reads `CLAUDE.md` and not `AGENTS.md`: it holds the `@AGENTS.md` import and may hold a genuinely Claude-only delta, but never a copy of a rule from the contract. Every repository-wide rule goes in `AGENTS.md`. `scripts/test-check-repository-contract.sh` runs the guard against the checkout and then its fixtures, and fails if a pairing, an `@AGENTS.md` import, or a referenced path breaks.
 
-`scripts/test-check-delivery-links.sh` checks the local Claude hook commands and
-the explicitly declared review-skill links against shipped files, then exercises
-missing-target fixtures. It requires `jq`; a missing or unusable `jq` fails the
-check. The PowerShell port and its fixtures run in the Windows suite. These
-checks do not inspect user settings or establish runtime tool availability.
+`scripts/test-check-delivery-links.sh` checks Claude example commands using the
+supported `bash ~/.claude/` form and the explicitly declared review-skill links
+against shipped files, then exercises missing-target and shared settings
+fixtures. It requires at least one local hook and a local status line, and fails
+if `jq` is missing or unusable. The PowerShell port runs the same settings
+fixtures in the Windows suite. These checks do not inspect user settings or
+establish runtime tool availability.
 
 Two other files here are also called `AGENTS.md` and are **not** this contract: `codex/AGENTS.md` is the personal, global payload installed to `$CODEX_HOME`, and `copilot/workspace-template/AGENTS.md` is a template copied into someone else's repository. They are not mirrored into each other. See [`adr/0014-agents-md-is-the-repository-contract.md`](./adr/0014-agents-md-is-the-repository-contract.md).
 
