@@ -199,7 +199,7 @@ if (Test-Path $copilotTemplate) {
 # Names are validated against the actual Claude Code skill catalog.
 $recommendedOut = Join-Path $PersonaDir 'recommended-skills.md'
 if (Test-Path $SkillsDir) {
-  $rec = @('spec', 'debug', 'commit', 'testing-checklist', 'pr-classify', 'humanizer')
+  $rec = @('spec', 'debug', 'commit', 'testing-checklist', 'pr-review', 'humanizer')
   switch ($Discipline) {
     'frontend'  { $rec += @('web-performance-checklist', 'web-security-checklist', 'lazy') }
     'fullstack' { $rec += @('web-performance-checklist', 'web-security-checklist', 'lazy', 'security-pass') }
@@ -216,7 +216,7 @@ if (Test-Path $SkillsDir) {
   switch ($Workflow) {
     'delivery-focused'     { $rec += @('spec', 'lazy', 'commit', 'pr-comment') }
     'architecture-focused' { $rec += @('rfc', 'adr', 'module-design', 'complexity-audit', 'research', 'migration-plan') }
-    'review-focused'       { $rec += @('pr-classify', 'pr-recheck', 'pr-comment') }
+    'review-focused'       { $rec += @('pr-review', 'pr-recheck', 'pr-comment') }
     'learning-focused'     { $rec += @('codebase-map', 'debug', 'testing-checklist', 'spec', 'lazy') }
   }
   $emphasis = switch ($Workflow) {

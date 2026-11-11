@@ -1,9 +1,9 @@
 ---
-name: pr-classify
+name: pr-review
 description: Use when reviewing a PR, triaging code-review feedback, or deciding what is worth commenting on. Classifies every finding as Critical, Important, or Optional and ends with a verdict. The follow-up pass after fixes is pr-recheck.
 ---
 
-# PR Classify
+# PR Review
 
 Lead with findings. Use English for GitHub markdown unless the user explicitly asks otherwise.
 

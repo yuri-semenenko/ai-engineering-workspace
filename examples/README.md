@@ -15,7 +15,7 @@ documents, each a different skill and a different moment in the decision:
 | --- | --- | --- |
 | [`rfc-sample.md`](./rfc-sample.md) | `rfc` | The approach is contested. Explore options, recommend one. |
 | [`adr-sample.md`](./adr-sample.md) | `adr` | The decision is made. Record why, for future readers. |
-| [`pr-review-sample.md`](./pr-review-sample.md) | `pr-classify` | The implementation exists. Review it, triaged by severity. |
+| [`pr-review-sample.md`](./pr-review-sample.md) | `pr-review` | The implementation exists. Review it, triaged by severity. |
 
 Read them in that order and you see the workflow the kit encodes: explore in an
 RFC, commit in an ADR, verify in review. Each one follows the format its skill
