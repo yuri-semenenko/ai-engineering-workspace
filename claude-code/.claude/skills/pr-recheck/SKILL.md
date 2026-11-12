@@ -9,7 +9,7 @@ Follow-up pass on a PR that has already been reviewed once. Assumes a prior roun
 of inline comments exists and the author has pushed fixes since.
 
 ## Preconditions
-The same checks as pr-classify: run `gh auth status`; require a PR number/URL or a
+The same checks as pr-review: run `gh auth status`; require a PR number/URL or a
 checked-out branch with an open PR; verify open state via
 `gh pr view <id> --json state,mergedAt`. One difference: if it is merged or closed,
 surface that and stop rather than asking, because there is no thread left to
@@ -40,9 +40,9 @@ resolve and nothing to approve.
    things, with the file:line and the commit that addresses it. Output as a table.
    - **Severity**, from the first review: Critical / Important / Optional. When the
      thread does not state it, classify it from what it describes under
-     pr-classify rules and mark the severity as inferred. When it reads as either
+     pr-review rules and mark the severity as inferred. When it reads as either
      of two tiers, take the higher one: severity alone decides what blocks, and
-     pr-classify posts comments as prose that rarely names a tier.
+     pr-review posts comments as prose that rarely names a tier.
    - **Status**: `addressed` / `partial` / `not addressed` /
      `wont-fix (author replied)`. A `wont-fix` reply is the author's position,
      not the reviewer's acceptance. `addressed (not resolved)` marks an
@@ -76,7 +76,7 @@ resolve and nothing to approve.
    read, not observed.
 4. **Scan for new findings.** Re-reading the changed code may surface fresh issues,
    including regressions the fix itself introduced on adjacent paths.
-   Classify them Critical / Important / Optional per pr-classify rules — the
+   Classify them Critical / Important / Optional per pr-review rules — the
    anti-nitpick gate applies (drop Optional whose cost of ignoring is "none").
    A new Critical or Important finding blocks approval unless its risk is accepted
    the same way; a new Optional one does not.
@@ -119,7 +119,7 @@ drafted as comments.
   acceptance with its reason, then stop and wait.
 
 ## Posting & resolving
-- New inline comments: same rules as pr-classify "Posting inline comments" — draft
+- New inline comments: same rules as pr-review "Posting inline comments" — draft
   first, confirm (a confirmation covers the drafts it names; a finding added after
   it is confirmed on its own; an explicit earlier instruction to post this
   recheck's comments is the confirmation), conversational English plain prose, no →/~/em-dash,

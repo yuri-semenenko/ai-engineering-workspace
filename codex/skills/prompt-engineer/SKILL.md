@@ -35,4 +35,4 @@ Mirror the user's language in the surrounding response. Generate the prompt itse
 - Drive clarity, decisions, risks, dependencies, and ownership.
 - Include assumptions and explicit non-goals.
 - Ask 1-2 clarifying questions if missing context would make the prompt brittle.
-- Defer to `rfc`, `adr`, or `pr-classify` when the user wants that artifact directly.
+- Defer to `rfc`, `adr`, or `pr-review` when the user wants that artifact directly.

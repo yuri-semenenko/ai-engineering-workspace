@@ -1,7 +1,7 @@
-# Ported from claude-code/.claude/skills/pr-classify/SKILL.md — Gemini CLI custom command.
+# Ported from claude-code/.claude/skills/pr-review/SKILL.md — Gemini CLI custom command.
 description = "Review a pull request and classify every finding as Critical / Important / Optional per the user's persona framework."
 prompt = '''
-# PR classify
+# PR review
 
 Review the current branch (or a specified PR) and produce structured feedback in the user's canonical classification scheme. The user is a Staff Engineer who explicitly wants to filter out nitpicks and focus on meaningful engineering concerns.
 

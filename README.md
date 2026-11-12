@@ -216,7 +216,7 @@ Read it in [`docs/principles/`](docs/principles/).
 | `debt-ledger` | collects `TRADEOFF(...)` annotations into one ledger | "list tradeoffs" |
 | `codebase-map` | orient in unfamiliar code: entry points, domain glossary, seams, risky areas | "map this repo", "where do I start" |
 | `debug` | reproduce → build a feedback loop → isolate → fix the cause | "why is X failing", "find root cause" |
-| `pr-classify` | Critical / Important / Optional review triage | "review this PR" |
+| `pr-review` | Critical / Important / Optional review triage | "review this PR" |
 | `pr-comment` | fills the repo's PR template as copy-paste markdown | "prepare a PR description" |
 | `pr-recheck` | second-pass re-review after fixes | "recheck the PR" |
 | `security-pass` | staged remediation with an approval gate | "harden this", "security pass" |
@@ -228,7 +228,7 @@ Read it in [`docs/principles/`](docs/principles/).
 | `handoff` | carries one work stream across `/clear` in a file outside every repo; resume and close | "write a handoff", "resume from handoff" |
 
 Codex carries the canon name wherever a canon skill exists — `debug`,
-`testing-checklist`, `pr-classify`, `pr-comment`, `pr-recheck`, `module-design`,
+`testing-checklist`, `pr-review`, `pr-comment`, `pr-recheck`, `module-design`,
 `codebase-map`, `research`, `migration-plan`, `handoff`, plus RFC/ADR/humanizer — and keeps
 its own name only for the four with no canon counterpart: `architect`,
 `context-brief`, `project-onboarding`, and `prompt-engineer`. Copilot exposes the

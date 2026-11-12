@@ -103,7 +103,7 @@ The canon's workflow steps are roles. They land here as:
 | `architect` | `/rfc` while options are open, `/module-design` for one interface |
 | `decide` | the main loop; `/adr` records what it settles |
 | `implement` | project agent |
-| `review` | `independent-review`, then `/pr-classify` for the classification |
+| `review` | `independent-review`, then `/pr-review` for the classification |
 | `judge` | always the main loop |
 
 Two mechanisms the other tools do not have:

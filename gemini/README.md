@@ -37,6 +37,10 @@ source it used, and reports `TEMPLATE ONLY` or `INCOMPLETE` when what landed
 still holds `{{PLACEHOLDERS}}`. Auth, logs, sessions, and cache are never
 touched.
 
+The installer does not remove old commands. If upgrading from a version with
+`pr-classify.toml`, inspect any local edits before archiving or removing that
+file; the replacement is `pr-review.toml`.
+
 `GEMINI.md` is re-sent on every prompt, which is why the mirror is the
 **condensed** persona rather than the full one.
 
@@ -79,7 +83,7 @@ package wires up:
 The canon's workflows ([`../docs/principles/working-with-agents.md`](../docs/principles/working-with-agents.md))
 map onto the command ports: `explore` is `codebase_investigator` or
 `/codebase-map`, `architect` is `/rfc` or `/module-design`, `decide` is yours with
-`/adr` recording it, `review` is `/pr-classify`. `judge` never leaves the parent.
+`/adr` recording it, `review` is `/pr-review`. `judge` never leaves the parent.
 
 This package leaves model selection to Gemini CLI's built-in routing or to user
 settings. Do not assume built-in agents inherit the session model, do not

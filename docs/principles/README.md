@@ -34,7 +34,7 @@ of prompts. The distinction is concrete, not cosmetic:
   read instructions.
 
 Everything in this repository is the second kind. The skills are named for
-engineering activities — `rfc`, `adr`, `spec`, `pr-classify`, `security-pass` —
+engineering activities — `rfc`, `adr`, `spec`, `pr-review`, `security-pass` —
 not for prompt tricks. When you read them, they should look like the checklists a
 staff engineer already carries in their head, written down so an assistant
 carries them too.

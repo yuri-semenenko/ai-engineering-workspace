@@ -1023,6 +1023,14 @@ Add-Check 'workflow-model-guard' {
 
 # --- run ---------------------------------------------------------------------
 
+foreach ($hostExe in $Hosts) {
+    Add-Check "delivery-links [$hostExe]" -Arguments @($hostExe) {
+        param([string]$HostExe)
+        $sb = Get-Sandbox $HostExe
+        $r = Invoke-Ps1 -HostExe $HostExe -Script (Join-Path $sb.Repo 'scripts\test-check-delivery-links.ps1')
+        Assert-Ps1Succeeded $r 'delivery-links fixtures'
+    }
+}
 $selected = @($script:Checks | Where-Object { -not $Filter -or $_.Name -like "*$Filter*" })
 if ($selected.Count -eq 0) {
     Write-Error "No checks match filter '$Filter'"

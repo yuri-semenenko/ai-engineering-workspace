@@ -21,6 +21,9 @@ jobs:
       - name: Repository contract guard + its fixtures
         run: bash scripts/test-check-repository-contract.sh
 
+      - name: Shipped delivery links
+        run: bash scripts/test-check-delivery-links.sh
+
       - name: Shell syntax check
         run: |
           status=0

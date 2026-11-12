@@ -226,7 +226,7 @@ fi
 # Names are validated against the actual Claude Code skill catalog, so the
 # mapping cannot drift into referencing a skill that does not exist.
 write_recommended_skills() {
-  local rec="spec debug commit testing-checklist pr-classify humanizer"
+  local rec="spec debug commit testing-checklist pr-review humanizer"
   case "$DISCIPLINE" in
     frontend)  rec="$rec web-performance-checklist web-security-checklist lazy" ;;
     fullstack) rec="$rec web-performance-checklist web-security-checklist lazy security-pass" ;;
@@ -246,7 +246,7 @@ write_recommended_skills() {
                           emphasis="ship-oriented skills: specs, the laziest-solution ladder, small commits, and PR descriptions." ;;
     architecture-focused) rec="$rec rfc adr module-design complexity-audit research migration-plan"
                           emphasis="design-first skills: evidence-backed option research, RFCs, ADRs, module design, migration planning, and whole-tree complexity checks." ;;
-    review-focused)       rec="$rec pr-classify pr-recheck pr-comment"
+    review-focused)       rec="$rec pr-review pr-recheck pr-comment"
                           emphasis="review skills: tiered PR classification, second-pass re-review, and PR descriptions." ;;
     learning-focused)     rec="$rec codebase-map debug testing-checklist spec lazy"
                           emphasis="understanding-first skills: orienting in an unfamiliar codebase, reproduce-then-fix debugging, specs, and test coverage." ;;

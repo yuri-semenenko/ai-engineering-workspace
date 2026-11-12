@@ -1,6 +1,6 @@
 # PR review: Webhook delivery worker
 
-> Example output of the `pr-classify` skill. Fictional PR. See
+> Example output of the `pr-review` skill. Fictional PR. See
 > [`docs/principles/review-discipline.md`](../docs/principles/review-discipline.md)
 > for the classification scheme. This reviews the implementation of the decision
 > in [`adr-sample.md`](./adr-sample.md).

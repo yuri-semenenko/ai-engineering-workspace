@@ -38,7 +38,10 @@ it must not delete local work. If you installed a version from before the skill-
 alignment, inspect any local customizations and then archive or remove only these
 superseded directories: `failure-investigation`, `test-strategy`, and
 `pull-request-workflow`. Their replacements are `debug`, `testing-checklist`, and
-`pr-classify`, `pr-comment`, and `pr-recheck`, respectively.
+`pr-review`, `pr-comment`, and `pr-recheck`, respectively.
+
+The same applies to the old `pr-classify` directory: inspect any local edits
+before archiving or removing it; the replacement is `pr-review`.
 
 ## What is a mirror and what is owned here
 
@@ -83,7 +86,7 @@ Trigger a narrower workflow explicitly:
 - `$rfc` — RFC in the canonical 10-section format
 - `$adr` — record an accepted decision
 - `$debug` — systematic root-cause investigation
-- `$pr-classify` — review a PR and classify every finding by severity
+- `$pr-review` — review a PR and classify every finding by severity
 - `$pr-recheck` — second pass after fixes, against the open threads
 - `$pr-comment` — draft the PR description from the branch
 - `$humanizer` — make text sound less AI-generated
